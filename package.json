@@ -1,6 +1,6 @@
 {
   "name": "steem",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Steem Blockchain API",
   "main": "index.js",
   "scripts": {
