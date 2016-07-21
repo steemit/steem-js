@@ -21,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/adcpm/steem/issues"
   },
-  "homepage": "https://github.com/adcpm/steem#readme"
+  "homepage": "https://github.com/adcpm/steem#readme",
+  "dependencies": {
+    "steem-rpc": "^0.5.2"
+  }
 }
