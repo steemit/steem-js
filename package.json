@@ -1,7 +1,7 @@
 {
   "name": "steem",
-  "version": "0.0.1",
-  "description": "Steem Blockchain API",
+  "version": "0.0.2",
+  "description": "SteemJS the JavaScript API for Steem blockchain",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -23,6 +23,6 @@
   },
   "homepage": "https://github.com/adcpm/steem#readme",
   "dependencies": {
-    "steem-rpc": "^0.5.2"
+    "ws": "^1.1.1"
   }
 }
