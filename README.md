@@ -30,6 +30,8 @@ Steem.send(data, function(result, err) {
 });
 ```
 
+http://piston.readthedocs.io/en/develop/lib.html#piston-api
+
 ## Get Accounts
 ```js
 Steem.getAccounts(['ned', 'dan'], function(result, err) {
