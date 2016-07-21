@@ -1,7 +1,7 @@
 scr
 lib
-.idea*
-.save*
+.idea
+.save
 *.css.map
 *.css
 
