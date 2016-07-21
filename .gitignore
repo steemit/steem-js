@@ -1,5 +1,5 @@
-.save
-.idea
+.save/
+.idea/
 node_modules
 npm-debug.log
 scr/
