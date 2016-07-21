@@ -1,0 +1,25 @@
+{
+  "name": "steem",
+  "version": "0.0.0",
+  "description": "Steem Blockchain API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adcpm/steem.git"
+  },
+  "keywords": [
+    "steem",
+    "steemit",
+    "blockchain",
+    "steemjs"
+  ],
+  "author": "AdCpm <fabien@adcpm.com> (https://github.com/adcpm)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/adcpm/steem/issues"
+  },
+  "homepage": "https://github.com/adcpm/steem#readme"
+}
