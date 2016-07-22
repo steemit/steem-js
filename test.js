@@ -1,11 +1,6 @@
-var steem = require('./lib/steem');
-var Steem = new steem();
+var Steem = require('./lib/steem');
+var steem = new Steem();
 
-var data = {
-	'id': 1,
-	'method': 'get_account_count'
-};
-
-Steem.send(data, function(result, err) {
+steem.getAccounts(['ned', 'dan'], function(result, err) {
 	console.log(result, err);
 });
