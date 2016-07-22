@@ -89,9 +89,7 @@ Steem.streamOperations(function(result) {
 ```
 
 ## TO-DO
-- Cancel All Subscriptions method
-- Connect Account method
-- Create Account method
+- Create more methods
 - You have some suggestions? Let me know on Slack https://steem.slack.com/ channel #steemjs
 
 ## License

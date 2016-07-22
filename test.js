@@ -9,7 +9,3 @@ var data = {
 Steem.send(data, function(result, err) {
 	console.log(result, err);
 });
-
-Steem.getAccountCount(function(result, err) {
-	console.log(result, err);
-});
