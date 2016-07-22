@@ -32,6 +32,13 @@ Steem.send(data, function(result, err) {
 
 http://piston.readthedocs.io/en/develop/lib.html#piston-api
 
+## Get Account Count
+```js
+Steem.getAccountCount(function(result, err) {
+	console.log(result, err);
+});
+```
+
 ## Get Accounts
 ```js
 Steem.getAccounts(['ned', 'dan'], function(result, err) {
