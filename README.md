@@ -9,7 +9,7 @@ $ npm install steem --save
 ## Usage
 
 ```js
-var steem = require('./lib/steem');
+var steem = require('steem');
 var Steem = new steem();
 
 Steem.getAccount('steemit', function(result, err) {
