@@ -399,6 +399,32 @@ steem.getMinerQueue(function(result, err) {
 });
 ```
 
+## Stream
+### Stream Block Number
+```js 
+steem.streamBlockNumber(function(result) {
+	console.log(result);
+});
+```
+### Stream Block
+```js 
+steem.streamBlock(function(result) {
+	console.log(result);
+});
+```
+### Stream Transactions
+```js 
+steem.streamTransactions(function(result) {
+	console.log(result);
+});
+```
+### Stream Operations
+```js 
+steem.streamOperations(function(result) {
+	console.log(result);
+});
+```
+
 ## To-Do
 - Connect all the others API
 
