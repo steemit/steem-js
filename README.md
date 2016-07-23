@@ -402,26 +402,26 @@ steem.getMinerQueue(function(err, result) {
 ## Stream
 ### Stream Block Number
 ```js 
-steem.streamBlockNumber(function(result) {
-	console.log(result);
+steem.streamBlockNumber(function(err, result) {
+	console.log(err, result);
 });
 ```
 ### Stream Block
 ```js 
-steem.streamBlock(function(result) {
-	console.log(result);
+steem.streamBlock(function(err, result) {
+	console.log(err, result);
 });
 ```
 ### Stream Transactions
 ```js 
-steem.streamTransactions(function(result) {
-	console.log(result);
+steem.streamTransactions(function(err, result) {
+	console.log(err, result);
 });
 ```
 ### Stream Operations
 ```js 
-steem.streamOperations(function(result) {
-	console.log(result);
+steem.streamOperations(function(err, result) {
+	console.log(err, result);
 });
 ```
 
