@@ -3,7 +3,7 @@
 ## Install
 
 ```
-$ npm install https://github.com/KaptainKrayola/steem --save
+$ npm install steem --save
 ```
 
 ## Usage
