@@ -1,2 +1,2 @@
-module.exports = require('./lib/steem');
-
+var Steem = require('steem');
+var steem = new Steem();

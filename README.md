@@ -17,6 +17,13 @@ steem.getAccounts(['ned', 'dan'], function(err, result) {
 });
 ```
 
+## Login
+```js
+steem.login('ned', '****************', function(err, result) {
+	console.log(err, result);
+});
+```
+
 ## Subscriptions
 ### Set Subscribe Callback
 ```js 
