@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SteemJS</title>
+</head>
+<body>
+
+<script src="./../lib/steem.min.js"></script>
+
+<script>
+    var steem = new Steem();
+    steem.getAccounts(['ned', 'dan'], function(err, response){
+       console.log(err, response);
+    });
+</script>
+
+</body>
+</html>

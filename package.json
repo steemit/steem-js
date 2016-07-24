@@ -1,10 +1,11 @@
 {
   "name": "steem",
-  "version": "0.2.1",
+  "version": "0.2.6",
   "description": "SteemJS the JavaScript API for Steem blockchain",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "browserify lib/steem.js | uglifyjs > lib/steem.min.js"
   },
   "repository": {
     "type": "git",
@@ -24,5 +25,10 @@
   "homepage": "https://github.com/adcpm/steem#readme",
   "dependencies": {
     "ws": "^1.1.1"
+  },
+  "devDependencies": {
+    "browserify": "^13.0.1",
+    "bufferutil": "^1.2.1",
+    "utf-8-validate": "^1.2.1"
   }
 }

@@ -1,6 +1,6 @@
-var Steem = require('./lib/steem');
-var steem = new Steem();
+var Steem = require('./lib/steem'),
+	steem = new Steem('wss://steemit.com/wstmp3');
 
-steem.getAccounts(['ned', 'dan'], function(result, err) {
-	console.log(result, err);
+steem.login('dan', '****************', function(err, result) {
+	console.log(err, result);
 });
