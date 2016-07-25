@@ -1,13 +1,11 @@
-# SteemJS
+# Documentation
 
 ## Install
-
 ```
 $ npm install steem --save
 ```
 
 ## Usage
-
 ```js
 var Steem = require('steem');
 var steem = new Steem();
@@ -431,16 +429,3 @@ steem.streamOperations(function(err, result) {
 	console.log(err, result);
 });
 ```
-
-## To-Do
-- Connect all the others API
-
-### You have some suggestions? Let me know on Slack https://steem.slack.com/ channel #steemjs
-
-## License
-
-MIT
-
-
-
-

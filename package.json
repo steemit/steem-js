@@ -30,5 +30,9 @@
     "browserify": "^13.0.1",
     "bufferutil": "^1.2.1",
     "utf-8-validate": "^1.2.1"
-  }
+  },
+  "contributors": [
+    "Fabien (https://github.com/adcpm)",
+    "KaptainKrayola (https://github.com/KaptainKrayola)"
+  ]
 }
