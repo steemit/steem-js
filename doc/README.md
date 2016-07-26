@@ -5,23 +5,6 @@
 $ npm install steem --save
 ```
 
-## Usage
-```js
-var Steem = require('steem');
-var steem = new Steem();
-
-steem.getAccounts(['ned', 'dan'], function(err, result) {
-	console.log(err, result);
-});
-```
-
-## Login
-```js
-steem.login('ned', '****************', function(err, result) {
-	console.log(err, result);
-});
-```
-
 ## Subscriptions
 ### Set Subscribe Callback
 ```js 
@@ -426,6 +409,27 @@ steem.streamTransactions(function(err, result) {
 ### Stream Operations
 ```js 
 steem.streamOperations(function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Login
+```js
+steem.login('ned', '****************', function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Follow
+### Get Followers
+```js 
+steem.getFollowers(following, startFollower, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Following
+```js 
+steem.getFollowing(follower, startFollowing, limit, function(err, result) {
 	console.log(err, result);
 });
 ```
