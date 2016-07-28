@@ -7,8 +7,7 @@ $ npm install steem --save
 ```
 
 ## Documentation 
-https://steemjs.com/
-https://github.com/adcpm/steem/tree/master/doc
+Here is full documentation: https://github.com/adcpm/steem/tree/master/doc
 
 ## Examples
 ### Get Accounts
