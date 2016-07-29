@@ -4,7 +4,7 @@ SteemJS the JavaScript API for Steem blockchain
 ## Documentation 
 Here is full documentation: https://github.com/adcpm/steem/tree/master/doc
 
-## Browser
+## Browser 
 ```html 
 <script src="./steem.min.js"></script>
 <script>
