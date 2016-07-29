@@ -4,8 +4,8 @@
   "description": "SteemJS the JavaScript API for Steem blockchain",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "browserify lib/steem.js | uglifyjs > lib/steem.min.js"
+    "test": "node test.js",
+    "build": "browserify lib/browser.js -o | uglifyjs > lib/steem.min.js && browserify lib/browser.js -o | uglifyjs > examples/steem.min.js"
   },
   "repository": {
     "type": "git",
