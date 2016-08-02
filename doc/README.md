@@ -387,6 +387,53 @@ steem.getMinerQueue(function(err, result) {
 });
 ```
 
+## Login
+```js
+steem.login('ned', '****************', function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Follow
+### Get Followers
+```js 
+steem.getFollowers(following, startFollower, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Following
+```js 
+steem.getFollowing(follower, startFollowing, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Broadcast
+### Broadcast Transaction
+```js 
+steem.broadcastTransaction(trx, function(err, result) {
+	console.log(err, result);
+});
+```
+### Broadcast Transaction Synchronous
+```js 
+steem.broadcastTransactionSynchronous(trx, function(err, result) {
+	console.log(err, result);
+});
+```
+### Broadcast Block
+```js 
+steem.broadcastBlock(b, function(err, result) {
+	console.log(err, result);
+});
+```
+### Broadcast Transaction With Callback
+```js 
+steem.broadcastTransactionWithCallback(confirmationCallback, trx, function(err, result) {
+	console.log(err, result);
+});
+```
+
 ## Stream
 ### Stream Block Number
 ```js 
@@ -409,27 +456,6 @@ steem.streamTransactions(function(err, result) {
 ### Stream Operations
 ```js 
 steem.streamOperations(function(err, result) {
-	console.log(err, result);
-});
-```
-
-## Login
-```js
-steem.login('ned', '****************', function(err, result) {
-	console.log(err, result);
-});
-```
-
-## Follow
-### Get Followers
-```js 
-steem.getFollowers(following, startFollower, limit, function(err, result) {
-	console.log(err, result);
-});
-```
-### Get Following
-```js 
-steem.getFollowing(follower, startFollowing, limit, function(err, result) {
 	console.log(err, result);
 });
 ```
