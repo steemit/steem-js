@@ -86,6 +86,12 @@ steem.getDiscussionsByHot(query, function(err, result) {
 	console.log(err, result);
 });
 ```
+### Get Discussions By Feed
+```js 
+steem.getDiscussionsByFeed(query, function(err, result) {
+	console.log(err, result);
+});
+```
 
 ## Blocks And Transactions
 ### Get Block Header

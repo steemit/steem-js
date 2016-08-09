@@ -1,5 +1,5 @@
 var Steem = require('./lib/steem'),
-	steem = new Steem('wss://steemit.com/wstmp3');
+	steem = new Steem('wss://steemit.com/wspa');
 
 
 steem.getAccounts(['dan', 'ned'], function(err, result) {
