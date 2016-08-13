@@ -1,4 +1,4 @@
-# SteemJS
+# Steem.js
 SteemJS the JavaScript API for Steem blockchain
 
 ## Documentation 
