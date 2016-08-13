@@ -403,13 +403,13 @@ steem.login('ned', '****************', function(err, result) {
 ## Follow
 ### Get Followers
 ```js 
-steem.getFollowers(following, startFollower, limit, function(err, result) {
+steem.getFollowers(following, startFollower, followType, limit, function(err, result) {
 	console.log(err, result);
 });
 ```
 ### Get Following
 ```js 
-steem.getFollowing(follower, startFollowing, limit, function(err, result) {
+steem.getFollowing(follower, startFollowing, followType, limit, function(err, result) {
 	console.log(err, result);
 });
 ```
