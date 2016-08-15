@@ -1,5 +1,5 @@
 # Steem.js
-SteemJS the JavaScript API for Steem blockchain
+Steem.js the JavaScript API for Steem blockchain
 
 ## Documentation 
 Here is full documentation: https://github.com/adcpm/steem/tree/master/doc
@@ -14,11 +14,23 @@ steem.getAccounts(['ned', 'dan'], function(err, response){
 </script>
 ```
 
+## CDN 
+http://cdn.steemjs.com/lib/steem.min.js
+https://cdn.steemjs.com/lib/steem.min.js
+```html 
+<script src="//cdn.steemjs.com/lib/steem.min.js"></script>
+```
+
 ## Server
 ## Install
 ```
 $ npm install steem --save
 ```
+
+## WebSockets
+wss://steemit.com/wspa By @steemit (Set By Default)
+wss://this.piston.rocks By @xeroc
+wss://node.steem.ws By @xerox And @jesta
 
 ## Examples
 ### Get Accounts

@@ -1,5 +1,5 @@
 var Steem = require('./lib/steem'),
-	steem = new Steem('wss://steemit.com/wspa');
+	steem = new Steem();
 
 steem.login('******', '****************', function(err, result) {
 	console.log(result);
