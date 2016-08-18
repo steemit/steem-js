@@ -3,6 +3,7 @@ scr
 .save
 *.css.map
 *.css
+dev.js
 
 # Logs
 logs
