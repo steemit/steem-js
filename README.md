@@ -15,8 +15,8 @@ steem.getAccounts(['ned', 'dan'], function(err, response){
 ```
 
 ## CDN 
-http://cdn.steemjs.com/lib/steem.min.js
-https://cdn.steemjs.com/lib/steem.min.js
+http://cdn.steemjs.com/lib/steem.min.js<br/>
+https://cdn.steemjs.com/lib/steem.min.js<br/>
 ```html 
 <script src="//cdn.steemjs.com/lib/steem.min.js"></script>
 ```
