@@ -1,7 +1,6 @@
-var Steem = require('./lib/steem'),
-	steem = new Steem();
+var steem = require('./index');
 
-steem.login('******', '****************', function(err, result) {
+steem.api.login('******', '****************', function(err, result) {
 	console.log(result);
 	var trx = {
 		expiration: '2016-08-13T05:44:15',
@@ -16,7 +15,7 @@ steem.login('******', '****************', function(err, result) {
 		ref_block_prefix: 3483617648,
 		signatures: ['10f7ce6fc9f5bc99fe789af9e464ff62e6b676622611abd22ed332f20649797b13e0ff85a1be1b72bc26f2ba0d4bf6eStef']
 	};
-	steem.broadcastTransaction(trx, function(err, result) {
+	steem.api.broadcastTransaction(trx, function(err, result) {
 		console.log(err, result);
 	});
 });

@@ -1,11 +1,11 @@
 {
   "name": "steem",
-  "version": "0.2.21",
+  "version": "0.3.0",
   "description": "Steem.js the JavaScript API for Steem blockchain",
   "main": "index.js",
   "scripts": {
     "test": "node test.js",
-    "build": "browserify lib/browser.js -o | uglifyjs > lib/steem.min.js && browserify lib/browser.js -o | uglifyjs > examples/steem.min.js"
+    "build": "browserify browser.js -o | uglifyjs > lib/steem.min.js && browserify browser.js -o | uglifyjs > examples/steem.min.js"
   },
   "repository": {
     "type": "git",

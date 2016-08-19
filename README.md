@@ -35,26 +35,31 @@ wss://node.steem.ws By @xerox And @jesta<br/>
 ## Examples
 ### Get Accounts
 ```js
-var Steem = require('steem');
-var steem = new Steem();
+var steem = require('steem');
 
-steem.getAccounts(['ned', 'dan'], function(err, result) {
+steem.api.getAccounts(['ned', 'dan'], function(err, result) {
 	console.log(err, result);
 });
 ```
 
 ### Get State
 ```js 
-steem.getState('/trends/funny', function(err, result) {
+steem.api.getState('/trends/funny', function(err, result) {
 	console.log(err, result);
 });
 ```
 
 ### Get Config
 ```js 
-steem.getConfig(function(err, result) {
+steem.api.getConfig(function(err, result) {
 	console.log(err, result);
 });
+```
+
+### Reputation Formatter
+```js 
+var reputation = steem.formatter.reputation(user.reputation);
+console.log(reputation);
 ```
 
 ## Contributions

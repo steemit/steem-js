@@ -1,22 +1,28 @@
-var steem = require('./lib/steem'),
-	steem = new Steem();
+var steem = require('./index');
 
-steem.getAccountCount(function(err, result) {
+steem.api.getAccountCount(function(err, result) {
 	console.log(err, result);
 });
 
-steem.getAccounts(['dan'], function(err, result) {
+steem.api.getAccounts(['dan'], function(err, result) {
+	console.log(err, result);
+
+	var reputation = steem.formatter.reputation(result[0].reputation);
+	console.log(reputation);
+});
+
+steem.api.getState('trending/steemit', function(err, result) {
 	console.log(err, result);
 });
 
-steem.getState('trending/steemit', function(err, result) {
+steem.api.getFollowing('ned', 0, 'blog', 10, function(err, result) {
 	console.log(err, result);
 });
 
-steem.getFollowing('ned', 0, 'blog', 10, function(err, result) {
+steem.api.getFollowers('dan', 0, 'blog', 10, function(err, result) {
 	console.log(err, result);
 });
 
-steem.getFollowers('dan', 0, 'blog', 10, function(err, result) {
+steem.api.streamOperations(function(err, result) {
 	console.log(err, result);
 });
