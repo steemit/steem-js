@@ -6,7 +6,6 @@ steem.api.getAccountCount(function(err, result) {
 
 steem.api.getAccounts(['dan'], function(err, result) {
 	console.log(err, result);
-
 	var reputation = steem.formatter.reputation(result[0].reputation);
 	console.log(reputation);
 });
@@ -24,5 +23,7 @@ steem.api.getFollowers('dan', 0, 'blog', 10, function(err, result) {
 });
 
 steem.api.streamOperations(function(err, result) {
-	console.log(err, result);
+	if (!err && result[1].author == 'fabien') {
+		console.log(result);
+	}
 });
