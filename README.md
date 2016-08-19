@@ -28,9 +28,9 @@ $ npm install steem --save
 ```
 
 ## WebSockets
-wss://steemit.com/wspa By @steemit (Set By Default)<br/>
+wss://node.steem.ws By @xerox And @jesta (Set By Default)<br/>
+wss://steemit.com/wspa By @steemit<br/>
 wss://this.piston.rocks By @xeroc<br/>
-wss://node.steem.ws By @xerox And @jesta<br/>
 
 ## Examples
 ### Get Accounts
