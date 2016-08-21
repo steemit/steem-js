@@ -4,6 +4,7 @@ scr
 *.css.map
 *.css
 dev.js
+test.js
 
 # Logs
 logs

@@ -1,29 +1,8 @@
 var steem = require('./index');
 
-steem.api.getAccountCount(function(err, result) {
-	console.log(err, result);
-});
+var username = process.env.STEEM_USERNAME;
+var password = process.env.STEEM_PASSWORD;
 
-steem.api.getAccounts(['dan'], function(err, result) {
+steem.broadcast.vote(username, password, 'infovore', 'mentorship-channel-for-artists-this-week-on-steemit-steemians-speak-behind-the-username-steemmag-steemit-s-weekend-digest-6-p-2', 10000, function(err, result) {
 	console.log(err, result);
-	var reputation = steem.formatter.reputation(result[0].reputation);
-	console.log(reputation);
-});
-
-steem.api.getState('trending/steemit', function(err, result) {
-	console.log(err, result);
-});
-
-steem.api.getFollowing('ned', 0, 'blog', 10, function(err, result) {
-	console.log(err, result);
-});
-
-steem.api.getFollowers('dan', 0, 'blog', 10, function(err, result) {
-	console.log(err, result);
-});
-
-steem.api.streamOperations(function(err, result) {
-	if (!err && result[1].author == 'fabien') {
-		console.log(result);
-	}
 });

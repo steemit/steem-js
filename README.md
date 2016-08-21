@@ -33,10 +33,17 @@ wss://node.steem.ws<br/>
 wss://this.piston.rocks<br/>
 
 ## Examples
-### Get Accounts
+### Broadcast Vote
 ```js
 var steem = require('steem');
 
+steem.broadcast.vote(username, password, author, permlink, weight, function(err, result) {
+	console.log(err, result);
+});
+```
+
+### Get Accounts
+```js
 steem.api.getAccounts(['ned', 'dan'], function(err, result) {
 	console.log(err, result);
 });
@@ -45,13 +52,6 @@ steem.api.getAccounts(['ned', 'dan'], function(err, result) {
 ### Get State
 ```js 
 steem.api.getState('/trends/funny', function(err, result) {
-	console.log(err, result);
-});
-```
-
-### Get Config
-```js 
-steem.api.getConfig(function(err, result) {
 	console.log(err, result);
 });
 ```

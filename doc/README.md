@@ -477,3 +477,11 @@ console.log(reputation);
 var power = steem.formatter.vestToSteem(user.vesting_shares, props.total_vesting_shares, props.total_vesting_fund_steem)
 console.log(power);
 ```
+
+## Broadcast
+### Vote
+```js
+steem.broadcast.vote(username, password, author, permlink, weight, function(err, result) {
+	console.log(err, result);
+});
+```
