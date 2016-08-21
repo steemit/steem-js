@@ -21,9 +21,3 @@ steem.api.getFollowing('ned', 0, 'blog', 10, function(err, result) {
 steem.api.getFollowers('dan', 0, 'blog', 10, function(err, result) {
 	console.log(err, result);
 });
-
-steem.api.streamOperations(function(err, result) {
-	if (!err && result[1].author == 'fabien') {
-		console.log(result);
-	}
-});

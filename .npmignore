@@ -2,3 +2,4 @@
 .idea
 src
 npm-debug.log
+dev.js
