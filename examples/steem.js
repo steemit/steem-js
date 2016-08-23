@@ -1,3 +1,4 @@
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var isNode = require('detect-node');
 if (isNode)
 	var WebSocketNode = require('ws');
@@ -1007,3 +1008,68 @@ Steem.streamOperations = function(callback) {
 
 
 module.exports = Steem;
+
+},{"detect-node":4,"ws":5}],2:[function(require,module,exports){
+steem = {
+	api: require('./api'),
+	formatter: require('./formatter'),
+};
+
+},{"./api":1,"./formatter":3}],3:[function(require,module,exports){
+module.exports = {
+	reputation: function (reputation) {
+		if (reputation == null) return reputation;
+		reputation = parseInt(reputation);
+		var rep = String(reputation);
+		var neg = rep.charAt(0) === '-';
+		rep = neg ? rep.substring(1) : rep;
+		var str = rep;
+		var leadingDigits = parseInt(str.substring(0, 4));
+		var log = Math.log(leadingDigits) / Math.log(10);
+		var n = str.length - 1;
+		var out = n + (log - parseInt(log));
+		if (isNaN(out)) out = 0;
+		out = Math.max(out - 9, 0);
+		out = (neg ? -1 : 1) * out;
+		out = (out * 9) + 25;
+		out = parseInt(out);
+		return out;
+	},
+	vestToSteem: function(vestingShares, totalVestingShares, totalVestingFundSteem) {
+		return parseFloat(totalVestingFundSteem) * (parseFloat(vestingShares) / parseFloat(totalVestingShares));
+	},
+	sanitizePermlink: function(permlink) {
+		permlink = permlink.replace(/_|\s|\./g, '-')
+		permlink = permlink.replace(/[^\w-]/g, '')
+		return permlink.toLowerCase()
+	},
+	derivePermlink: function(title, parent_permlink) {
+		var permlink = ''
+		if (parent_permlink){
+			permlink += 're-'
+			permlink += parent_permlink
+			permlink += '-'
+			permlink += (new Date()).getTime()
+			return permlink;
+		}
+		else return this.sanitizePermlink(title)
+	},
+	amount: function(amount, asset) {
+		// maybe improve this
+		return amount.toFixed(3) + ' ' + asset;
+	}
+};
+
+},{}],4:[function(require,module,exports){
+(function (global){
+module.exports = false;
+
+// Only Node.JS has a process variable that is of [[Class]] process
+try {
+ module.exports = Object.prototype.toString.call(global.process) === '[object process]' 
+} catch(e) {}
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],5:[function(require,module,exports){
+
+},{}]},{},[2]);

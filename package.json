@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "node test.js",
-    "build": "browserify lib/browser.js -o | uglifyjs > lib/steem.min.js && browserify lib/browser.js -o | uglifyjs > examples/steem.min.js"
+    "build": "browserify lib/browser.js -o examples/steem.js && uglifyjs examples/steem.js -o examples/steem.min.js"
+  },
+  "browser": {
+    "ws": false
   },
   "repository": {
     "type": "git",
@@ -24,6 +27,7 @@
   },
   "homepage": "https://github.com/adcpm/steem#readme",
   "dependencies": {
+    "detect-node": "^2.0.3",
     "moment": "^2.14.1",
     "steemauth": "0.0.4",
     "ws": "^1.1.1"
