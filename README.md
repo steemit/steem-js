@@ -15,8 +15,8 @@ steem.api.getAccounts(['ned', 'dan'], function(err, response){
 ```
 
 ## CDN 
-http://cdn.steemjs.com/lib/steem.min.js<br/>
-https://cdn.steemjs.com/lib/steem.min.js<br/>
+http://cdn.steemjs.com/lib/lastest/steem.min.js<br/>
+https://cdn.steemjs.com/lib/lastest/steem.min.js<br/>
 ```html 
 <script src="//cdn.steemjs.com/lib/steem.min.js"></script>
 ```
@@ -28,7 +28,7 @@ $ npm install steem --save
 ```
 
 ## WebSockets
-wss://steemit.com/wspa By @steemit (Set By Default)<br/>
+wss://steemit.com/wspa By Default<br/>
 wss://node.steem.ws<br/>
 wss://this.piston.rocks<br/>
 
