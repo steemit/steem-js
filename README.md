@@ -8,7 +8,7 @@ Here is full documentation: https://github.com/adcpm/steem/tree/master/doc
 ```html 
 <script src="./steem.min.js"></script>
 <script>
-steem.getAccounts(['ned', 'dan'], function(err, response){
+steem.api.getAccounts(['ned', 'dan'], function(err, response){
     console.log(err, response);
 });
 </script>
