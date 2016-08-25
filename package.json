@@ -1,11 +1,11 @@
 {
   "name": "steem",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "description": "Steem.js the JavaScript API for Steem blockchain",
   "main": "index.js",
   "scripts": {
     "test": "node test.js",
-    "build": "browserify lib/browser.js -o examples/steem.js && uglifyjs examples/steem.js -o examples/steem.min.js"
+    "build": "browserify lib/browser.js -o examples/steem.js && uglifyjs examples/steem.js -o examples/steem.min.js && uglifyjs examples/steem.js -o steem.min.js"
   },
   "browser": {
     "ws": false
@@ -29,7 +29,7 @@
   "dependencies": {
     "detect-node": "^2.0.3",
     "moment": "^2.14.1",
-    "steemauth": "0.0.4",
+    "steemauth": "0.0.13",
     "ws": "^1.1.1"
   },
   "devDependencies": {

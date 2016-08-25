@@ -1,7 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var isNode = require('detect-node');
-if (isNode)
-	var WebSocketNode = require('ws');
+if (isNode) var WS = require('ws');
 
 var Steem = {
 	url: 'wss://steemit.com/wspa',
@@ -24,7 +23,7 @@ Steem.setWebSocket = function(url) {
 Steem.init = function(callback) {
 	if (!this.isReady) {
 		if (isNode) {
-			this.ws = new WebSocketNode(this.url);
+			this.ws = new WS(this.url);
 			this.ws.setMaxListeners(0);
 		} else
 			this.ws = new WebSocket(this.url);
@@ -98,7 +97,7 @@ Steem.setSubscribeCallback = function(cb, clearFilter, callback) {
 	this.send('database_api', {
 		'id': iterator,
 		'method': 'set_subscribe_callback',
-		'params': [cb, clearFilter]
+		'params': [callback, clearFilter]
 	}, function(err, data) {
 		if (iterator == data.id) callback(err, data.result);
 	});
@@ -1009,7 +1008,7 @@ Steem.streamOperations = function(callback) {
 
 module.exports = Steem;
 
-},{"detect-node":4,"ws":5}],2:[function(require,module,exports){
+},{"detect-node":5,"ws":4}],2:[function(require,module,exports){
 steem = {
 	api: require('./api'),
 	formatter: require('./formatter'),
@@ -1038,29 +1037,18 @@ module.exports = {
 	vestToSteem: function(vestingShares, totalVestingShares, totalVestingFundSteem) {
 		return parseFloat(totalVestingFundSteem) * (parseFloat(vestingShares) / parseFloat(totalVestingShares));
 	},
-	sanitizePermlink: function(permlink) {
-		permlink = permlink.replace(/_|\s|\./g, '-')
-		permlink = permlink.replace(/[^\w-]/g, '')
-		return permlink.toLowerCase()
-	},
-	derivePermlink: function(title, parent_permlink) {
-		var permlink = ''
-		if (parent_permlink){
-			permlink += 're-'
-			permlink += parent_permlink
-			permlink += '-'
-			permlink += (new Date()).getTime()
-			return permlink;
-		}
-		else return this.sanitizePermlink(title)
+	commentPermlink: function(parentAuthor, parentPermlink) {
+		var timeStr = new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '');
+		parentPermlink = parentPermlink.replace(/(-\d{8}t\d{9}z)/g, '');
+		return 're-' + parentAuthor + '-' + parentPermlink + '-' + timeStr;
 	},
 	amount: function(amount, asset) {
-		// maybe improve this
 		return amount.toFixed(3) + ' ' + asset;
 	}
 };
-
 },{}],4:[function(require,module,exports){
+
+},{}],5:[function(require,module,exports){
 (function (global){
 module.exports = false;
 
@@ -1070,6 +1058,4 @@ try {
 } catch(e) {}
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],5:[function(require,module,exports){
-
 },{}]},{},[2]);

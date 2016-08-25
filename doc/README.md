@@ -485,3 +485,27 @@ steem.broadcast.vote(username, password, author, permlink, weight, function(err,
 	console.log(err, result);
 });
 ```
+### UpVote
+```js
+steem.broadcast.upvote(username, password, author, permlink, weight, function(err, result) {
+	console.log(err, result);
+});
+```
+### DownVote
+```js
+steem.broadcast.downvote(username, password, author, permlink, weight, function(err, result) {
+	console.log(err, result);
+});
+```
+### Comment
+```js
+steem.broadcast.comment(username, password, parentAuthor, parentPermlink, author, permlink, title, body, jsonMetadata, function(err, result) {
+	console.log(err, result);
+});
+```
+### Transfer
+```js
+steem.broadcast.transfer(username, password, from, to, amount, memo, function(err, result) {
+	console.log(err, result);
+});
+```
