@@ -18,7 +18,7 @@ steem.api.getAccounts(['ned', 'dan'], function(err, response){
 http://cdn.steemjs.com/lib/lastest/steem.min.js<br/>
 https://cdn.steemjs.com/lib/lastest/steem.min.js<br/>
 ```html 
-<script src="//cdn.steemjs.com/lib/steem.min.js"></script>
+<script src="//cdn.steemjs.com/lib/lastest/steem.min.js"></script>
 ```
 
 ## Server
