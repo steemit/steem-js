@@ -481,31 +481,34 @@ console.log(power);
 ## Broadcast
 ### Vote
 ```js
-steem.broadcast.vote(username, password, author, permlink, weight, function(err, result) {
+var steem = require('steem');
+
+var wif = steem.auth.toWif(username, password, 'posting');
+steem.broadcast.vote(wif, voter, author, permlink, weight, function(err, result) {
 	console.log(err, result);
 });
 ```
 ### UpVote
 ```js
-steem.broadcast.upvote(username, password, author, permlink, weight, function(err, result) {
+steem.broadcast.upvote(wif, voter, author, permlink, weight, function(err, result) {
 	console.log(err, result);
 });
 ```
 ### DownVote
 ```js
-steem.broadcast.downvote(username, password, author, permlink, weight, function(err, result) {
+steem.broadcast.downvote(wif, voter, author, permlink, weight, function(err, result) {
 	console.log(err, result);
 });
 ```
 ### Comment
 ```js
-steem.broadcast.comment(username, password, parentAuthor, parentPermlink, author, permlink, title, body, jsonMetadata, function(err, result) {
+steem.broadcast.comment(wif, parentAuthor, parentPermlink, author, permlink, title, body, jsonMetadata, function(err, result) {
 	console.log(err, result);
 });
 ```
 ### Transfer
 ```js
-steem.broadcast.transfer(username, password, from, to, amount, memo, function(err, result) {
+steem.broadcast.transfer(wif, from, to, amount, memo, function(err, result) {
 	console.log(err, result);
 });
 ```

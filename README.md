@@ -37,7 +37,8 @@ wss://this.piston.rocks<br/>
 ```js
 var steem = require('steem');
 
-steem.broadcast.vote(username, password, author, permlink, weight, function(err, result) {
+var wif = steem.auth.toWif(username, password, 'posting');
+steem.broadcast.vote(wif, voter, author, permlink, weight, function(err, result) {
 	console.log(err, result);
 });
 ```
@@ -63,7 +64,7 @@ console.log(reputation);
 ```
 
 ## Contributions
-Patches are welcome! Contributors are listed in the package.json file. Please run the tests before opening a pull request and make sure that you are passing all of them. If you would like to contribute, but don't know what to work on, check the issues list or on Slack https://steem.slack.com/ channel #steemjs.
+Patches are welcome! Contributors are listed in the package.json file. Please run the tests before opening a pull request and make sure that you are passing all of them. If you would like to contribute, but don't know what to work on, check the issues list or on Rocket Chat https://steem.chat/ channel #steemjs.
 
 ## Issues
 When you find issues, please report them!

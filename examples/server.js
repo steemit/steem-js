@@ -27,3 +27,19 @@ steem.api.streamOperations(function(err, result) {
 		console.log(err, result);
 	}
 });
+
+/*
+steem.broadcast.comment(
+	username,
+	password,
+	'',
+	'steemjs',
+  username,
+	'this-is-the-slug',
+	'This is the title',
+	'This is the body',
+	{tags: ['steemjs', 'steem']},
+	function(err, result) {
+	console.log(err, result);
+});
+*/
