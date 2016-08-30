@@ -20,7 +20,7 @@
     "blockchain",
     "steemjs"
   ],
-  "author": "AdCpm <fabien@bonustrack.co> (https://github.com/adcpm)",
+  "author": "Bonustrack <fabien@bonustrack.co> (https://github.com/adcpm)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/adcpm/steem/issues"
@@ -39,6 +39,8 @@
   },
   "contributors": [
     "Fabien (https://github.com/adcpm)",
-    "KaptainKrayola (https://github.com/KaptainKrayola)"
+    "KaptainKrayola (https://github.com/KaptainKrayola)",
+    "heimindanger (https://github.com/skzap)",
+    "Nilesh Suthar (https://github.com/nil1511)"
   ]
 }
