@@ -35,6 +35,7 @@
   "devDependencies": {
     "browserify": "^13.0.1",
     "bufferutil": "^1.2.1",
+    "uglifyjs": "^2.4.10",
     "utf-8-validate": "^1.2.1"
   },
   "contributors": [
