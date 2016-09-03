@@ -28,8 +28,7 @@
   "homepage": "https://github.com/adcpm/steem#readme",
   "dependencies": {
     "detect-node": "^2.0.3",
-    "moment": "^2.14.1",
-    "steemauth": "0.0.14",
+    "steemauth": "0.0.15",
     "ws": "^1.1.1"
   },
   "devDependencies": {
