@@ -24,6 +24,8 @@ var memoKey = steem.auth.toWif(username, password, 'memoKey');
 var creator = 'fabien';
 var creatorWif = steem.auth.toWif(creator, 'XXXX', 'active');
 
+/*
 steem.broadcast.accountCreate(creatorWif, '3.000 STEEM', 'fabien', 'steemconnect', owner, active, posting, memoKey, '', function(err, result) {
 	console.log(err, result);
 });
+*/

@@ -1,6 +1,6 @@
 {
   "name": "steem",
-  "version": "0.3.19",
+  "version": "0.3.21",
   "description": "Steem.js the JavaScript API for Steem blockchain",
   "main": "index.js",
   "scripts": {
@@ -29,6 +29,8 @@
   "dependencies": {
     "detect-node": "^2.0.3",
     "steemauth": "0.0.16",
+    "steemconnect": "0.0.25",
+    "steemembed": "^1.0.17",
     "ws": "^1.1.1"
   },
   "devDependencies": {
