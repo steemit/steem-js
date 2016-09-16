@@ -1,6 +1,6 @@
 {
   "name": "steem",
-  "version": "0.3.17",
+  "version": "0.3.18",
   "description": "Steem.js the JavaScript API for Steem blockchain",
   "main": "index.js",
   "scripts": {
@@ -41,6 +41,7 @@
     "Fabien (https://github.com/adcpm)",
     "KaptainKrayola (https://github.com/KaptainKrayola)",
     "heimindanger (https://github.com/skzap)",
-    "Nilesh Suthar (https://github.com/nil1511)"
+    "Nilesh Suthar (https://github.com/nil1511)",
+    "Pedro Tacla Yamada (https://github.com/yamadapc)"
   ]
 }
