@@ -102,6 +102,7 @@ Steem.setSubscribeCallback = function(cb, clearFilter, callback) {
 		'method': 'set_subscribe_callback',
 		'params': [callback, clearFilter]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -114,6 +115,7 @@ Steem.setPendingTransactionCallback = function(cb, callback) {
 		'method': 'set_pending_transaction_callback',
 		'params': [cb]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -126,6 +128,7 @@ Steem.setBlockAppliedCallback = function(cb, callback) {
 		'method': 'set_block_applied_callback',
 		'params': [cb]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -137,6 +140,7 @@ Steem.cancelAllSubscriptions = function(callback) {
 		'id': iterator,
 		'method': 'cancel_all_subscriptions'
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -152,6 +156,7 @@ Steem.getTrendingTags = function(afterTag, limit, callback) {
 		'method': 'get_trending_tags',
 		'params': [afterTag, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -164,6 +169,7 @@ Steem.getDiscussionsByTrending = function(query, callback) {
 		'method': 'get_discussions_by_trending',
 		'params': [query]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -176,6 +182,7 @@ Steem.getDiscussionsByCreated = function(query, callback) {
 		'method': 'get_discussions_by_created',
 		'params': [query]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -188,6 +195,7 @@ Steem.getDiscussionsByActive = function(query, callback) {
 		'method': 'get_discussions_by_active',
 		'params': [query]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -200,6 +208,7 @@ Steem.getDiscussionsByCashout = function(query, callback) {
 		'method': 'get_discussions_by_cashout',
 		'params': [query]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -212,6 +221,7 @@ Steem.getDiscussionsByPayout = function(query, callback) {
 		'method': 'get_discussions_by_payout',
 		'params': [query]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -224,6 +234,7 @@ Steem.getDiscussionsByVotes = function(query, callback) {
 		'method': 'get_discussions_by_votes',
 		'params': [query]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -236,6 +247,7 @@ Steem.getDiscussionsByChildren = function(query, callback) {
 		'method': 'get_discussions_by_children',
 		'params': [query]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -248,6 +260,7 @@ Steem.getDiscussionsByHot = function(query, callback) {
 		'method': 'get_discussions_by_hot',
 		'params': [query]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -260,6 +273,7 @@ Steem.getDiscussionsByFeed = function(query, callback) {
 		'method': 'get_discussions_by_feed',
 		'params': [query]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -274,6 +288,7 @@ Steem.getBlockHeader = function(blockNum, callback) {
 		'method': 'get_block_header',
 		'params': [blockNum]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -286,6 +301,7 @@ Steem.getBlock = function(blockNum, callback) {
 		'method': 'get_block',
 		'params': [blockNum]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -298,6 +314,7 @@ Steem.getState = function(path, callback) {
 		'method': 'get_state',
 		'params': [path]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -310,6 +327,7 @@ Steem.getTrendingCategories = function(after, limit, callback) {
 		'method': 'get_trending_categories',
 		'params': [after, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -322,6 +340,7 @@ Steem.getBestCategories = function(after, limit, callback) {
 		'method': 'get_best_categories',
 		'params': [after, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -334,6 +353,7 @@ Steem.getActiveCategories = function(after, limit, callback) {
 		'method': 'get_active_categories',
 		'params': [after, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -346,6 +366,7 @@ Steem.getRecentCategories = function(after, limit, callback) {
 		'method': 'get_recent_categories',
 		'params': [after, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -358,8 +379,9 @@ Steem.getConfig = function(callback) {
 	var iterator = this.iterate();
 	this.send('database_api', {
 		'id': iterator,
-		'method': 'get_config',
+		'method': 'get_config'
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -371,6 +393,7 @@ Steem.getDynamicGlobalProperties = function(callback) {
 		'id': iterator,
 		'method': 'get_dynamic_global_properties'
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -382,6 +405,7 @@ Steem.getChainProperties = function(after, limit, callback) {
 		'id': iterator,
 		'method': 'get_chain_properties'
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -393,6 +417,7 @@ Steem.getFeedHistory = function(callback) {
 		'id': iterator,
 		'method': 'get_feed_history'
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -404,6 +429,7 @@ Steem.getCurrentMedianHistoryPrice = function(callback) {
 		'id': iterator,
 		'method': 'get_current_median_history_price'
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -416,6 +442,7 @@ Steem.getWitnessSchedule = function(callback) {
 		'method': 'get_recent_categories',
 		'params': [after, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -427,6 +454,7 @@ Steem.getHardforkVersion = function(callback) {
 		'id': iterator,
 		'method': 'get_hardfork_version'
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -438,6 +466,7 @@ Steem.getNextScheduledHardfork = function(callback) {
 		'id': iterator,
 		'method': 'get_next_scheduled_hardfork'
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -453,6 +482,7 @@ Steem.getKeyReferences = function(key, callback) {
 		'method': 'get_key_references',
 		'params': [key]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -468,6 +498,7 @@ Steem.getAccounts = function(names, callback) {
 		'method': 'get_accounts',
 		'params': [names]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -480,6 +511,7 @@ Steem.getAccountReferences = function(accountId , callback) {
 		'method': 'get_account_references',
 		'params': [accountId]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -492,6 +524,7 @@ Steem.lookupAccountNames = function(accountNames, callback) {
 		'method': 'lookup_account_names',
 		'params': [accountNames]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -504,6 +537,7 @@ Steem.lookupAccounts = function(lowerBoundName, limit, callback) {
 		'method': 'lookup_accounts',
 		'params': [lowerBoundName, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -515,6 +549,7 @@ Steem.getAccountCount = function(callback) {
 		'id': iterator,
 		'method': 'get_account_count'
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -527,6 +562,7 @@ Steem.getConversionRequests = function(accountName, callback) {
 		'method': 'get_conversion_requests',
 		'params': [accountName]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -539,6 +575,7 @@ Steem.getAccountHistory = function(account, from, limit, callback) {
 		'method': 'get_account_history',
 		'params': [account, from, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -551,6 +588,7 @@ Steem.getOwnerHistory = function(account, callback) {
 		'method': 'get_owner_history',
 		'params': [account]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -563,6 +601,7 @@ Steem.getRecoveryRequest = function(account, callback) {
 		'method': 'get_recovery_request',
 		'params': [account]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -578,6 +617,7 @@ Steem.getOrderBook = function(limit, callback) {
 		'method': 'getOrderBook',
 		'params': [limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -590,6 +630,7 @@ Steem.getOpenOrders = function(owner, callback) {
 		'method': 'get_open_orders',
 		'params': [owner]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -602,6 +643,7 @@ Steem.getLiquidityQueue = function(startAccount, limit, callback) {
 		'method': 'get_liquidity_queue',
 		'params': [startAccount, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -617,6 +659,7 @@ Steem.getTransactionHex = function(trx, callback) {
 		'method': 'get_transaction_hex',
 		'params': [trx]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -629,6 +672,7 @@ Steem.getTransaction = function(trxId, callback) {
 		'method': 'get_transaction',
 		'params': [trxId]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -641,6 +685,7 @@ Steem.getRequiredSignatures = function(trx, availableKeys, callback) {
 		'method': 'get_required_signatures',
 		'params': [trx, availableKeys]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -653,6 +698,7 @@ Steem.getPotentialSignatures = function(trx, callback) {
 		'method': 'get_potential_signatures',
 		'params': [trx]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -665,6 +711,7 @@ Steem.verifyAuthority = function(trx, callback) {
 		'method': 'verify_authority',
 		'params': [trx]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -677,6 +724,7 @@ Steem.verifyAccountAuthority = function(nameOrId, signers, callback) {
 		'method': 'verify_account_authority',
 		'params': [nameOrId, signers]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -692,6 +740,7 @@ Steem.getActiveVotes = function(author, permlink, callback) {
 		'method': 'get_active_votes',
 		'params': [author, permlink]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -704,6 +753,7 @@ Steem.getAccountVotes = function(voter, callback) {
 		'method': 'get_account_votes',
 		'params': [voter]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -719,6 +769,7 @@ Steem.getContent = function(author, permlink, callback) {
 		'method': 'get_content',
 		'params': [author, permlink]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -731,6 +782,7 @@ Steem.getContentReplies = function(parent, parentPermlink, callback) {
 		'method': 'get_content_replies',
 		'params': [parent, parentPermlink]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -743,6 +795,7 @@ Steem.getDiscussionsByAuthorBeforeDate = function(author, startPermlink, beforeD
 		'method': 'get_discussions_by_author_before_date',
 		'params': [author, startPermlink, beforeDate, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -755,6 +808,7 @@ Steem.getRepliesByLastUpdate = function(startAuthor, startPermlink, limit, callb
 		'method': 'get_replies_by_last_update',
 		'params': [startAuthor, startPermlink, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -770,6 +824,7 @@ Steem.getWitnesses = function(witnessIds, callback) {
 		'method': 'get_witnesses',
 		'params': [witnessIds]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -782,6 +837,7 @@ Steem.getWitnessByAccount = function(accountName, callback) {
 		'method': 'get_witness_by_account',
 		'params': [accountName]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -794,6 +850,7 @@ Steem.getWitnessesByVote = function(from, limit, callback) {
 		'method': 'get_witnesses_by_vote',
 		'params': [from, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -806,6 +863,7 @@ Steem.lookupWitnessAccounts = function(lowerBoundName, limit, callback) {
 		'method': 'lookup_witness_accounts',
 		'params': [lowerBoundName, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -817,6 +875,7 @@ Steem.getWitnessCount = function(callback) {
 		'id': iterator,
 		'method': 'get_witness_count'
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -828,6 +887,7 @@ Steem.getActiveWitnesses = function(callback) {
 		'id': iterator,
 		'method': 'get_active_witnesses'
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -839,6 +899,7 @@ Steem.getMinerQueue = function(callback) {
 		'id': iterator,
 		'method': 'get_miner_queue'
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -854,6 +915,7 @@ Steem.login = function(username, password, callback) {
 		'method': 'login',
 		'params': [username, password]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) {
 			this.getApiByName('network_broadcast_api', function() {});
 			callback(err, data.result);
@@ -869,6 +931,7 @@ Steem.getApiByName = function(apiName, callback) {
 		'method': 'get_api_by_name',
 		'params': [apiName]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) {
 			this.apiIds[apiName] = data.result;
 			callback(err, data.result);
@@ -887,6 +950,7 @@ Steem.getFollowers = function(following, startFollower, followType, limit, callb
 		'method': 'get_followers',
 		'params': [following, startFollower, followType, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -899,6 +963,7 @@ Steem.getFollowing = function(follower, startFollowing, followType, limit, callb
 		'method': 'get_following',
 		'params': [follower, startFollowing, followType, limit]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -914,6 +979,7 @@ Steem.broadcastTransaction = function(trx, callback) {
 		'method': 'broadcast_transaction',
 		'params': [trx]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -926,6 +992,7 @@ Steem.broadcastTransactionSynchronous = function(trx , callback) {
 		'method': 'broadcast_transaction_synchronous',
 		'params': [trx]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -938,6 +1005,7 @@ Steem.broadcastBlock = function(b, callback) {
 		'method': 'broadcast_block',
 		'params': [b]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
@@ -950,6 +1018,7 @@ Steem.broadcastTransactionWithCallback = function(confirmationCallback, trx, cal
 		'method': 'broadcast_transaction_with_callback',
 		'params': [confirmationCallback, trx]
 	}, function(err, data) {
+		if (err) return callback(err);
 		if (iterator == data.id) callback(err, data.result);
 	});
 };
