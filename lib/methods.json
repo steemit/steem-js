@@ -98,6 +98,20 @@
   },
   {
     "api": "database_api",
+    "method": "get_discussions_by_blog",
+    "params": [
+      "query"
+    ]
+  },
+  {
+    "api": "database_api",
+    "method": "get_discussions_by_comments",
+    "params": [
+      "query"
+    ]
+  },
+  {
+    "api": "database_api",
     "method": "get_block_header",
     "params": [
       "blockNum"
