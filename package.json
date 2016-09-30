@@ -4,7 +4,7 @@
   "description": "Steem.js the JavaScript API for Steem blockchain",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js",
+    "test": "mocha --require babel-register",
     "build": "browserify lib/browser.js -o examples/steem.js && uglifyjs examples/steem.js -o examples/steem.min.js && uglifyjs examples/steem.js -o steem.min.js"
   },
   "browser": {
