@@ -1,0 +1,13 @@
+<link href="../node_modules/mocha/mocha.css" rel="stylesheet" />
+
+<div id="mocha"></div>
+
+<script src="../node_modules/mocha/mocha.js"></script>
+<script>mocha.setup('bdd')</script>
+<script src="../dist/steemjs-tests.min.js"></script>
+
+
+<script>
+  mocha.checkLeaks();
+  mocha.run();
+</script>

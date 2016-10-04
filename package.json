@@ -4,8 +4,8 @@
   "description": "Steem.js the JavaScript API for Steem blockchain",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js",
-    "build": "browserify lib/browser.js -o examples/steem.js && uglifyjs examples/steem.js -o examples/steem.min.js && uglifyjs examples/steem.js -o steem.min.js"
+    "test": "mocha -t 10000 --require babel-polyfill --require babel-register",
+    "build": "rm -rf dist && NODE_ENV=production webpack && gzip -k -f ./dist/*.js && du -h ./dist/*"
   },
   "browser": {
     "ws": false
@@ -27,6 +27,8 @@
   },
   "homepage": "https://github.com/adcpm/steem#readme",
   "dependencies": {
+    "bluebird": "^3.4.6",
+    "debug": "^2.2.0",
     "detect-node": "^2.0.3",
     "steemauth": "0.0.16",
     "steemconnect": "0.0.25",
@@ -34,16 +36,20 @@
     "ws": "^1.1.1"
   },
   "devDependencies": {
-    "babel-polyfill": "^6.13.0",
-    "babel-preset-es2017": "^6.14.0",
+    "babel-loader": "^6.2.5",
+    "babel-polyfill": "^6.16.0",
+    "babel-preset-es2015": "^6.16.0",
+    "babel-preset-es2017": "^6.16.0",
     "babel-register": "^6.14.0",
     "bluebird": "^3.4.6",
     "browserify": "^13.0.1",
     "bufferutil": "^1.2.1",
+    "json-loader": "^0.5.4",
     "mocha": "^3.0.2",
     "should": "^11.1.0",
     "uglifyjs": "^2.4.10",
-    "utf-8-validate": "^1.2.1"
+    "utf-8-validate": "^1.2.1",
+    "webpack-visualizer-plugin": "^0.1.5"
   },
   "contributors": [
     "Fabien (https://github.com/adcpm)",
