@@ -1,7 +1,7 @@
 import Promise from 'bluebird';
 import should from 'should';
 
-import steem from '../lib/api';
+import steem from '../src/api';
 import testPost from './test-post.json';
 
 describe('steem', function () {
