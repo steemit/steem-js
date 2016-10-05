@@ -54,6 +54,7 @@
     "should": "^11.1.0",
     "uglifyjs": "^2.4.10",
     "utf-8-validate": "^1.2.1",
+    "webpack": "^1.13.2",
     "webpack-visualizer-plugin": "^0.1.5"
   },
   "contributors": [
