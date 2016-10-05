@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha -t 10000 --require babel-polyfill --require babel-register",
-    "build": "rm -rf dist && NODE_ENV=production webpack && gzip -k -f ./dist/*.js && du -h ./dist/*"
+    "build": "npm run build-browser && npm run build-node",
+    "build-browser": "rm -rf dist && NODE_ENV=production webpack && gzip -k -f ./dist/*.js && du -h ./dist/*",
+    "build-node": "babel ./lib --out-dir ./node-dist"
   },
   "browser": {
     "ws": false

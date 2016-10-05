@@ -14,3 +14,4 @@ build/Release
 node_modules
 .tern-port
 dist
+node-dist
