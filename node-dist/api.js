@@ -1,10 +1,5 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Steem = undefined;
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _debug = require('debug');
@@ -62,7 +57,7 @@ var DEFAULTS = {
   id: 0
 };
 
-var Steem = exports.Steem = function (_EventEmitter) {
+var Steem = function (_EventEmitter) {
   _inherits(Steem, _EventEmitter);
 
   function Steem() {
@@ -330,4 +325,5 @@ _bluebird2.default.promisifyAll(Steem.prototype);
 
 // Export singleton instance
 var steem = new Steem();
-exports.default = steem;
+exports = module.exports = steem;
+exports.Steem = Steem;

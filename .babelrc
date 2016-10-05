@@ -2,5 +2,8 @@
   "presets": [
     "es2015",
     "es2017"
+  ],
+  "plugins": [
+    "add-module-exports"
   ]
 }
