@@ -31,8 +31,6 @@
     "debug": "^2.2.0",
     "detect-node": "^2.0.3",
     "steemauth": "0.0.16",
-    "steemconnect": "0.0.25",
-    "steemembed": "^1.0.17",
     "ws": "^1.1.1"
   },
   "devDependencies": {
