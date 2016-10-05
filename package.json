@@ -7,7 +7,7 @@
     "test": "mocha -t 10000 --require babel-polyfill --require babel-register",
     "build": "npm run build-browser && npm run build-node",
     "build-browser": "rm -rf dist && NODE_ENV=production webpack && gzip -k -f ./dist/*.js && du -h ./dist/*",
-    "build-node": "mkdir -p ./node-dist && cp ./lib/* ./node-dist/ && babel ./lib --out-dir ./node-dist"
+    "build-node": "mkdir -p ./lib && cp ./src/* ./lib/ && babel ./src --out-dir ./lib"
   },
   "browser": {
     "ws": false
