@@ -1,10 +1,5 @@
-scr
 .idea
 .save
-*.css.map
-*.css
-dev.js
-test.js
 
 # Logs
 logs
