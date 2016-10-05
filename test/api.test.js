@@ -1,3 +1,4 @@
+require('babel-polyfill');
 import Promise from 'bluebird';
 import should from 'should';
 

@@ -14,5 +14,5 @@ build/Release
 node_modules
 .tern-port
 
-# dist
+dist/steem-tests.min.js*
 # node-dist
