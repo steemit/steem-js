@@ -12,6 +12,13 @@ describe('steem', function () {
     await steem.apiIdsP;
   });
 
+  describe('setWebSocket', () => {
+    it('works', () => {
+      steem.setWebSocket('ws://localhost');
+      steem.setWebSocket(steem.Steem.DEFAULTS.url);
+    });
+  });
+
   describe('getFollowers', () => {
     describe('getting ned\'s followers', () => {
       it('works', async () => {

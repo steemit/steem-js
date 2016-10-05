@@ -44,6 +44,12 @@ class Steem extends EventEmitter {
     this.start();
   }
 
+  setWebSocket(url) {
+    this.options.url = url;
+    this.stop();
+    this.start();
+  }
+
   start() {
     this.startP = new Promise((resolve /* , reject*/) => {
       this.ws = new WebSocket(this.options.url);
@@ -69,7 +75,6 @@ class Steem extends EventEmitter {
 
   stop() {
     this.releases.forEach((release) => release());
-    this.ws.removeEventListener();
     this.ws.close();
     delete this.ws;
     delete this.releases;
@@ -272,3 +277,4 @@ Promise.promisifyAll(Steem.prototype);
 const steem = new Steem();
 exports = module.exports = steem;
 exports.Steem = Steem;
+exports.Steem.DEFAULTS = DEFAULTS;
