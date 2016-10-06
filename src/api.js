@@ -1,6 +1,7 @@
 import Debug from 'debug';
 import EventEmitter from 'events';
 import Promise from 'bluebird';
+import cloneDeep from 'lodash/cloneDeep';
 import isNode from 'detect-node';
 
 import methods from './methods';
@@ -35,7 +36,7 @@ class Steem extends EventEmitter {
   constructor(options = {}) {
     super(options);
     Object.assign(options, DEFAULTS);
-    this.options = options;
+    this.options = cloneDeep(options);
 
     this.id = 0;
     this.currentP = Promise.fulfilled();
@@ -96,7 +97,11 @@ class Steem extends EventEmitter {
     return Promise.map(Object.keys(this.apiIds), (name) => {
       debugSetup('Syncing API IDs', name);
       return this.getApiByNameAsync(name).then((result) => {
-        this.apiIds[name] = result;
+        if (result) {
+          this.apiIds[name] = result;
+        } else {
+          debugSetup('Dropped null API ID for', name);
+        }
       });
     });
   }
