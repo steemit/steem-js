@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Steem.js</title>
+</head>
+<body>
+
+<script src="./../dist/steem.min.js"></script>
+<script>
+steem.api.streamOperations(function(err, operations) {
+  if (err) {
+    document.write('Error:', err.message);
+    return;
+  }
+
+  operations.forEach(function (operation) {
+    document.write('New operation:', JSON.stringify(operation));
+    console.log('New operation:', operation);
+    document.write('<br />');
+  });
+});
+</script>
+
+</body>
+</html>
