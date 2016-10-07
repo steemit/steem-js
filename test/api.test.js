@@ -1,15 +1,29 @@
 require('babel-polyfill');
 import Promise from 'bluebird';
+import assert from 'assert';
 import should from 'should';
 
-import steem from '../src/api';
+import steem, { Steem } from '../src/api';
 import testPost from './test-post.json';
 
 describe('steem', function () {
   this.timeout(10000);
 
-  before(async () => {
-    await steem.apiIdsP;
+  describe('new Steem', () => {
+    it('doesn\'t open a connection until required', () => {
+      assert(!steem.ws, 'There was a connection on the singleton?');
+      assert(!new Steem().ws, 'There was a connection on a new instance?');
+    });
+
+    it('opens a connection on demand', (done) => {
+      const s = new Steem();
+      assert(!new Steem().ws, 'There was a connection on a new instance?');
+      s.start();
+      process.nextTick(() => {
+        assert(s.ws, 'There was no connection?');
+        done();
+      });
+    });
   });
 
   describe('setWebSocket', () => {
@@ -17,6 +31,10 @@ describe('steem', function () {
       steem.setWebSocket('ws://localhost');
       steem.setWebSocket(steem.Steem.DEFAULTS.url);
     });
+  });
+
+  beforeEach(async () => {
+    await steem.apiIdsP;
   });
 
   describe('getFollowers', () => {

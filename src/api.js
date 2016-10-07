@@ -42,43 +42,58 @@ class Steem extends EventEmitter {
     this.currentP = Promise.fulfilled();
     this.apiIds = this.options.apiIds;
     this.isOpen = false;
-    this.start();
+    this.releases = [];
   }
 
   setWebSocket(url) {
     this.options.url = url;
     this.stop();
-    this.start();
   }
 
   start() {
-    this.startP = new Promise((resolve /* , reject*/) => {
+    if (this.startP) return this.startP;
+
+    const startP = new Promise((resolve /* , reject*/) => {
+      if (startP !== this.startP) return;
       this.ws = new WebSocket(this.options.url);
-      this.releases = [
-        this.listenTo(this.ws, 'open', () => {
-          debugWs('Opened WS connection with', this.options.url);
-          this.isOpen = true;
-          resolve();
-        }),
-        this.listenTo(this.ws, 'close', () => {
-          debugWs('Closed WS connection with', this.options.url);
-          this.isOpen = false;
-        }),
-        this.listenTo(this.ws, 'message', (message) => {
-          debugWs('Received message', message.data);
-          this.emit('message', JSON.parse(message.data));
-        }),
-      ];
+
+      const releaseOpen = this.listenTo(this.ws, 'open', () => {
+        debugWs('Opened WS connection with', this.options.url);
+        this.isOpen = true;
+        releaseOpen();
+        resolve();
+      });
+
+      const releaseClose = this.listenTo(this.ws, 'close', () => {
+        debugWs('Closed WS connection with', this.options.url);
+        releaseClose();
+        this.isOpen = false;
+      });
+
+      const releaseMessage = this.listenTo(this.ws, 'message', (message) => {
+        debugWs('Received message', message.data);
+        releaseMessage();
+        this.emit('message', JSON.parse(message.data));
+      });
+
+      this.releases = this.releases.concat([
+        releaseOpen,
+        releaseClose,
+        releaseMessage
+      ]);
     });
+
+    this.startP = startP;
     this.apiIdsP = this.getApiIds();
     return this.startP;
   }
 
   stop() {
-    this.releases.forEach((release) => release());
-    this.ws.close();
+    if (this.ws) this.ws.close();
+    delete this.startP;
     delete this.ws;
-    delete this.releases;
+    this.releases.forEach((release) => release());
+    this.releases = [];
   }
 
   listenTo(target, eventName, callback) {
@@ -109,7 +124,7 @@ class Steem extends EventEmitter {
   send(api, data, callback) {
     const id = data.id || this.id++;
     const currentP = this.currentP;
-    this.currentP = Promise.join(this.startP, currentP)
+    this.currentP = Promise.join(this.start(), currentP)
       .then(() => new Promise((resolve, reject) => {
         const payload = JSON.stringify({
           id,
