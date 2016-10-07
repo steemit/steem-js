@@ -22,6 +22,9 @@ function makePlugins(options) {
     plugins = plugins.concat([
       new webpack.optimize.DedupePlugin(),
       new webpack.optimize.UglifyJsPlugin({
+        output: {
+          comments: false,
+        },
         minimize: true,
         compress: {
           warnings: false,
