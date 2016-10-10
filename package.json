@@ -4,7 +4,7 @@
   "description": "Steem.js the JavaScript API for Steem blockchain",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -t 10000 --require babel-polyfill --require babel-register",
+    "test": "mocha -t 20000 --require babel-polyfill --require babel-register",
     "build": "npm run build-browser && npm run build-node",
     "build-browser": "rm -rf dist && NODE_ENV=production webpack && gzip -k -f ./dist/*.js && du -h ./dist/*",
     "build-node": "mkdir -p ./lib && cp ./src/* ./lib/ && babel ./src --out-dir ./lib"

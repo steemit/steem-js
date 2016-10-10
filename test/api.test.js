@@ -7,7 +7,7 @@ import steem, { Steem } from '../src/api';
 import testPost from './test-post.json';
 
 describe('steem', function () {
-  this.timeout(10000);
+  this.timeout(30 * 1000);
 
   describe('new Steem', () => {
     it('doesn\'t open a connection until required', () => {
@@ -37,10 +37,11 @@ describe('steem', function () {
     await steem.apiIdsP;
   });
 
-  describe('getFollowers', () => {
+  describe.only('getFollowers', () => {
     describe('getting ned\'s followers', () => {
       it('works', async () => {
         const result = await steem.getFollowersAsync('ned', 0, 'blog', 5);
+        assert(result, 'getFollowersAsync resoved to null?');
         result.should.have.lengthOf(5);
       });
 

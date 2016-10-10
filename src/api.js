@@ -27,7 +27,7 @@ const DEFAULTS = {
     database_api: 0,
     login_api: 1,
     follow_api: 3,
-    network_broadcast_api: 2
+    network_broadcast_api: 2,
   },
   id: 0,
 };
@@ -47,6 +47,7 @@ class Steem extends EventEmitter {
   }
 
   setWebSocket(url) {
+    debugSetup('Setting WS', url);
     this.options.url = url;
     this.stop();
   }
@@ -56,17 +57,18 @@ class Steem extends EventEmitter {
 
     const startP = new Promise((resolve /* , reject*/) => {
       if (startP !== this.startP) return;
-      this.ws = new WebSocket(this.options.url);
+      const url = this.options.url;
+      this.ws = new WebSocket(url);
 
       const releaseOpen = this.listenTo(this.ws, 'open', () => {
-        debugWs('Opened WS connection with', this.options.url);
+        debugWs('Opened WS connection with', url);
         this.isOpen = true;
         releaseOpen();
         resolve();
       });
 
       const releaseClose = this.listenTo(this.ws, 'close', () => {
-        debugWs('Closed WS connection with', this.options.url);
+        debugWs('Closed WS connection with', url);
         releaseClose();
         this.isOpen = false;
       });
@@ -80,17 +82,20 @@ class Steem extends EventEmitter {
       this.releases = this.releases.concat([
         releaseOpen,
         releaseClose,
-        releaseMessage
+        releaseMessage,
       ]);
     });
 
+    this.getApiIds();
+
     this.startP = startP;
-    this.apiIdsP = this.getApiIds();
     return this.startP;
   }
 
   stop() {
+    debugSetup('Stopping...');
     if (this.ws) this.ws.close();
+    delete this.apiIdsP;
     delete this.startP;
     delete this.ws;
     this.releases.forEach((release) => release());
@@ -110,30 +115,50 @@ class Steem extends EventEmitter {
   }
 
   getApiIds() {
-    return Promise.map(Object.keys(this.apiIds), (name) => {
+    this.apiIdsP = Promise.map(Object.keys(this.apiIds), (name) => {
       debugSetup('Syncing API IDs', name);
       return this.getApiByNameAsync(name).then((result) => {
-        if (result) {
+        if (result != null) {
           this.apiIds[name] = result;
         } else {
-          debugSetup('Dropped null API ID for', name);
+          debugSetup('Dropped null API ID for', name, result);
         }
       });
+    }).then((ret) => {
+      debugSetup('DONE - Synced API IDs', this.apiIds);
+      return ret;
     });
+    return this.apiIdsP;
   }
 
   waitForSlot() {
+    if (this.inFlight < 10) {
+      debugEmitters('Less than 10 in-flight messages, moving on');
+      return null;
+    }
     return Promise.delay(100).then(() => {
-      if (this.inFlight < 10) return null;
-
+      if (this.inFlight < 10) {
+        debugEmitters('Less than 10 in-flight messages, moving on');
+        return null;
+      }
       return this.waitForSlot();
-    })
+    });
   }
 
   send(api, data, callback) {
+    debugSetup('Steem::send', api, data);
     const id = data.id || this.id++;
     const currentP = this.currentP;
-    this.currentP = Promise.join(this.start(), this.waitForSlot())
+    const apiIdsP = api === 'login_api' && data.method === 'get_api_by_name'
+      ? Promise.fulfilled()
+      : this.getApiIds();
+    if (api === 'login_api' && data.method === 'get_api_by_name') {
+      debugProtocol('Sending setup message');
+    } else {
+      debugProtocol('Going to wait for setup messages to resolve');
+    }
+
+    this.currentP = Promise.join(this.start(), this.waitForSlot(), apiIdsP)
       .then(() => new Promise((resolve, reject) => {
         const payload = JSON.stringify({
           id,
@@ -170,7 +195,7 @@ class Steem extends EventEmitter {
             return;
           }
 
-          debugProtocol('Resolved', id);
+          debugProtocol('Resolved', api, data, '->', message);
           resolve(message.result);
         });
 
