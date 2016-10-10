@@ -124,7 +124,7 @@ class Steem extends EventEmitter {
   send(api, data, callback) {
     const id = data.id || this.id++;
     const currentP = this.currentP;
-    this.currentP = Promise.join(this.start(), currentP)
+    this.currentP = Promise.join(this.start()/*, currentP*/)
       .then(() => new Promise((resolve, reject) => {
         const payload = JSON.stringify({
           id,
