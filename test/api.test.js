@@ -37,7 +37,7 @@ describe('steem', function () {
     await steem.apiIdsP;
   });
 
-  describe.only('getFollowers', () => {
+  describe('getFollowers', () => {
     describe('getting ned\'s followers', () => {
       it('works', async () => {
         const result = await steem.getFollowersAsync('ned', 0, 'blog', 5);
