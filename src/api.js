@@ -75,7 +75,6 @@ class Steem extends EventEmitter {
 
       const releaseMessage = this.listenTo(this.ws, 'message', (message) => {
         debugWs('Received message', message.data);
-        releaseMessage();
         this.emit('message', JSON.parse(message.data));
       });
 
@@ -116,7 +115,6 @@ class Steem extends EventEmitter {
 
   getApiIds() {
     if (this.apiIdsP) return this.apiIdsP;
-
     this.apiIdsP = Promise.map(Object.keys(this.apiIds), (name) => {
       debugSetup('Syncing API IDs', name);
       return this.getApiByNameAsync(name).then((result) => {
