@@ -115,6 +115,8 @@ class Steem extends EventEmitter {
   }
 
   getApiIds() {
+    if (this.apiIdsP) return this.apiIdsP;
+
     this.apiIdsP = Promise.map(Object.keys(this.apiIds), (name) => {
       debugSetup('Syncing API IDs', name);
       return this.getApiByNameAsync(name).then((result) => {
