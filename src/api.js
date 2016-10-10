@@ -150,17 +150,21 @@ class Steem extends EventEmitter {
   send(api, data, callback) {
     debugSetup('Steem::send', api, data);
     const id = data.id || this.id++;
-    const currentP = this.currentP;
+    const startP = this.start();
+
+    // const currentP = this.currentP;
+
     const apiIdsP = api === 'login_api' && data.method === 'get_api_by_name'
       ? Promise.fulfilled()
       : this.getApiIds();
+
     if (api === 'login_api' && data.method === 'get_api_by_name') {
       debugProtocol('Sending setup message');
     } else {
       debugProtocol('Going to wait for setup messages to resolve');
     }
 
-    this.currentP = Promise.join(this.start(), this.waitForSlot(), apiIdsP)
+    this.currentP = Promise.join(startP, this.waitForSlot(), apiIdsP)
       .then(() => new Promise((resolve, reject) => {
         const payload = JSON.stringify({
           id,
