@@ -39,6 +39,7 @@ class Steem extends EventEmitter {
     this.options = cloneDeep(options);
 
     this.id = 0;
+    this.inFlight = 0;
     this.currentP = Promise.fulfilled();
     this.apiIds = this.options.apiIds;
     this.isOpen = false;
@@ -121,10 +122,18 @@ class Steem extends EventEmitter {
     });
   }
 
+  waitForSlot() {
+    return Promise.delay(100).then(() => {
+      if (this.inFlight < 10) return null;
+
+      return this.waitForSlot();
+    })
+  }
+
   send(api, data, callback) {
     const id = data.id || this.id++;
     const currentP = this.currentP;
-    this.currentP = Promise.join(this.start()/*, currentP*/)
+    this.currentP = Promise.join(this.start(), this.waitForSlot())
       .then(() => new Promise((resolve, reject) => {
         const payload = JSON.stringify({
           id,
@@ -143,6 +152,7 @@ class Steem extends EventEmitter {
             return;
           }
 
+          this.inFlight -= 1;
           release();
 
           // We dropped a message
@@ -171,6 +181,8 @@ class Steem extends EventEmitter {
         (result) => callback(null, result),
         (err) => callback(err)
       ));
+
+    this.inFlight += 1;
 
     return this.currentP;
   }
