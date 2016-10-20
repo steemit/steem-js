@@ -4,11 +4,11 @@ var formatter = require('./formatter');
 
 module.exports = {
   send: function(tx, privKeys, callback) {
-    steemApi.login('', '', function() {
-      steemApi.getDynamicGlobalProperties(function(err, result) {
+    return steemApi.loginAsync('', '').then(function () {
+      return steemApi.getDynamicGlobalPropertiesAsync().then(function (result) {
         var seconds = 1000;
         result.timestamp = result.timestamp || Date.now()
-          var expiration = new Date(result.timestamp + 15 * seconds);
+        var expiration = new Date(result.timestamp + 15 * seconds);
         tx.expiration = expiration.toISOString().replace('Z', '');
         tx.ref_block_num = result.head_block_number & 0xFFFF;
         tx.ref_block_prefix =  new Buffer(result.head_block_id, 'hex').readUInt32LE(4);
