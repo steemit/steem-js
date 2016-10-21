@@ -69,8 +69,9 @@ class Steem extends EventEmitter {
 
       const releaseClose = this.listenTo(this.ws, 'close', () => {
         debugWs('Closed WS connection with', url);
-        releaseClose();
         this.isOpen = false;
+        this.stop();
+        this.start();
       });
 
       const releaseMessage = this.listenTo(this.ws, 'message', (message) => {
