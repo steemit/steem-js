@@ -1,6 +1,7 @@
 require('babel-polyfill');
 import Promise from 'bluebird';
 import assert from 'assert';
+import makeStub from 'mocha-make-stub'
 import should from 'should';
 
 import steem, { Steem } from '../src/api';
@@ -158,6 +159,39 @@ describe('steem', function () {
           done();
         }
       });
+    });
+  });
+
+  describe.only('when there are network failures (the ws closes)', () => {
+    const originalStart = Steem.prototype.start;
+    makeStub(Steem.prototype, 'start', function () {
+      return originalStart.apply(this, arguments);
+    });
+
+    const originalStop = Steem.prototype.stop;
+    makeStub(Steem.prototype, 'stop', function () {
+      return originalStop.apply(this, arguments);
+    });
+
+    it('tries to reconnect automatically', async function () {
+      const steem = new Steem();
+      // console.log('RECONNECT TEST start');
+      assert(!steem.ws, 'There was a websocket connection before a call?');
+      // console.log('RECONNECT TEST make followers call');
+      await steem.getFollowersAsync('ned', 0, 'blog', 5);
+      assert(steem.ws, 'There was no websocket connection after a call?');
+      // console.log('RECONNECT TEST wait 1s');
+      await Promise.delay(1000);
+      // console.log('RECONNECT TEST simulate close event');
+      assert(!steem.stop.calledOnce, 'Steem::stop was already called before disconnect?');
+      steem.ws.emit('close');
+      assert(!steem.ws);
+      assert(!steem.startP);
+      assert(steem.stop.calledOnce, 'Steem::stop wasn\'t called when the connection closed?');
+      // console.log('RECONNECT TEST make followers call');
+      await steem.getFollowersAsync('ned', 0, 'blog', 5);
+      assert(steem.ws, 'There was no websocket connection after a call?');
+      assert(steem.isOpen, 'There was no websocket connection after a call?');
     });
   });
 });

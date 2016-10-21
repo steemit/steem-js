@@ -1,16 +1,17 @@
-import Debug from 'debug';
+import newDebug from 'debug';
 import EventEmitter from 'events';
 import Promise from 'bluebird';
 import cloneDeep from 'lodash/cloneDeep';
+import defaults from 'lodash/defaults';
 import isNode from 'detect-node';
 
 import methods from './methods';
-import {camelCase} from './util';
+import { camelCase } from './util';
 
-const debugEmitters = Debug('steem:emitters');
-const debugProtocol = Debug('steem:protocol');
-const debugSetup = Debug('steem:setup');
-const debugWs = Debug('steem:ws');
+const debugEmitters = newDebug('steem:emitters');
+const debugProtocol = newDebug('steem:protocol');
+const debugSetup = newDebug('steem:setup');
+const debugWs = newDebug('steem:ws');
 
 let WebSocket;
 if (isNode) {
@@ -35,7 +36,7 @@ const DEFAULTS = {
 class Steem extends EventEmitter {
   constructor(options = {}) {
     super(options);
-    Object.assign(options, DEFAULTS);
+    defaults(options, DEFAULTS);
     this.options = cloneDeep(options);
 
     this.id = 0;
@@ -53,7 +54,9 @@ class Steem extends EventEmitter {
   }
 
   start() {
-    if (this.startP) return this.startP;
+    if (this.startP) {
+      return this.startP;
+    }
 
     const startP = new Promise((resolve /* , reject*/) => {
       if (startP !== this.startP) return;
@@ -71,7 +74,6 @@ class Steem extends EventEmitter {
         debugWs('Closed WS connection with', url);
         this.isOpen = false;
         this.stop();
-        this.start();
       });
 
       const releaseMessage = this.listenTo(this.ws, 'message', (message) => {
@@ -86,10 +88,10 @@ class Steem extends EventEmitter {
       ]);
     });
 
+    this.startP = startP;
     this.getApiIds();
 
-    this.startP = startP;
-    return this.startP;
+    return startP;
   }
 
   stop() {

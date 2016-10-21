@@ -52,6 +52,7 @@
     "eslint-plugin-react": "^6.2.1",
     "json-loader": "^0.5.4",
     "mocha": "^3.0.2",
+    "mocha-make-stub": "^2.3.2",
     "should": "^11.1.0",
     "uglifyjs": "^2.4.10",
     "utf-8-validate": "^1.2.1",
