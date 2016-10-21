@@ -58,7 +58,7 @@ class Steem extends EventEmitter {
       return this.startP;
     }
 
-    const startP = new Promise((resolve /* , reject*/) => {
+    const startP = new Promise((resolve, reject) => {
       if (startP !== this.startP) return;
       const url = this.options.url;
       this.ws = new WebSocket(url);
@@ -74,6 +74,12 @@ class Steem extends EventEmitter {
         debugWs('Closed WS connection with', url);
         this.isOpen = false;
         this.stop();
+
+        if (startP.isPending()) {
+          reject(new Error(
+            'The WS connection was closed before this operation was made'
+          ));
+        }
       });
 
       const releaseMessage = this.listenTo(this.ws, 'message', (message) => {
@@ -139,6 +145,8 @@ class Steem extends EventEmitter {
       debugEmitters('Less than 10 in-flight messages, moving on');
       return null;
     }
+
+    debugEmitters('More than 10 in-flight messages, waiting');
     return Promise.delay(100).then(() => {
       if (this.inFlight < 10) {
         debugEmitters('Less than 10 in-flight messages, moving on');
@@ -165,8 +173,15 @@ class Steem extends EventEmitter {
       debugProtocol('Going to wait for setup messages to resolve');
     }
 
-    this.currentP = Promise.join(startP, this.waitForSlot(), apiIdsP)
+    this.currentP = Promise.join(startP, apiIdsP, this.waitForSlot())
       .then(() => new Promise((resolve, reject) => {
+        if (!this.ws) {
+          reject(new Error(
+            'The WS connection was closed while this request was pending'
+          ));
+          return;
+        }
+
         const payload = JSON.stringify({
           id,
           method: 'call',
@@ -190,6 +205,7 @@ class Steem extends EventEmitter {
           // We dropped a message
           if (message.id !== id) {
             debugProtocol('Response to RPC call was dropped', payload);
+            reject(new Error('The response to this RPC call was dropped, please file this as a bug at https://github.com/adcpm/steem/issues'));
             return;
           }
 
@@ -208,11 +224,14 @@ class Steem extends EventEmitter {
 
         debugWs('Sending message', payload);
         this.ws.send(payload);
-      })
+      }))
       .then(
         (result) => callback(null, result),
-        (err) => callback(err)
-      ));
+        (err) => {
+          callback(err);
+          throw err;
+        }
+      );
 
     this.inFlight += 1;
 
@@ -226,7 +245,6 @@ class Steem extends EventEmitter {
     const update = () => {
       if (!running) return;
 
-      let result;
       this.getDynamicGlobalPropertiesAsync()
         .then((result) => {
           const blockId = result.head_block_number;
@@ -295,7 +313,7 @@ class Steem extends EventEmitter {
         return;
       }
 
-      transaction.operations.forEach(function (operation) {
+      transaction.operations.forEach((operation) => {
         callback(null, operation);
       });
     });
@@ -305,35 +323,30 @@ class Steem extends EventEmitter {
 }
 
 // Generate Methods from methods.json
-methods.reduce(function (memo, method) {
+methods.forEach((method) => {
   const methodName = camelCase(method.method);
   const methodParams = method.params || [];
 
-  memo[methodName + 'With'] =
+  Steem.prototype[`${methodName}With`] =
     function Steem$$specializedSendWith(options, callback) {
-      const params = methodParams.map(function (param) {
-        return options[param];
-      });
-
+      const params = methodParams.map((param) => options[param]);
       return this.send(method.api, {
         method: method.method,
-        params: params,
+        params,
       }, callback);
     };
 
-  memo[methodName] =
+  Steem.prototype[methodName] =
     function Steem$specializedSend(...args) {
-      const options = methodParams.reduce(function (memo, param, i) {
-        memo[param] = args[i];
+      const options = methodParams.reduce((memo, param, i) => {
+        memo[param] = args[i]; // eslint-disable-line no-param-reassign
         return memo;
       }, {});
       const callback = args[methodParams.length];
 
-      return this[methodName + 'With'](options, callback);
+      return this[`${methodName}With`](options, callback);
     };
-
-  return memo;
-}, Steem.prototype);
+});
 
 Promise.promisifyAll(Steem.prototype);
 

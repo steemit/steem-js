@@ -162,7 +162,7 @@ describe('steem', function () {
     });
   });
 
-  describe.only('when there are network failures (the ws closes)', () => {
+  describe('when there are network failures (the ws closes)', () => {
     const originalStart = Steem.prototype.start;
     makeStub(Steem.prototype, 'start', function () {
       return originalStart.apply(this, arguments);
@@ -173,7 +173,7 @@ describe('steem', function () {
       return originalStop.apply(this, arguments);
     });
 
-    it('tries to reconnect automatically', async function () {
+    it('tries to reconnect automatically', async () => {
       const steem = new Steem();
       // console.log('RECONNECT TEST start');
       assert(!steem.ws, 'There was a websocket connection before a call?');
