@@ -18,17 +18,17 @@ module.exports = {
     return out;
   },
 
-  vestToSteem: function(vestingShares, totalVestingShares, totalVestingFundSteem) {
+  vestToSteem: function (vestingShares, totalVestingShares, totalVestingFundSteem) {
     return parseFloat(totalVestingFundSteem) * (parseFloat(vestingShares) / parseFloat(totalVestingShares));
   },
 
-  commentPermlink: function(parentAuthor, parentPermlink) {
+  commentPermlink: function (parentAuthor, parentPermlink) {
     var timeStr = new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '');
     parentPermlink = parentPermlink.replace(/(-\d{8}t\d{9}z)/g, '');
     return 're-' + parentAuthor + '-' + parentPermlink + '-' + timeStr;
   },
 
-  amount: function(amount, asset) {
+  amount: function (amount, asset) {
     return amount.toFixed(3) + ' ' + asset;
-  }
+  },
 };
