@@ -27,8 +27,8 @@ const DEFAULTS = {
   apiIds: {
     database_api: 0,
     login_api: 1,
-    follow_api: 3,
-    network_broadcast_api: 2,
+    follow_api: 2,
+    network_broadcast_api: 4,
   },
   id: 0,
 };
@@ -214,13 +214,21 @@ class Steem extends EventEmitter {
           const errorCause = message.error;
           if (errorCause) {
             const err = new Error(
-              (errorCause.message ||
-               'Failed to complete operation')
-              + ' (see err.payload for the full error payload)'
+              // eslint-disable-next-line prefer-template
+              (errorCause.message || 'Failed to complete operation') +
+                ' (see err.payload for the full error payload)'
             );
             err.payload = message;
             reject(err);
             return;
+          }
+
+          if (api === 'login_api' && data.method === 'login') {
+            debugProtocol(
+                'API IDs depend on the WS\' session. Triggering a refresh.'
+                );
+            delete this.apiIdsP;
+            this.getApiIds();
           }
 
           debugProtocol('Resolved', api, data, '->', message);
