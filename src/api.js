@@ -212,20 +212,13 @@ class Steem extends EventEmitter {
 
         const release = this.listenTo(this, 'message', (message) => {
           // We're still seeing old messages
-          if (message.id < id) {
-            debugProtocol('Old message was dropped', message);
+          if (message.id !== id) {
+            debugProtocol('Different message was dropped', message);
             return;
           }
 
           this.inFlight -= 1;
           release();
-
-          // We dropped a message
-          if (message.id !== id) {
-            debugProtocol('Response to RPC call was dropped', payload);
-            reject(new Error('The response to this RPC call was dropped, please file this as a bug at https://github.com/adcpm/steem/issues'));
-            return;
-          }
 
           // Our message's response came back
           const errorCause = message.error;
