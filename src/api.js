@@ -213,8 +213,6 @@ class Steem extends EventEmitter {
           // Our message's response came back
           const errorCause = message.error;
           if (errorCause) {
-            console.error(JSON.stringify(message));
-            console.error('"', JSON.stringify(message.error.message), '"');
             const err = new Error(
               (errorCause.message ||
                'Failed to complete operation')
