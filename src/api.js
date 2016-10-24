@@ -211,10 +211,16 @@ class Steem extends EventEmitter {
           }
 
           // Our message's response came back
-          const errorCause = data.error;
+          const errorCause = message.error;
           if (errorCause) {
-            const err = new Error(errorCause);
-            err.message = data;
+            console.error(JSON.stringify(message));
+            console.error('"', JSON.stringify(message.error.message), '"');
+            const err = new Error(
+              (errorCause.message ||
+               'Failed to complete operation')
+              + ' (see err.payload for the full error payload)'
+            );
+            err.payload = message;
             reject(err);
             return;
           }
@@ -226,13 +232,7 @@ class Steem extends EventEmitter {
         debugWs('Sending message', payload);
         this.ws.send(payload);
       }))
-      .then(
-        (result) => callback(null, result),
-        (err) => {
-          callback(err);
-          throw err;
-        }
-      );
+      .nodeify(callback);
 
     this.inFlight += 1;
 
