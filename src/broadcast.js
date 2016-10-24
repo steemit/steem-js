@@ -1,21 +1,42 @@
-var steemAuth = require('steemauth');
-var steemApi = require('./api');
-var formatter = require('./formatter');
+import clone from 'lodash/clone';
+import newDebug from 'debug';
+import steemAuth from 'steemauth';
 
-module.exports = {
-  send: function(tx, privKeys, callback) {
-    steemApi.login('', '', function() {
-      steemApi.getDynamicGlobalProperties(function(err, result) {
-        var seconds = 1000;
-        result.timestamp = result.timestamp || Date.now()
-          var expiration = new Date(result.timestamp + 15 * seconds);
-        tx.expiration = expiration.toISOString().replace('Z', '');
-        tx.ref_block_num = result.head_block_number & 0xFFFF;
-        tx.ref_block_prefix =  new Buffer(result.head_block_id, 'hex').readUInt32LE(4);
-        var signedTransaction = steemAuth.signTransaction(tx, privKeys);
-        steemApi.broadcastTransactionWithCallback(function(){}, signedTransaction, function(err, result) {
-          callback(err, result);
-        });
+import formatter from './formatter';
+import steemApi from './api';
+
+const debug = newDebug('steem:broadcast');
+
+exports = module.exports = {
+  send(tx, privKeys, callback) {
+    steemApi.login('', '', () => {
+      steemApi.getDynamicGlobalProperties((err, result) => {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        const output = clone(result);
+        const transaction = clone(tx);
+
+        output.timestamp = output.timestamp || Date.now();
+
+        const expiration = new Date(output.timestamp + 15 * 1000);
+
+        transaction.expiration = expiration.toISOString().replace('Z', '');
+        transaction.ref_block_num = output.head_block_number & 0xFFFF;
+        transaction.ref_block_prefix = new Buffer(output.head_block_id, 'hex').readUInt32LE(4);
+
+        debug(
+          'Signing transaction (transaction, transaction.operations)',
+          transaction, transaction.operations
+        );
+        const signedTransaction = steemAuth.signTransaction(transaction, privKeys);
+        steemApi.broadcastTransactionWithCallback(
+          () => {},
+          signedTransaction,
+          callback
+        );
       });
     });
   },
