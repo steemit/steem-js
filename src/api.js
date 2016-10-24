@@ -1,9 +1,9 @@
-import newDebug from 'debug';
 import EventEmitter from 'events';
 import Promise from 'bluebird';
 import cloneDeep from 'lodash/cloneDeep';
 import defaults from 'lodash/defaults';
 import isNode from 'detect-node';
+import newDebug from 'debug';
 
 import methods from './methods';
 import { camelCase } from './util';
@@ -11,6 +11,7 @@ import { camelCase } from './util';
 const debugEmitters = newDebug('steem:emitters');
 const debugProtocol = newDebug('steem:protocol');
 const debugSetup = newDebug('steem:setup');
+const debugApiIds = newDebug('steem:api_ids');
 const debugWs = newDebug('steem:ws');
 
 let WebSocket;
@@ -45,6 +46,9 @@ class Steem extends EventEmitter {
     this.apiIds = this.options.apiIds;
     this.isOpen = false;
     this.releases = [];
+
+    // A Map of api name to a promise to it's API ID refresh call
+    this.apiIdsP = {};
   }
 
   setWebSocket(url) {
@@ -104,7 +108,7 @@ class Steem extends EventEmitter {
   stop() {
     debugSetup('Stopping...');
     if (this.ws) this.ws.close();
-    delete this.apiIdsP;
+    this.apiIdsP = {};
     delete this.startP;
     delete this.ws;
     this.releases.forEach((release) => release());
@@ -123,22 +127,37 @@ class Steem extends EventEmitter {
     };
   }
 
-  getApiIds() {
-    if (this.apiIdsP) return this.apiIdsP;
-    this.apiIdsP = Promise.map(Object.keys(this.apiIds), (name) => {
-      debugSetup('Syncing API IDs', name);
-      return this.getApiByNameAsync(name).then((result) => {
+  /**
+   * Refreshes API IDs, populating the `Steem::apiIdsP` map.
+   *
+   * @param {String} [requestName] If provided, only this API will be refreshed
+   * @param {Boolean} [force] If true the API will be forced to refresh, ignoring existing results
+   */
+
+  getApiIds(requestName, force) {
+    if (!force && requestName && this.apiIdsP[requestName]) {
+      return this.apiIdsP[requestName];
+    }
+
+    const apiNamesToRefresh = requestName ? [requestName] : Object.keys(this.apiIds);
+    apiNamesToRefresh.forEach((name) => {
+      debugApiIds('Syncing API ID', name);
+      this.apiIdsP[name] = this.getApiByNameAsync(name).then((result) => {
         if (result != null) {
           this.apiIds[name] = result;
         } else {
-          debugSetup('Dropped null API ID for', name, result);
+          debugApiIds('Dropped null API ID for', name, result);
         }
       });
-    }).then((ret) => {
-      debugSetup('DONE - Synced API IDs', this.apiIds);
-      return ret;
     });
-    return this.apiIdsP;
+
+    // If `requestName` was provided, only wait for this API ID
+    if (requestName) {
+      return this.apiIdsP[requestName];
+    }
+
+    // Otherwise wait for all of them
+    return Promise.props(this.apiIdsP);
   }
 
   waitForSlot() {
@@ -162,16 +181,14 @@ class Steem extends EventEmitter {
     const id = data.id || this.id++;
     const startP = this.start();
 
-    // const currentP = this.currentP;
-
     const apiIdsP = api === 'login_api' && data.method === 'get_api_by_name'
       ? Promise.fulfilled()
-      : this.getApiIds();
+      : this.getApiIds(api);
 
     if (api === 'login_api' && data.method === 'get_api_by_name') {
-      debugProtocol('Sending setup message');
+      debugApiIds('Sending setup message');
     } else {
-      debugProtocol('Going to wait for setup messages to resolve');
+      debugApiIds('Going to wait for setup messages to resolve');
     }
 
     this.currentP = Promise.join(startP, apiIdsP, this.waitForSlot())
@@ -224,11 +241,11 @@ class Steem extends EventEmitter {
           }
 
           if (api === 'login_api' && data.method === 'login') {
-            debugProtocol(
-                'API IDs depend on the WS\' session. Triggering a refresh.'
-                );
-            delete this.apiIdsP;
-            this.getApiIds();
+            debugApiIds(
+              'network_broadcast_api API ID depends on the WS\' session. ' +
+                'Triggering a refresh...'
+            );
+            this.getApiIds('network_broadcast_api', true);
           }
 
           debugProtocol('Resolved', api, data, '->', message);
