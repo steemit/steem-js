@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Steem.js Broadcast</title>
+</head>
+<body>
+
+<script src="./../dist/steem.min.js"></script>
+<script>
+steem.broadcast.vote('YOUR_POSTING_WIF', 'YOUR_USERNAME', 'firepower', 'steemit-veni-vidi-vici-steemfest-2016-together-we-made-it-happen-thank-you-steemians', 10000,
+  function(err, result) {
+    console.log(err, result);
+  }
+);
+</script>
+
+</body>
+</html>
