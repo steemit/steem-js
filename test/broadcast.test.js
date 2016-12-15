@@ -49,12 +49,12 @@ describe('steem.broadcast', () => {
 
   describe('downvoting', () => {
     it('works', async () => {
-      const tx = await steemBroadcast.downvoteAsync(
+      const tx = await steemBroadcast.voteAsync(
         steemAuth.toWif(process.env.STEEM_USERNAME, process.env.STEEM_PASSWORD, 'posting'),
         process.env.STEEM_USERNAME,
         'yamadapc',
         'test-1-2-3-4-5-6-7-9',
-        null
+        -1000
       );
 
       tx.should.have.properties([
@@ -74,12 +74,12 @@ describe('steem.broadcast', () => {
     });
 
     it('works', async () => {
-      const tx = await steemBroadcast.upvoteAsync(
+      const tx = await steemBroadcast.voteAsync(
         steemAuth.toWif(process.env.STEEM_USERNAME, process.env.STEEM_PASSWORD, 'posting'),
         process.env.STEEM_USERNAME,
         'yamadapc',
         'test-1-2-3-4-5-6-7-9',
-        null
+        10000
       );
 
       tx.should.have.properties([
