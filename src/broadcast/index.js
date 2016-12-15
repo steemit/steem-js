@@ -107,16 +107,6 @@ operations.forEach((operation) => {
     };
 });
 
-// Custom logic methods -------------------------------------------------------
-
-steemBroadcast.upvote = function steemBroadcast$upvote(wif, voter, author, permlink, weight, callback) {
-  steemBroadcast.vote(wif, voter, author, permlink, weight || 10000, callback);
-};
-
-steemBroadcast.downvote = function steemBroadcast$downvote(wif, voter, author, permlink, weight, callback) {
-  steemBroadcast.vote(wif, voter, author, permlink, -Math.abs(weight || 10000), callback);
-};
-
 Promise.promisifyAll(steemBroadcast);
 
 export default steemBroadcast;
