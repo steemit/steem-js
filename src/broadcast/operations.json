@@ -251,6 +251,17 @@
     "roles": [
       "active"
     ],
+    "operation": "pow2",
+    "params": [
+      "work",
+      "new_owner_key",
+      "props"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
     "operation": "fill_convert_request",
     "params": [
       "owner",
@@ -400,6 +411,20 @@
     ]
   },
   {
+    "operation": "escrow_approve",
+    "roles": [
+      "active"
+    ],
+    "params": [
+      "from",
+      "to",
+      "agent",
+      "who",
+      "escrow_id",
+      "approve"
+    ]
+  },
+  {
     "roles": [
       "active"
     ],
@@ -468,6 +493,91 @@
       "block_signing_key",
       "props",
       "fee"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "fill_vesting_withdraw",
+    "params": [
+      "from_account",
+      "to_account",
+      "withdrawn",
+      "deposited"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "fill_order",
+    "params": [
+      "current_owner",
+      "current_orderid",
+      "current_pays",
+      "open_owner",
+      "open_orderid",
+      "open_pays"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "fill_transfer_from_savings",
+    "params": [
+      "from",
+      "to",
+      "amount",
+      "request_id",
+      "memo"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "comment_payout",
+    "params": [
+      "author",
+      "permlink",
+      "payout"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "transfer_to_savings",
+    "params": [
+      "from",
+      "to",
+      "amount",
+      "memo"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "transfer_from_savings",
+    "params": [
+      "from",
+      "request_id",
+      "to",
+      "amount",
+      "memo"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "cancel_transfer_from_savings",
+    "params": [
+      "from",
+      "request_id"
     ]
   }
 ]
