@@ -271,7 +271,7 @@
   },
   {
     "api": "database_api",
-    "method": "getOrderBook",
+    "method": "get_order_book",
     "params": [
       "limit"
     ]
