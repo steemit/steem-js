@@ -12,6 +12,7 @@ describe('steem.broadcast', () => {
 
   it('has generated methods', () => {
     should.exist(steemBroadcast.vote);
+    should.exist(steemBroadcast.voteWith);
     should.exist(steemBroadcast.comment);
     should.exist(steemBroadcast.transfer);
   });
