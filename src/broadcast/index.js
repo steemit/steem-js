@@ -79,7 +79,9 @@ operations.forEach((operation) => {
     function steemBroadcast$specializedSendWith(wif, options, callback) {
       debug(`Sending operation "${operationName}" with`, {options, callback});
       const keys = {};
-      keys[operation.roles[0]] = wif; // TODO - Automatically pick a role?
+      if (operation.roles && operation.roles.length) {
+        keys[operation.roles[0]] = wif; // TODO - Automatically pick a role? Send all?
+      }
       return steemBroadcast.send({
         extensions: [],
         operations: [[operationName, Object.assign(
