@@ -111,4 +111,4 @@ operations.forEach((operation) => {
 
 Promise.promisifyAll(steemBroadcast);
 
-export default steemBroadcast;
+exports = module.exports = steemBroadcast;
