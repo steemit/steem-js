@@ -1,0 +1,459 @@
+[
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "vote",
+    "params": [
+      "voter",
+      "author",
+      "permlink",
+      "weight"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "comment",
+    "params": [
+      "parent_author",
+      "parent_permlink",
+      "author",
+      "permlink",
+      "title",
+      "body",
+      "json_metadata"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "transfer",
+    "params": [
+      "from",
+      "to",
+      "amount",
+      "memo"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "transfer_to_vesting",
+    "params": [
+      "from",
+      "to",
+      "amount"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "withdraw_vesting",
+    "params": [
+      "account",
+      "vesting_shares"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "limit_order_create",
+    "params": [
+      "owner",
+      "orderid",
+      "amount_to_sell",
+      "min_to_receive",
+      "fill_or_kill",
+      "expiration"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "limit_order_cancel",
+    "params": [
+      "owner",
+      "orderid"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "feed_publish",
+    "params": [
+      "publisher",
+      "exchange_rate"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "convert",
+    "params": [
+      "owner",
+      "requestid",
+      "amount"
+    ]
+  },
+  {
+    "roles": [
+      "owner"
+    ],
+    "operation": "account_create",
+    "params": [
+      "fee",
+      "creator",
+      "new_account_name",
+      "owner",
+      "active",
+      "posting",
+      "memo_key",
+      "json_metadata"
+    ]
+  },
+  {
+    "roles": [
+      "owner"
+    ],
+    "operation": "account_update",
+    "params": [
+      "account",
+      "owner",
+      "active",
+      "posting",
+      "memo_key",
+      "json_metadata"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "witness_update",
+    "params": [
+      "owner",
+      "url",
+      "block_signing_key",
+      "props",
+      "fee"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "account_witness_vote",
+    "params": [
+      "account",
+      "witness",
+      "approve"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "account_witness_proxy",
+    "params": [
+      "account",
+      "proxy"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "pow",
+    "params": [
+      "worker",
+      "input",
+      "signature",
+      "work"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "custom",
+    "params": [
+      "required_auths",
+      "id",
+      "data"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "report_over_production",
+    "params": [
+      "reporter",
+      "first_block",
+      "second_block"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "delete_comment",
+    "params": [
+      "author",
+      "permlink"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "custom_json",
+    "params": [
+      "required_auths",
+      "required_posting_auths",
+      "id",
+      "json"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "comment_options",
+    "params": [
+      "author",
+      "permlink",
+      "max_accepted_payout",
+      "percent_steem_dollars",
+      "allow_votes",
+      "allow_curation_rewards",
+      "extensions"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "set_withdraw_vesting_route",
+    "params": [
+      "from_account",
+      "to_account",
+      "percent",
+      "auto_vest"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "limit_order_create2",
+    "params": [
+      "owner",
+      "orderid",
+      "amount_to_sell",
+      "exchange_rate",
+      "fill_or_kill",
+      "expiration"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "challenge_authority",
+    "params": [
+      "challenger",
+      "challenged",
+      "require_owner"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "prove_authority",
+    "params": [
+      "challenged",
+      "require_owner"
+    ]
+  },
+  {
+    "roles": [
+      "owner"
+    ],
+    "operation": "request_account_recovery",
+    "params": [
+      "recovery_account",
+      "account_to_recover",
+      "new_owner_authority",
+      "extensions"
+    ]
+  },
+  {
+    "roles": [
+      "owner"
+    ],
+    "operation": "recover_account",
+    "params": [
+      "account_to_recover",
+      "new_owner_authority",
+      "recent_owner_authority",
+      "extensions"
+    ]
+  },
+  {
+    "roles": [
+      "owner"
+    ],
+    "operation": "change_recovery_account",
+    "params": [
+      "account_to_recover",
+      "new_recovery_account",
+      "extensions"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "escrow_transfer",
+    "params": [
+      "from",
+      "to",
+      "amount",
+      "memo",
+      "escrow_id",
+      "agent",
+      "fee",
+      "json_meta",
+      "expiration"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "escrow_dispute",
+    "params": [
+      "from",
+      "to",
+      "escrow_id",
+      "who"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "escrow_release",
+    "params": [
+      "from",
+      "to",
+      "escrow_id",
+      "who",
+      "amount"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "fill_convert_request",
+    "params": [
+      "owner",
+      "requestid",
+      "amount_in",
+      "amount_out"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "comment_reward",
+    "params": [
+      "author",
+      "permlink",
+      "sbd_payout",
+      "vesting_payout"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "curate_reward",
+    "params": [
+      "curator",
+      "reward",
+      "comment_author",
+      "comment_permlink"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "liquidity_reward",
+    "params": [
+      "owner",
+      "payout"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "interest",
+    "params": [
+      "owner",
+      "interest"
+    ]
+  },
+  {
+    "roles": [
+      "active"
+    ],
+    "operation": "fill_vesting_withdraw",
+    "params": [
+      "from_account",
+      "to_account",
+      "withdrawn",
+      "deposited"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "fill_order",
+    "params": [
+      "current_owner",
+      "current_orderid",
+      "current_pays",
+      "open_owner",
+      "open_orderid",
+      "open_pays"
+    ]
+  },
+  {
+    "roles": [
+      "posting"
+    ],
+    "operation": "comment_payout",
+    "params": [
+      "author",
+      "permlink",
+      "payout"
+    ]
+  }
+]
