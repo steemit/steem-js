@@ -222,7 +222,7 @@
   },
   {
     "roles": [
-      "transfer"
+      "active"
     ],
     "operation": "escrow_transfer",
     "params": [
