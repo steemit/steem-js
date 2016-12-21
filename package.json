@@ -33,7 +33,7 @@
     "debug": "^2.2.0",
     "detect-node": "^2.0.3",
     "lodash": "^4.16.4",
-    "steemauth": "0.0.19",
+    "steemauth": "dacom-dark-sun/steemauth",
     "ws": "^1.1.1"
   },
   "devDependencies": {
