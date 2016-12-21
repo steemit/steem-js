@@ -24,7 +24,7 @@ if (isNode) {
 }
 
 const DEFAULTS = {
-  url: 'wss://steemit.com/wspa',
+  url: 'wss://ws.golos.io',
   apiIds: {
     database_api: 0,
     login_api: 1,
