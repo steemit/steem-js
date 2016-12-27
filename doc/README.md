@@ -2,7 +2,7 @@
 
 ## Install
 ```
-$ npm install steem --save
+$ npm install golos --save
 ```
 
 ## Subscriptions
@@ -454,14 +454,463 @@ steem.api.streamBlock(function(err, result) {
 });
 ```
 ### Stream Transactions
+## Subscriptions
+### Set Subscribe Callback
 ```js 
-steem.api.streamTransactions(function(err, result) {
+golos.api.setSubscribeCallback(cb, clearFilter, function(err, result) {
+	console.log(err, result);
+});
+```
+### Set Pending Transaction Callback
+```js 
+golos.api.setPendingTransactionCallback(cb, function(err, result) {
+	console.log(err, result);
+});
+```
+### Set Block Applied Callback
+```js 
+golos.api.setBlockAppliedCallback(cb, function(err, result) {
+	console.log(err, result);
+});
+```
+### Cancel All Subscriptions
+```js 
+golos.api.cancelAllSubscriptions(function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Tags
+### Get Trending Tags
+```js 
+golos.api.getTrendingTags(afterTag, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Discussions By Trending
+```js 
+golos.api.getDiscussionsByTrending(query, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Discussions By Created
+```js 
+golos.api.getDiscussionsByCreated(query, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Discussions By Active
+```js 
+golos.api.getDiscussionsByActive(query, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Discussions By Cashout
+```js 
+golos.api.getDiscussionsByCashout(query, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Discussions By Payout
+```js 
+golos.api.getDiscussionsByPayout(query, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Discussions By Votes
+```js 
+golos.api.getDiscussionsByVotes(query, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Discussions By Children
+```js 
+golos.api.getDiscussionsByChildren(query, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Discussions By Hot
+```js 
+golos.api.getDiscussionsByHot(query, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Discussions By Feed
+```js 
+golos.api.getDiscussionsByFeed(query, function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Blocks And Transactions
+### Get Block Header
+```js 
+golos.api.getBlockHeader(blockNum, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Block
+```js 
+golos.api.getBlock(blockNum, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get State
+```js 
+golos.api.getState(path, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Trending Categories
+```js 
+golos.api.getTrendingCategories(after, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Best Categories
+```js 
+golos.api.getBestCategories(after, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Active Categories
+```js 
+golos.api.getActiveCategories(after, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Recent Categories
+```js 
+golos.api.getRecentCategories(after, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Globals
+### Get Config
+```js 
+golos.api.getConfig(function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Dynamic Global Properties
+```js 
+golos.api.getDynamicGlobalProperties(function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Chain Properties
+```js 
+golos.api.getChainProperties(after, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Feed History
+```js 
+golos.api.getFeedHistory(function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Current Median History Price
+```js 
+golos.api.getCurrentMedianHistoryPrice(function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Witness Schedule
+```js 
+golos.api.getWitnessSchedule(function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Hardfork Version
+```js 
+golos.api.getHardforkVersion(function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Next Scheduled Hardfork
+```js 
+golos.api.getNextScheduledHardfork(function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Keys
+### Get Key References
+```js 
+golos.api.getKeyReferences(key, function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Accounts
+### Get Accounts
+```js 
+golos.api.getAccounts(names, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Account References
+```js 
+golos.api.getAccountReferences(accountId, function(err, result) {
+	console.log(err, result);
+});
+```
+### Lookup Account Names
+```js 
+golos.api.lookupAccountNames(accountNames, function(err, result) {
+	console.log(err, result);
+});
+```
+### Lookup Accounts
+```js 
+golos.api.lookupAccounts(lowerBoundName, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Account Count
+```js 
+golos.api.getAccountCount(function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Conversion Requests
+```js 
+golos.api.getConversionRequests(accountName, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Account History
+```js 
+golos.api.getAccountHistory(account, from, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Owner History
+```js 
+golos.api.getOwnerHistory(account, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Recovery Request
+```js 
+golos.api.getRecoveryRequest(account, function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Market
+### Get Order Book
+```js 
+golos.api.getOrderBook(limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Open Orders
+```js 
+golos.api.getOpenOrders(owner, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Liquidity Queue
+```js 
+golos.api.getLiquidityQueue(startAccount, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Authority / Validation
+### Get Transaction Hex
+```js 
+golos.api.getTransactionHex(trx, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Transaction
+```js 
+golos.api.getTransaction(trxId, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Required Signatures
+```js 
+golos.api.getRequiredSignatures(trx, availableKeys, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Potential Signatures
+```js 
+golos.api.getPotentialSignatures(trx, function(err, result) {
+	console.log(err, result);
+});
+```
+### Verify Authority
+```js 
+golos.api.verifyAuthority(trx, function(err, result) {
+	console.log(err, result);
+});
+```
+### Verify Account Authority
+```js 
+golos.api.verifyAccountAuthority(nameOrId, signers, function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Votes
+### Get Active Votes
+```js 
+golos.api.getActiveVotes(author, permlink, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Account Votes
+```js 
+golos.api.getAccountVotes(voter, function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Content
+### Get Content
+```js 
+golos.api.getContent(author, permlink, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Content Replies
+```js 
+golos.api.getContentReplies(parent, parentPermlink, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Discussion By Author Before Date
+```js 
+golos.api.getDiscussionsByAuthorBeforeDate(author, startPermlink, beforeDate, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Replies By Last Update
+```js 
+golos.api.getRepliesByLastUpdate(startAuthor, startPermlink, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Witnesses
+### Get Witnesses
+```js 
+golos.api.getWitnesses(witnessIds, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Witness By Account
+```js 
+golos.api.getWitnessByAccount(accountName, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Witnesses By Vote
+```js 
+golos.api.getWitnessesByVote(from, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Lookup Witness Accounts
+```js 
+golos.api.lookupWitnessAccounts(lowerBoundName, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Witness Count
+```js 
+golos.api.getWitnessCount(function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Active Witnesses
+```js 
+golos.api.getActiveWitnesses(function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Miner Queue
+```js 
+golos.api.getMinerQueue(function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Login
+```js
+golos.api.login('ned', '****************', function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Follow
+### Get Followers
+```js 
+golos.api.getFollowers(following, startFollower, followType, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+### Get Following
+```js 
+golos.api.getFollowing(follower, startFollowing, followType, limit, function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Broadcast
+### Broadcast Transaction
+```js 
+golos.api.broadcastTransaction(trx, function(err, result) {
+	console.log(err, result);
+});
+```
+### Broadcast Transaction Synchronous
+```js 
+golos.api.broadcastTransactionSynchronous(trx, function(err, result) {
+	console.log(err, result);
+});
+```
+### Broadcast Block
+```js 
+golos.api.broadcastBlock(b, function(err, result) {
+	console.log(err, result);
+});
+```
+### Broadcast Transaction With Callback
+```js 
+golos.api.broadcastTransactionWithCallback(confirmationCallback, trx, function(err, result) {
+	console.log(err, result);
+});
+```
+
+## Stream
+### Stream Block Number
+```js 
+golos.api.streamBlockNumber(function(err, result) {
+	console.log(err, result);
+});
+```
+### Stream Block
+```js 
+golos.api.streamBlock(function(err, result) {
+	console.log(err, result);
+});
+```
+### Stream Transactions
+```js 
+golos.api.streamTransactions(function(err, result) {
 	console.log(err, result);
 });
 ```
 ### Stream Operations
 ```js 
-steem.api.streamOperations(function(err, result) {
+golos.api.streamOperations(function(err, result) {
 	console.log(err, result);
 });
 ```
@@ -469,46 +918,46 @@ steem.api.streamOperations(function(err, result) {
 ## Formatter
 ### Reputation
 ```js 
-var reputation = steem.formatter.reputation(user.reputation);
+var reputation = golos.formatter.reputation(user.reputation);
 console.log(reputation);
 ```
 ### Vest To Steem
 ```js 
-var power = steem.formatter.vestToSteem(user.vesting_shares, props.total_vesting_shares, props.total_vesting_fund_steem)
+var power = golos.formatter.vestToSteem(user.vesting_shares, props.total_vesting_shares, props.total_vesting_fund_steem)
 console.log(power);
 ```
 
 ## Broadcast
 ### Vote
 ```js
-var steem = require('steem');
+var golos = require('golos');
 
-var wif = steem.auth.toWif(username, password, 'posting');
-steem.broadcast.vote(wif, voter, author, permlink, weight, function(err, result) {
+var wif = golos.auth.toWif(username, password, 'posting');
+golos.broadcast.vote(wif, voter, author, permlink, weight, function(err, result) {
 	console.log(err, result);
 });
 ```
 ### UpVote
 ```js
-steem.broadcast.upvote(wif, voter, author, permlink, weight, function(err, result) {
+golos.broadcast.upvote(wif, voter, author, permlink, weight, function(err, result) {
 	console.log(err, result);
 });
 ```
 ### DownVote
 ```js
-steem.broadcast.downvote(wif, voter, author, permlink, weight, function(err, result) {
+golos.broadcast.downvote(wif, voter, author, permlink, weight, function(err, result) {
 	console.log(err, result);
 });
 ```
 ### Comment
 ```js
-steem.broadcast.comment(wif, parentAuthor, parentPermlink, author, permlink, title, body, jsonMetadata, function(err, result) {
+golos.broadcast.comment(wif, parentAuthor, parentPermlink, author, permlink, title, body, jsonMetadata, function(err, result) {
 	console.log(err, result);
 });
 ```
 ### Transfer
 ```js
-steem.broadcast.transfer(wif, from, to, amount, memo, function(err, result) {
+golos.broadcast.transfer(wif, from, to, amount, memo, function(err, result) {
 	console.log(err, result);
 });
 ```
