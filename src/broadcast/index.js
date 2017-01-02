@@ -84,7 +84,7 @@ operations.forEach((operation) => {
       }
       return steemBroadcast.send({
         extensions: [],
-        operations: [[operationName, Object.assign(
+        operations: [[operation.operation, Object.assign(
           {},
           options,
           options.json_metadata != null ? {

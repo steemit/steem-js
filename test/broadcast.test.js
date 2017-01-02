@@ -71,7 +71,7 @@ describe('steem.broadcast', () => {
 
   describe('voting', () => {
     before(() => {
-      return Promise.delay(1000);
+      return Promise.delay(2000);
     });
 
     it('works', async () => {
@@ -81,6 +81,38 @@ describe('steem.broadcast', () => {
         'yamadapc',
         'test-1-2-3-4-5-6-7-9',
         10000
+      );
+
+      tx.should.have.properties([
+        'expiration',
+        'ref_block_num',
+        'ref_block_prefix',
+        'extensions',
+        'operations',
+        'signatures',
+      ]);
+    });
+  });
+
+  describe('customJson', () => {
+    before(() => {
+      return Promise.delay(2000);
+    });
+
+    it('works', async () => {
+      const tx = await steemBroadcast.customJsonAsync(
+        steemAuth.toWif(process.env.STEEM_USERNAME, process.env.STEEM_PASSWORD, 'posting'),
+        [],
+        [process.env.STEEM_USERNAME],
+        'follow',
+        JSON.stringify([
+          'follow',
+          {
+            follower: process.env.STEEM_USERNAME,
+            following: 'fabien',
+            what: ['blog'],
+          },
+        ])
       );
 
       tx.should.have.properties([
