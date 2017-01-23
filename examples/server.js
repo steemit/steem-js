@@ -25,3 +25,11 @@ steem.api.getFollowers('dan', 0, 'blog', 10, function(err, result) {
 steem.api.streamOperations(function(err, result) {
 	console.log(err, result);
 });
+
+steem.api.getDiscussionsByActive({
+  limit: 10,
+  start_author: 'thecastle',
+  start_permlink: 'this-week-in-level-design-1-22-2017'
+}, function(err, result) {
+	console.log(err, result);
+});
