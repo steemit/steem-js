@@ -463,6 +463,13 @@
     ]
   },
   {
+    "api": "follow_api",
+    "method": "get_follow_count",
+    "params": [
+      "accout"
+    ]
+  },
+  {
     "api": "network_broadcast_api",
     "method": "broadcast_transaction",
     "params": [
