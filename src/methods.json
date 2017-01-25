@@ -458,7 +458,7 @@
     "api": "follow_api",
     "method": "get_follow_count",
     "params": [
-      "accout"
+      "account"
     ]
   },
   {
