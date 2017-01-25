@@ -185,14 +185,6 @@
   },
   {
     "api": "database_api",
-    "method": "get_recent_categories",
-    "params": [
-      "after",
-      "limit"
-    ]
-  },
-  {
-    "api": "database_api",
     "method": "get_hardfork_version"
   },
   {
@@ -466,7 +458,7 @@
     "api": "follow_api",
     "method": "get_follow_count",
     "params": [
-      "accout"
+      "account"
     ]
   },
   {
