@@ -488,18 +488,6 @@ steem.broadcast.vote(wif, voter, author, permlink, weight, function(err, result)
 	console.log(err, result);
 });
 ```
-### UpVote
-```js
-steem.broadcast.upvote(wif, voter, author, permlink, weight, function(err, result) {
-	console.log(err, result);
-});
-```
-### DownVote
-```js
-steem.broadcast.downvote(wif, voter, author, permlink, weight, function(err, result) {
-	console.log(err, result);
-});
-```
 ### Comment
 ```js
 steem.broadcast.comment(wif, parentAuthor, parentPermlink, author, permlink, title, body, jsonMetadata, function(err, result) {
