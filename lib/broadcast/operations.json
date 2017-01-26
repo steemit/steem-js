@@ -203,9 +203,8 @@
     "params": [
       "from",
       "to",
-      "agent",
-      "who",
-      "escrow_id"
+      "escrow_id",
+      "who"
     ]
   },
   {
@@ -216,12 +215,9 @@
     "params": [
       "from",
       "to",
-      "agent",
-      "who",
-      "receiver",
       "escrow_id",
-      "sbd_amount",
-      "steem_amount"
+      "who",
+      "amount"
     ]
   },
   {
@@ -232,14 +228,13 @@
     "params": [
       "from",
       "to",
-      "agent",
+      "amount",
+      "memo",
       "escrow_id",
-      "sbd_amount",
-      "steem_amount",
+      "agent",
       "fee",
-      "ratification_deadline",
-      "escrow_expiration",
-      "json_meta"
+      "json_meta",
+      "expiration"
     ]
   },
   {
