@@ -42,6 +42,13 @@
   },
   {
     "api": "database_api",
+    "method": "get_discussions_by_trending30",
+    "params": [
+      "query"
+    ]
+  },
+  {
+    "api": "database_api",
     "method": "get_discussions_by_created",
     "params": [
       "query"
@@ -106,6 +113,13 @@
   {
     "api": "database_api",
     "method": "get_discussions_by_comments",
+    "params": [
+      "query"
+    ]
+  },
+  {
+    "api": "database_api",
+    "method": "get_discussions_by_promoted",
     "params": [
       "query"
     ]
