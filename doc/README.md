@@ -394,8 +394,8 @@ steem.api.getMinerQueue(function(err, result) {
 ```
 
 ## Login
-```js
-steem.api.login('ned', '****************', function(err, result) {
+```js 
+steem.api.login(username, password, function(err, result) {
 	console.log(err, result);
 });
 ```
