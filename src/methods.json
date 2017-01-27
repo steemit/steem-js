@@ -199,6 +199,10 @@
   },
   {
     "api": "database_api",
+    "method": "get_witness_schedule"
+  },
+  {
+    "api": "database_api",
     "method": "get_hardfork_version"
   },
   {
