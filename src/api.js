@@ -314,9 +314,11 @@ class Steem extends EventEmitter {
         return;
       }
 
-      result.transactions.forEach((transaction) => {
-        callback(null, transaction);
-      });
+      if (result.transactions) {
+        result.transactions.forEach((transaction) => {
+          callback(null, transaction);
+        });
+      }
     });
 
     return release;
