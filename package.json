@@ -22,12 +22,12 @@
     "blockchain",
     "steemjs"
   ],
-  "author": "Bonustrack <fabien@bonustrack.co> (https://github.com/adcpm)",
+  "author": "Bonustrack <fabien@bonustrack.co> (https://github.com/bonustrack)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/adcpm/steem/issues"
+    "url": "https://github.com/steemit/steem-js/issues"
   },
-  "homepage": "https://github.com/adcpm/steem#readme",
+  "homepage": "https://github.com/steemit/steem-js#readme",
   "dependencies": {
     "bluebird": "^3.4.6",
     "debug": "^2.2.0",
@@ -57,7 +57,7 @@
     "webpack-visualizer-plugin": "^0.1.5"
   },
   "contributors": [
-    "Fabien (https://github.com/adcpm)",
+    "Bonustrack (https://github.com/bonustrack)",
     "KaptainKrayola (https://github.com/KaptainKrayola)",
     "heimindanger (https://github.com/skzap)",
     "Nilesh Suthar (https://github.com/nil1511)",
