@@ -1,23 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Steem.js</title>
+  <meta charset="UTF-8">
+  <title>Steem.js Stream</title>
 </head>
 <body>
 
 <script src="../dist/steem.min.js"></script>
 <script>
-steem.api.streamOperations(function(err, operations) {
-  if (err) {
-    document.write('Error:', err.message);
-    return;
-  }
-
+steem.api.streamOperations(function (err, operations) {
   operations.forEach(function (operation) {
-    document.write('New operation:', JSON.stringify(operation));
-    console.log('New operation:', operation);
-    document.write('<br />');
+    console.log(operation);
   });
 });
 </script>
