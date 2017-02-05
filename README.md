@@ -38,7 +38,6 @@ steem.api.getAccounts(['ned', 'dan'], function(err, response){
 ```
 
 ## CDN 
-http://cdn.steemjs.com/lib/latest/steem.min.js<br/>
 https://cdn.steemjs.com/lib/latest/steem.min.js<br/>
 ```html 
 <script src="//cdn.steemjs.com/lib/latest/steem.min.js"></script>
