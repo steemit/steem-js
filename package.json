@@ -29,11 +29,15 @@
   },
   "homepage": "https://github.com/steemit/steem-js#readme",
   "dependencies": {
+    "bigi": "^1.4.2",
     "bluebird": "^3.4.6",
+    "bs58": "^4.0.0",
+    "bytebuffer": "^5.0.1",
+    "crypto": "0.0.3",
     "debug": "^2.2.0",
     "detect-node": "^2.0.3",
+    "ecurve": "^1.0.5",
     "lodash": "^4.16.4",
-    "steemauth": "0.0.19",
     "ws": "^1.1.1"
   },
   "devDependencies": {
