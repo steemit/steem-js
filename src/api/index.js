@@ -6,7 +6,7 @@ import isNode from 'detect-node';
 import newDebug from 'debug';
 
 import methods from './methods';
-import { camelCase } from './util';
+import { camelCase } from '../util';
 
 const debugEmitters = newDebug('steem:emitters');
 const debugProtocol = newDebug('steem:protocol');
