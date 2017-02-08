@@ -4,8 +4,8 @@ import assert from 'assert';
 import makeStub from 'mocha-make-stub'
 import should from 'should';
 
-import steem, { Steem } from '../src/api/index';
-import testPost from './test-post.json';
+import steem, { Steem } from '../../src/api/index';
+import testPost from '../test-post.json';
 
 describe('steem', function () {
   this.timeout(30 * 1000);
