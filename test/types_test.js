@@ -1,7 +1,7 @@
 var Convert = require('../src/auth/protocol/types/convert');
 var Long = require('bytebuffer').Long;
 var assert = require('assert');
-const types = require('../src/auth/protocol/types/index');
+const type = require('../src/auth/protocol/types/index');
 var p = require('../src/auth/protocol/types/precision');
 
 var th = require('./test_helper');
