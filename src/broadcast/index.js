@@ -1,11 +1,11 @@
 import Promise from 'bluebird';
 import newDebug from 'debug';
 import noop from 'lodash/noop';
-import steemAuth from 'steemauth';
 
 import formatter from '../formatter';
 import operations from './operations.json';
 import steemApi from '../api';
+import steemAuth from '../auth';
 import { camelCase } from '../util';
 
 const debug = newDebug('steem:broadcast');

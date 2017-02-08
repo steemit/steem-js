@@ -1,8 +1,8 @@
 import Promise from 'bluebird';
 import should from 'should';
-import steemAuth from 'steemauth';
 
 import steemApi from '../src/api';
+import steemAuth from '../src/auth';
 import steemBroadcast from '../src/broadcast';
 
 describe('steem.broadcast', () => {
