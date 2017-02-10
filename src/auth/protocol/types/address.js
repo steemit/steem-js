@@ -1,7 +1,6 @@
+import config from './../../../config';
+
 const assert = require('assert');
-const config = {
-  address_prefix: process.env.npm_config__graphene_ecc_default_address_prefix || 'STM'
-};
 const hash = require('../signature/hash');
 const base58 = require('bs58');
 
@@ -18,7 +17,7 @@ class Address {
         return new Address(addy);
     }
 
-    static fromString(string, address_prefix = config.address_prefix) {
+    static fromString(string, address_prefix = config.addressPrefix) {
         const prefix = string.slice(0, address_prefix.length);
         assert.equal(address_prefix, prefix, `Expecting key to begin with ${address_prefix}, instead got ${prefix}`);
         let addy = string.slice(address_prefix.length);
@@ -48,7 +47,7 @@ class Address {
         return this.addy;
     }
 
-    toString(address_prefix = config.address_prefix) {
+    toString(address_prefix = config.addressPrefix) {
         const checksum = hash.ripemd160(this.addy);
         const addy = Buffer.concat([this.addy, checksum.slice(0, 4)]);
         return address_prefix + base58.encode(addy);

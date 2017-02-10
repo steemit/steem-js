@@ -1,3 +1,5 @@
+import config from './../../../config';
+
 // Low-level types that make up operations
 
 var ByteBuffer = require('bytebuffer');
@@ -10,7 +12,6 @@ var Long = ByteBuffer.Long;
 
 var PublicKey = require("./key-public");
 var hash = require('./../signature/hash');
-var config = { address_prefix: 'STM' };
 var Types = {};
 
 var HEX_DUMP = process.env.npm_config__graphene_serializer_hex_dump;
@@ -839,7 +840,7 @@ Types.public_key = {
     },
     toObject: function toObject(object, debug) {
         if (debug && debug.use_default && object === undefined) {
-            return config.address_prefix + "859gxfnXyUriMgUeThh1fWv3oqcpLFyHa3TfFYC4PK2HqhToVM";
+            return config.addressPrefix + "859gxfnXyUriMgUeThh1fWv3oqcpLFyHa3TfFYC4PK2HqhToVM";
         }
         return object.toString();
     },
@@ -868,7 +869,7 @@ Types.address = {
     },
     toObject: function toObject(object, debug) {
         if (debug.use_default && object === undefined) {
-            return config.address_prefix + "664KmHxSuQyDsfwo4WEJvWpzg1QKdg67S";
+            return config.addressPrefix + "664KmHxSuQyDsfwo4WEJvWpzg1QKdg67S";
         }
         return Types.address._to_address(object).toString();
     },
@@ -954,7 +955,7 @@ var Address = function () {
     };
 
     Address.fromString = function fromString(string) {
-        var address_prefix = arguments.length <= 1 || arguments[1] === undefined ? config.address_prefix : arguments[1];
+        var address_prefix = arguments.length <= 1 || arguments[1] === undefined ? config.addressPrefix : arguments[1];
 
         var prefix = string.slice(0, address_prefix.length);
         var addy = string.slice(address_prefix.length);
@@ -987,7 +988,7 @@ var Address = function () {
     };
 
     Address.prototype.toString = function toString() {
-        var address_prefix = arguments.length <= 0 || arguments[0] === undefined ? config.address_prefix : arguments[0];
+        var address_prefix = arguments.length <= 0 || arguments[0] === undefined ? config.addressPrefix : arguments[0];
         var checksum = hash.ripemd160(this.addy);
         var addy = Buffer.concat([this.addy, checksum.slice(0, 4)]);
         return address_prefix + base58.encode(addy);

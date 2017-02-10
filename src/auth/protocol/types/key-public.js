@@ -1,9 +1,10 @@
+import config from './../../../config';
+
 var BigInteger = require('bigi');
 var ecurve = require('ecurve');
 var secp256k1 = ecurve.getCurveByName('secp256k1');
 var base58 = require('bs58');
 var hash = require('./../signature/hash');
-var config = { address_prefix: 'STM' };
 var assert = require('assert');
 
 var G = secp256k1.G;
@@ -47,7 +48,7 @@ var PublicKey = function () {
     };
 
     PublicKey.prototype.toString = function toString() {
-        var address_prefix = arguments.length <= 0 || arguments[0] === undefined ? config.address_prefix : arguments[0];
+        var address_prefix = arguments.length <= 0 || arguments[0] === undefined ? config.addressPrefix : arguments[0];
 
         return this.toPublicKeyString(address_prefix);
     };
@@ -57,7 +58,7 @@ var PublicKey = function () {
         {return} string
     */
     PublicKey.prototype.toPublicKeyString = function toPublicKeyString() {
-        var address_prefix = arguments.length <= 0 || arguments[0] === undefined ? config.address_prefix : arguments[0];
+        var address_prefix = arguments.length <= 0 || arguments[0] === undefined ? config.addressPrefix : arguments[0];
 
         if (this.pubdata) return address_prefix + this.pubdata;
         var pub_buf = this.toBuffer();
@@ -74,7 +75,7 @@ var PublicKey = function () {
         @deprecated fromPublicKeyString (use fromString instead)
     */
     PublicKey.fromString = function fromString(public_key) {
-        var address_prefix = arguments.length <= 1 || arguments[1] === undefined ? config.address_prefix : arguments[1];
+        var address_prefix = arguments.length <= 1 || arguments[1] === undefined ? config.addressPrefix : arguments[1];
 
         try {
             return PublicKey.fromStringOrThrow(public_key, address_prefix);
@@ -90,7 +91,7 @@ var PublicKey = function () {
         @return PublicKey
     */
     PublicKey.fromStringOrThrow = function fromStringOrThrow(public_key) {
-        var address_prefix = arguments.length <= 1 || arguments[1] === undefined ? config.address_prefix : arguments[1];
+        var address_prefix = arguments.length <= 1 || arguments[1] === undefined ? config.addressPrefix : arguments[1];
 
         var prefix = public_key.slice(0, address_prefix.length);
         assert.equal(address_prefix, prefix, 'Expecting key to begin with ' + address_prefix + ', instead got ' + prefix);
@@ -106,7 +107,7 @@ var PublicKey = function () {
     };
 
     PublicKey.prototype.toAddressString = function toAddressString() {
-        var address_prefix = arguments.length <= 0 || arguments[0] === undefined ? config.address_prefix : arguments[0];
+        var address_prefix = arguments.length <= 0 || arguments[0] === undefined ? config.addressPrefix : arguments[0];
 
         var pub_buf = this.toBuffer();
         var pub_sha = hash.sha512(pub_buf);

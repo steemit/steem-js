@@ -1,3 +1,5 @@
+import config from './../config';
+
 var bigi = require('bigi'),
 	crypto = require('crypto'),
 	bs58 = require('bs58'),
@@ -40,7 +42,7 @@ Auth.generateKeys = function (name, password, roles) {
 		var pubBuf = point.getEncoded(toPubKey.compressed);
 		var checksum = crypto.createHash('rmd160').update(pubBuf).digest();
 		var addy = Buffer.concat([pubBuf, checksum.slice(0, 4)]);
-		pubKeys[role] = 'STM' + bs58.encode(addy);
+		pubKeys[role] = config.addressPrefix + bs58.encode(addy);
 	});
 	return pubKeys;
 };
@@ -97,7 +99,7 @@ Auth.signTransaction = function (trx, keys) {
 		signatures = [].concat(trx.signatures);
 	}
 
-	var cid = new Buffer('0000000000000000000000000000000000000000000000000000000000000000', 'hex');
+	var cid = new Buffer(config.chainId, 'hex');
 	var buf = transaction.toBuffer(trx);
 
 	for (var key in keys) {
