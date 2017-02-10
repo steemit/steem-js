@@ -161,12 +161,41 @@
   },
   {
     "roles": ["active"],
+    "operation": "escrow_transfer",
+    "params": [
+      "from",
+      "to",
+      "agent",
+      "escrow_id",
+      "sbd_amount",
+      "steem_amount",
+      "fee",
+      "ratification_deadline",
+      "escrow_expiration",
+      "json_meta"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "escrow_approve",
+    "params": [
+      "from",
+      "to",
+      "agent",
+      "who",
+      "escrow_id",
+      "approve"
+    ]
+  },
+  {
+    "roles": ["active"],
     "operation": "escrow_dispute",
     "params": [
       "from",
       "to",
-      "escrow_id",
-      "who"
+      "agent",
+      "who",
+      "escrow_id"
     ]
   },
   {
@@ -175,24 +204,12 @@
     "params": [
       "from",
       "to",
-      "escrow_id",
-      "who",
-      "amount"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "escrow_transfer",
-    "params": [
-      "from",
-      "to",
-      "amount",
-      "memo",
-      "escrow_id",
       "agent",
-      "fee",
-      "json_meta",
-      "expiration"
+      "who",
+      "receiver",
+      "escrow_id",
+      "sbd_amount",
+      "steem_amount"
     ]
   },
   {
