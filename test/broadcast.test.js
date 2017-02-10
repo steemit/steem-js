@@ -1,9 +1,13 @@
 import Promise from 'bluebird';
 import should from 'should';
-
-import steemApi from '../src/api';
 import steemAuth from '../src/auth';
 import steemBroadcast from '../src/broadcast';
+
+const username = process.env.USERNAME || 'guest123';
+const password = process.env.PASSWORD;
+const postingWif = password
+  ? steemAuth.toWif(username, password, 'posting')
+  : '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg';
 
 describe('steem.broadcast', () => {
   it('exists', () => {
@@ -51,8 +55,8 @@ describe('steem.broadcast', () => {
   describe('downvoting', () => {
     it('works', async () => {
       const tx = await steemBroadcast.voteAsync(
-        steemAuth.toWif(process.env.STEEM_USERNAME, process.env.STEEM_PASSWORD, 'posting'),
-        process.env.STEEM_USERNAME,
+        postingWif,
+        username,
         'yamadapc',
         'test-1-2-3-4-5-6-7-9',
         -1000
@@ -76,8 +80,8 @@ describe('steem.broadcast', () => {
 
     it('works', async () => {
       const tx = await steemBroadcast.voteAsync(
-        steemAuth.toWif(process.env.STEEM_USERNAME, process.env.STEEM_PASSWORD, 'posting'),
-        process.env.STEEM_USERNAME,
+        postingWif,
+        username,
         'yamadapc',
         'test-1-2-3-4-5-6-7-9',
         10000
@@ -95,8 +99,8 @@ describe('steem.broadcast', () => {
 
     it('works with callbacks', (done) => {
       steemBroadcast.vote(
-        steemAuth.toWif(process.env.STEEM_USERNAME, process.env.STEEM_PASSWORD, 'posting'),
-        process.env.STEEM_USERNAME,
+        postingWif,
+        username,
         'yamadapc',
         'test-1-2-3-4-5-6-7-9',
         10000,
@@ -123,14 +127,14 @@ describe('steem.broadcast', () => {
 
     it('works', async () => {
       const tx = await steemBroadcast.customJsonAsync(
-        steemAuth.toWif(process.env.STEEM_USERNAME, process.env.STEEM_PASSWORD, 'posting'),
+        postingWif,
         [],
-        [process.env.STEEM_USERNAME],
+        [username],
         'follow',
         JSON.stringify([
           'follow',
           {
-            follower: process.env.STEEM_USERNAME,
+            follower: username,
             following: 'fabien',
             what: ['blog'],
           },

@@ -5,9 +5,9 @@ var bigi = require('bigi'),
 	Point = ecurve.Point,
 	secp256k1 = ecurve.getCurveByName('secp256k1'),
 
-	operations = require('./protocol/operations'),
-	Signature = require('./protocol/signature'),
-	KeyPrivate = require('./protocol/types/key-private');
+	operations = require('./serializer/src/operations'),
+	Signature = require('./ecc/src/signature'),
+	KeyPrivate = require('./ecc/src/key_private');
 
 var Auth = {};
 var transaction = operations.transaction;
