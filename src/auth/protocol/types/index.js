@@ -1,3 +1,5 @@
+import config from './../../../config';
+
 // Low-level types that make up operations
 
 var ByteBuffer = require('bytebuffer');
@@ -10,7 +12,6 @@ var Long = ByteBuffer.Long;
 
 var PublicKey = require("./key-public");
 var hash = require('./../signature/hash');
-var config = 'STM';
 var Types = {};
 
 var HEX_DUMP = process.env.npm_config__graphene_serializer_hex_dump;
@@ -98,11 +99,11 @@ Types.uint16 = {
         return object;
     },
     toObject: function toObject(object, debug) {
-        if (debug.use_default && object === undefined) {
+        if (debug && debug.use_default && object === undefined) {
             return 0;
         }
         return parseInt(object);
-    }
+    },
 };
 
 Types.uint32 = {
@@ -121,7 +122,7 @@ Types.uint32 = {
             return 0;
         }
         return parseInt(object);
-    }
+    },
 };
 
 var MIN_SIGNED_32 = -1 * Math.pow(2, 31);
@@ -215,7 +216,7 @@ Types.string = {
         return new Buffer(object, 'utf8');
     },
     toObject: function toObject(object, debug) {
-        if (debug.use_default && object === undefined) {
+        if (debug && debug.use_default && object === undefined) {
             return "";
         }
         return object.toString('utf8');
@@ -457,7 +458,7 @@ Types.set = function (st_operation) {
             } ());
         },
         toObject: function toObject(object, debug) {
-            if (debug.use_default && object === undefined) {
+            if (debug && debug.use_default && object === undefined) {
                 return [st_operation.toObject(object, debug)];
             }
             if (!object) {
@@ -803,7 +804,7 @@ Types.map = function (key_st_operation, value_st_operation) {
             return this.validate(result);
         },
         toObject: function toObject(object, debug) {
-            if (debug.use_default && object === undefined) {
+            if (debug && debug.use_default && object === undefined) {
                 return [[key_st_operation.toObject(undefined, debug), value_st_operation.toObject(undefined, debug)]];
             }
             object = this.validate(object);
@@ -838,8 +839,8 @@ Types.public_key = {
         return Types.public_key.toPublic(object);
     },
     toObject: function toObject(object, debug) {
-        if (debug.use_default && object === undefined) {
-            return config.address_prefix + "859gxfnXyUriMgUeThh1fWv3oqcpLFyHa3TfFYC4PK2HqhToVM";
+        if (debug && debug.use_default && object === undefined) {
+            return config.addressPrefix + "859gxfnXyUriMgUeThh1fWv3oqcpLFyHa3TfFYC4PK2HqhToVM";
         }
         return object.toString();
     },
@@ -868,7 +869,7 @@ Types.address = {
     },
     toObject: function toObject(object, debug) {
         if (debug.use_default && object === undefined) {
-            return config.address_prefix + "664KmHxSuQyDsfwo4WEJvWpzg1QKdg67S";
+            return config.addressPrefix + "664KmHxSuQyDsfwo4WEJvWpzg1QKdg67S";
         }
         return Types.address._to_address(object).toString();
     },
@@ -954,7 +955,7 @@ var Address = function () {
     };
 
     Address.fromString = function fromString(string) {
-        var address_prefix = arguments.length <= 1 || arguments[1] === undefined ? config.address_prefix : arguments[1];
+        var address_prefix = arguments.length <= 1 || arguments[1] === undefined ? config.addressPrefix : arguments[1];
 
         var prefix = string.slice(0, address_prefix.length);
         var addy = string.slice(address_prefix.length);
@@ -987,7 +988,7 @@ var Address = function () {
     };
 
     Address.prototype.toString = function toString() {
-        var address_prefix = arguments.length <= 0 || arguments[0] === undefined ? config.address_prefix : arguments[0];
+        var address_prefix = arguments.length <= 0 || arguments[0] === undefined ? config.addressPrefix : arguments[0];
         var checksum = hash.ripemd160(this.addy);
         var addy = Buffer.concat([this.addy, checksum.slice(0, 4)]);
         return address_prefix + base58.encode(addy);
