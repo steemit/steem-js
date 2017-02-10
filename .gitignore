@@ -17,4 +17,4 @@ dist/steem-tests.min.js*
 .envrc
 .idea
 .save
-.lib
+lib
