@@ -1,6 +1,6 @@
 var assert = require('assert') // from github.com/bitcoinjs/bitcoinjs-lib from github.com/cryptocoinjs/ecdsa
 var crypto = require('./hash')
-var enforceType = require('./enforce-types')
+var enforceType = require('./enforce_types')
 
 var BigInteger = require('bigi')
 var ECSignature = require('./ecsignature')

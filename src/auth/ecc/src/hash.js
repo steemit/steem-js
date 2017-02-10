@@ -1,4 +1,4 @@
-var crypto = require('crypto');
+var crypto = require('crypto')
 
 /** @arg {string|Buffer} data
     @arg {string} [digest = null] - 'hex', 'binary' or 'base64'
@@ -32,10 +32,26 @@ function ripemd160(data) {
     return crypto.createHash('rmd160').update(data).digest()
 }
 
+// function hash160(buffer) {
+//   return ripemd160(sha256(buffer))
+// }
+// 
+// function hash256(buffer) {
+//   return sha256(sha256(buffer))
+// }
+
+// 
+// function HmacSHA512(buffer, secret) {
+//   return crypto.createHmac('sha512', secret).update(buffer).digest()
+// }
+
 module.exports = {
     sha1: sha1,
     sha256: sha256,
     sha512: sha512,
     HmacSHA256: HmacSHA256,
     ripemd160: ripemd160
+    // hash160: hash160,
+    // hash256: hash256,
+    // HmacSHA512: HmacSHA512
 }

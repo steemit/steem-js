@@ -26,7 +26,7 @@ module.exports = function enforce(type, value) { // Copied from https://github.c
     }
 
     default: {
-       return
+      if (getName(value.constructor) === getName(type)) return
     }
   }
 
