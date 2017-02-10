@@ -98,11 +98,11 @@ Types.uint16 = {
         return object;
     },
     toObject: function toObject(object, debug) {
-        if (debug.use_default && object === undefined) {
+        if (debug && debug.use_default && object === undefined) {
             return 0;
         }
         return parseInt(object);
-    }
+    },
 };
 
 Types.uint32 = {
@@ -121,7 +121,7 @@ Types.uint32 = {
             return 0;
         }
         return parseInt(object);
-    }
+    },
 };
 
 var MIN_SIGNED_32 = -1 * Math.pow(2, 31);
@@ -215,7 +215,7 @@ Types.string = {
         return new Buffer(object, 'utf8');
     },
     toObject: function toObject(object, debug) {
-        if (debug.use_default && object === undefined) {
+        if (debug && debug.use_default && object === undefined) {
             return "";
         }
         return object.toString('utf8');
@@ -457,7 +457,7 @@ Types.set = function (st_operation) {
             } ());
         },
         toObject: function toObject(object, debug) {
-            if (debug.use_default && object === undefined) {
+            if (debug && debug.use_default && object === undefined) {
                 return [st_operation.toObject(object, debug)];
             }
             if (!object) {
@@ -803,7 +803,7 @@ Types.map = function (key_st_operation, value_st_operation) {
             return this.validate(result);
         },
         toObject: function toObject(object, debug) {
-            if (debug.use_default && object === undefined) {
+            if (debug && debug.use_default && object === undefined) {
                 return [[key_st_operation.toObject(undefined, debug), value_st_operation.toObject(undefined, debug)]];
             }
             object = this.validate(object);
@@ -838,7 +838,7 @@ Types.public_key = {
         return Types.public_key.toPublic(object);
     },
     toObject: function toObject(object, debug) {
-        if (debug.use_default && object === undefined) {
+        if (debug && debug.use_default && object === undefined) {
             return config.address_prefix + "859gxfnXyUriMgUeThh1fWv3oqcpLFyHa3TfFYC4PK2HqhToVM";
         }
         return object.toString();
