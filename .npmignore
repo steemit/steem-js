@@ -1,5 +1,7 @@
 .save
 .idea
-src
 npm-debug.log
 test.js
+.github
+doc
+examples
