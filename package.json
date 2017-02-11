@@ -7,7 +7,8 @@
     "test": "mocha -t 20000 --require babel-polyfill --require babel-register",
     "build": "npm run build-browser && npm run build-node",
     "build-browser": "rm -rf dist && NODE_ENV=production webpack && gzip -k -f ./dist/*.js && du -h ./dist/*",
-    "build-node": "mkdir -p ./lib && cp -r ./src/* ./lib/ && babel ./src --out-dir ./lib"
+    "build-node": "mkdir -p ./lib && cp -r ./src/* ./lib/ && babel ./src --out-dir ./lib",
+    "prepublish": "npm run build"
   },
   "browser": {
     "ws": false
@@ -38,6 +39,7 @@
     "detect-node": "^2.0.3",
     "ecurve": "^1.0.5",
     "lodash": "^4.16.4",
+    "secure-random": "^1.1.1",
     "ws": "^1.1.1"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 const assert = require('assert');
-const config = require('../config');
+const config = require('../../../../config.json');
 const hash = require('./hash');
 const base58 = require('bs58');
 

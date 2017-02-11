@@ -4,7 +4,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import defaults from 'lodash/defaults';
 import isNode from 'detect-node';
 import newDebug from 'debug';
-
+import config from '../../config.json';
 import methods from './methods';
 import { camelCase } from '../util';
 
@@ -24,7 +24,7 @@ if (isNode) {
 }
 
 const DEFAULTS = {
-  url: 'wss://steemit.com/wspa',
+  url: config.websocket,
   apiIds: {
     database_api: 0,
     login_api: 1,
