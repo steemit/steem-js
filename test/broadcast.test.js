@@ -3,8 +3,8 @@ import should from 'should';
 import steemAuth from '../src/auth';
 import steemBroadcast from '../src/broadcast';
 
-const username = process.env.USERNAME || 'guest123';
-const password = process.env.PASSWORD;
+const username = process.env.STEEM_USERNAME || 'guest123';
+const password = process.env.STEEM_PASSWORD;
 const postingWif = password
   ? steemAuth.toWif(username, password, 'posting')
   : '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg';
