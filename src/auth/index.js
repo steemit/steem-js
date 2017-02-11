@@ -4,7 +4,7 @@ var bigi = require('bigi'),
 	ecurve = require('ecurve'),
 	Point = ecurve.Point,
 	secp256k1 = ecurve.getCurveByName('secp256k1'),
-
+	config = require('../../config.json'),
 	operations = require('./serializer/src/operations'),
 	Signature = require('./ecc/src/signature'),
 	KeyPrivate = require('./ecc/src/key_private');
@@ -40,7 +40,7 @@ Auth.generateKeys = function (name, password, roles) {
 		var pubBuf = point.getEncoded(toPubKey.compressed);
 		var checksum = crypto.createHash('rmd160').update(pubBuf).digest();
 		var addy = Buffer.concat([pubBuf, checksum.slice(0, 4)]);
-		pubKeys[role] = 'STM' + bs58.encode(addy);
+		pubKeys[role] = config.address_prefix + bs58.encode(addy);
 	});
 	return pubKeys;
 };
@@ -97,7 +97,7 @@ Auth.signTransaction = function (trx, keys) {
 		signatures = [].concat(trx.signatures);
 	}
 
-	var cid = new Buffer('0000000000000000000000000000000000000000000000000000000000000000', 'hex');
+	var cid = new Buffer(config.chain_id, 'hex');
 	var buf = transaction.toBuffer(trx);
 
 	for (var key in keys) {
