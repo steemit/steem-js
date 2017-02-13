@@ -1,6 +1,6 @@
 module.exports = {
   api: require('./lib/api'),
-  formatter: require('./lib/formatter'),
-  auth: require('steemauth'),
+  auth: require('./lib/auth'),
   broadcast: require('./lib/broadcast'),
+  formatter: require('./lib/formatter'),
 };

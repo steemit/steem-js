@@ -1,9 +1,8 @@
-const steemauth = require('steemauth');
 const steem = require('..');
 
 const username = process.env.STEEM_USERNAME;
 const password = process.env.STEEM_PASSWORD;
-const wif = steemauth.toWif(username, password, 'posting');
+const wif = steem.auth.toWif(username, password, 'posting');
 
 steem
   .broadcast

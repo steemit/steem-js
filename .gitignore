@@ -1,6 +1,3 @@
-.idea
-.save
-
 # Logs
 logs
 *.log
@@ -18,3 +15,7 @@ dist/steem-tests.min.js*
 # node-dist
 .tern-port
 .envrc
+.idea
+.save
+lib
+dist

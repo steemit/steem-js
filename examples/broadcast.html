@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Steem.js Broadcast</title>
+  <meta charset="UTF-8">
+  <title>Steem.js Broadcast</title>
 </head>
 <body>
 
 <script src="../dist/steem.min.js"></script>
 <script>
-steem.broadcast.vote('YOUR_POSTING_WIF', 'YOUR_USERNAME', 'firepower', 'steemit-veni-vidi-vici-steemfest-2016-together-we-made-it-happen-thank-you-steemians', 10000,
+steem.broadcast.vote(
+  '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg', // Posting WIF
+  'guest123', // Voter username
+  'firepower', // Author
+  'steemit-veni-vidi-vici-steemfest-2016-together-we-made-it-happen-thank-you-steemians', // Permlink
+  10000, // Weight (10000 = 100%)
   function(err, result) {
     console.log(err, result);
   }

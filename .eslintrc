@@ -1,3 +1,27 @@
 {
-  "extends": "airbnb"
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 7,
+    "sourceType": "module"
+  },
+  "env": {
+    "es6": true,
+    "node": true,
+    "browser": true,
+    "mocha": true,
+  },
+  "rules": {
+    "no-undef": ["error"],
+    "no-const-assign": ["error"],
+    "no-this-before-super": ["error"],
+    "use-isnan": ["error"],
+
+    "prefer-const": ["warn"],
+    "no-var": ["warn"],
+    "no-unused-vars": ["warn"],
+    "no-unreachable": ["warn"],
+    "no-shadow": ["warn"],
+    "no-constant-condition": ["warn"],
+    "no-shadow-restricted-names": ["off"], # warn misfired on 'import' statements
+  },
 }

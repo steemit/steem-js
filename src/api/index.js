@@ -4,9 +4,9 @@ import cloneDeep from 'lodash/cloneDeep';
 import defaults from 'lodash/defaults';
 import isNode from 'detect-node';
 import newDebug from 'debug';
-
+import config from '../../config.json';
 import methods from './methods';
-import { camelCase } from './util';
+import { camelCase } from '../util';
 
 const debugEmitters = newDebug('steem:emitters');
 const debugProtocol = newDebug('steem:protocol');
@@ -24,7 +24,7 @@ if (isNode) {
 }
 
 const DEFAULTS = {
-  url: 'wss://steemit.com/wspa',
+  url: config.websocket,
   apiIds: {
     database_api: 0,
     login_api: 1,
@@ -314,9 +314,11 @@ class Steem extends EventEmitter {
         return;
       }
 
-      result.transactions.forEach((transaction) => {
-        callback(null, transaction);
-      });
+      if (result && result.transactions) {
+        result.transactions.forEach((transaction) => {
+          callback(null, transaction);
+        });
+      }
     });
 
     return release;

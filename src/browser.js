@@ -1,8 +1,8 @@
 const steem = {
   api: require('./api'),
-  formatter: require('./formatter'),
-  auth: require('steemauth'),
+  auth: require('./auth'),
   broadcast: require('./broadcast'),
+  formatter: require('./formatter'),
 };
 
 if (typeof window !== 'undefined') {

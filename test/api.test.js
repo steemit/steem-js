@@ -4,7 +4,7 @@ import assert from 'assert';
 import makeStub from 'mocha-make-stub'
 import should from 'should';
 
-import steem, { Steem } from '../src/api';
+import steem, { Steem } from '../src/api/index';
 import testPost from './test-post.json';
 
 describe('steem', function () {
@@ -46,6 +46,15 @@ describe('steem', function () {
         result.should.have.lengthOf(5);
       });
 
+      it('the startFollower parameter has an impact on the result', async () => {
+        // Get the first 5
+        const result1 = await steem.getFollowersAsync('ned', 0, 'blog', 5)
+          result1.should.have.lengthOf(5);
+        const result2 = await steem.getFollowersAsync('ned', result1[result1.length - 1].follower, 'blog', 5)
+          result2.should.have.lengthOf(5);
+        result1.should.not.be.eql(result2);
+      });
+
       it('clears listeners', async () => {
         steem.listeners('message').should.have.lengthOf(0);
       });
@@ -61,15 +70,6 @@ describe('steem', function () {
 
       it('clears listeners', async () => {
         steem.listeners('message').should.have.lengthOf(0);
-      });
-    });
-  });
-
-  describe('getFollowers', () => {
-    describe('getting ned\'s followers', () => {
-      it('works', async () => {
-        const result = await steem.getFollowersAsync('ned', 0, 'blog', 5);
-        result.should.have.lengthOf(5);
       });
     });
   });
