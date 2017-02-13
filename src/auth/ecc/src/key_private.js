@@ -144,13 +144,11 @@ class PrivateKey {
         return new PrivateKey( derived )
     }
 
-    /* <helper_functions> */
-
-    toByteBuffer() {
-        var b = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
-        this.appendByteBuffer(b);
-        return b.copy(0, b.offset);
-    }
+    // toByteBuffer() {
+    //     var b = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
+    //     this.appendByteBuffer(b);
+    //     return b.copy(0, b.offset);
+    // }
 
     static fromHex(hex) {
         return PrivateKey.fromBuffer(new Buffer(hex, 'hex'));

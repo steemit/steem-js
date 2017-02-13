@@ -142,13 +142,11 @@ class PublicKey {
         return PublicKey.fromPoint(Qprime)
     }
 
-    /* <HEX> */
-
-    toByteBuffer() {
-        var b = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
-        this.appendByteBuffer(b);
-        return b.copy(0, b.offset);
-    }
+    // toByteBuffer() {
+    //     var b = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
+    //     this.appendByteBuffer(b);
+    //     return b.copy(0, b.offset);
+    // }
 
     static fromHex(hex) {
         return PublicKey.fromBuffer(new Buffer(hex, 'hex'));

@@ -240,7 +240,7 @@ module.exports = _my = {
         }
         if (Long.isLong(value) ){
             // typeof value.toInt() is 'number'
-            no_overflow53(value.toInt(), field_name);
+            _my.no_overflow53(value.toInt(), field_name);
             return;
         }
         throw `unsupported type ${field_name}: (${typeof value}) ${value}`;
