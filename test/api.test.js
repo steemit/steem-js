@@ -1,41 +1,18 @@
 require('babel-polyfill');
-import Promise from 'bluebird';
 import assert from 'assert';
-import makeStub from 'mocha-make-stub'
 import should from 'should';
-
 import steem, { Steem } from '../src/api/index';
 import testPost from './test-post.json';
+import config from '../config.json';
 
 describe('steem', function () {
   this.timeout(30 * 1000);
 
-  describe('new Steem', () => {
-    it('doesn\'t open a connection until required', () => {
-      assert(!steem.ws, 'There was a connection on the singleton?');
-      assert(!new Steem().ws, 'There was a connection on a new instance?');
-    });
-
-    it('opens a connection on demand', (done) => {
-      const s = new Steem();
-      assert(!new Steem().ws, 'There was a connection on a new instance?');
-      s.start();
-      process.nextTick(() => {
-        assert(s.ws, 'There was no connection?');
-        done();
-      });
-    });
-  });
-
-  describe('setWebSocket', () => {
+  describe('setUri', () => {
     it('works', () => {
-      steem.setWebSocket('ws://localhost');
-      steem.setWebSocket(steem.Steem.DEFAULTS.url);
+      steem.setUri('http://localhost');
+      steem.setUri(config.uri);
     });
-  });
-
-  beforeEach(async () => {
-    await steem.apiIdsP;
   });
 
   describe('getFollowers', () => {
@@ -159,39 +136,6 @@ describe('steem', function () {
           done();
         }
       });
-    });
-  });
-
-  describe('when there are network failures (the ws closes)', () => {
-    const originalStart = Steem.prototype.start;
-    makeStub(Steem.prototype, 'start', function () {
-      return originalStart.apply(this, arguments);
-    });
-
-    const originalStop = Steem.prototype.stop;
-    makeStub(Steem.prototype, 'stop', function () {
-      return originalStop.apply(this, arguments);
-    });
-
-    it('tries to reconnect automatically', async () => {
-      const steem = new Steem();
-      // console.log('RECONNECT TEST start');
-      assert(!steem.ws, 'There was a websocket connection before a call?');
-      // console.log('RECONNECT TEST make followers call');
-      await steem.getFollowersAsync('ned', 0, 'blog', 5);
-      assert(steem.ws, 'There was no websocket connection after a call?');
-      // console.log('RECONNECT TEST wait 1s');
-      await Promise.delay(1000);
-      // console.log('RECONNECT TEST simulate close event');
-      assert(!steem.stop.calledOnce, 'Steem::stop was already called before disconnect?');
-      steem.ws.emit('close');
-      assert(!steem.ws);
-      assert(!steem.startP);
-      assert(steem.stop.calledOnce, 'Steem::stop wasn\'t called when the connection closed?');
-      // console.log('RECONNECT TEST make followers call');
-      await steem.getFollowersAsync('ned', 0, 'blog', 5);
-      assert(steem.ws, 'There was no websocket connection after a call?');
-      assert(steem.isOpen, 'There was no websocket connection after a call?');
     });
   });
 });
