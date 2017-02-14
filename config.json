@@ -1,5 +1,5 @@
 {
-  "websocket": "wss://steemit.com/wspa",
+  "uri": "https://steemit.com/wspa",
   "address_prefix": "STM",
   "chain_id": "0000000000000000000000000000000000000000000000000000000000000000"
 }
