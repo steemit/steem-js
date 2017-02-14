@@ -35,8 +35,7 @@ steemBroadcast.send = function steemBroadcast$send(tx, privKeys, callback) {
         'Broadcasting transaction (transaction, transaction.operations)',
         transaction, transaction.operations
       );
-      return steemApi.broadcastTransactionWithCallbackAsync(
-        () => {},
+      return steemApi.broadcastTransactionSynchronousAsync(
         signedTransaction
       ).then(() => signedTransaction);
     });

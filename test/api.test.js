@@ -1,9 +1,13 @@
 require('babel-polyfill');
 import assert from 'assert';
 import should from 'should';
-import steem, { Steem } from '../src/api/index';
 import testPost from './test-post.json';
 import config from '../config.json';
+import api from '../src/api';
+import auth from '../src/auth';
+import broadcast from '../src/broadcast';
+
+const steem = api
 
 describe('steem', function () {
   this.timeout(30 * 1000);
@@ -135,6 +139,16 @@ describe('steem', function () {
           release();
           done();
         }
+      });
+    });
+  });
+
+  describe('writeOperations', () => {
+    it('broadcast', (done) => {
+      const wif = auth.toWif('username', 'password', 'posting');
+      broadcast.vote(wif, 'voter', 'author', 'permlink', 0, function(err, result) {
+        console.log(err, result);
+        done()
       });
     });
   });

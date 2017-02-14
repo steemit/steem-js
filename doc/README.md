@@ -490,12 +490,6 @@ steem.api.getFollowCount(account, function(err, result) {
 
 ## Broadcast API
 
-### Broadcast Transaction
-```
-steem.api.broadcastTransaction(trx, function(err, result) {
-  console.log(err, result);
-});
-```
 ### Broadcast Transaction Synchronous
 ```
 steem.api.broadcastTransactionSynchronous(trx, function(err, result) {
@@ -508,12 +502,7 @@ steem.api.broadcastBlock(b, function(err, result) {
   console.log(err, result);
 });
 ```
-### Broadcast Transaction With Callback
-```
-steem.api.broadcastTransactionWithCallback(confirmationCallback, trx, function(err, result) {
-  console.log(err, result);
-});
-```
+
 # Broadcast
 
 ### Account Create

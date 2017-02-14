@@ -4,6 +4,8 @@ import Promise from 'bluebird';
 import newDebug from 'debug';
 import config from '../../config.json';
 import methods from './methods';
+import {hash} from '../auth/ecc';
+import {ops} from '../auth/serializer';
 import { camelCase } from '../util';
 
 const debugSetup = newDebug('steem:setup');
@@ -159,6 +161,37 @@ methods.forEach((method) => {
       return this[`${methodName}With`](options, callback);
     };
 });
+
+/*
+  Wrap transaction broadcast: serializes the object and adds error reporting
+*/
+const _broadcastTransactionSynchronous = Steem.prototype.broadcastTransactionSynchronous
+Steem.prototype.broadcastTransactionSynchronous = (signed_tr) => {
+  // console.log('-- broadcastTransactionSynchronous -->', JSON.stringify(signed_transaction.toObject(signed_tr), null, 2));
+  const {signed_transaction} = ops
+  
+  // toObject converts objects into serializable types
+  const tr_object = signed_transaction.toObject(signed_tr)
+  
+  return Promise
+  .resolve(_broadcastTransactionSynchronous(tr_object))
+  .catch(error => {
+    // console.error may be redundant for network errors, however, other errors could occur
+    //console.error(error)
+    let message = error.message
+    if (!message) message = ''
+    const buf = signed_transaction.toBuffer(signed_tr)
+    throw new Error(
+      message + '\n' +
+      ' digest ' + hash.sha256(buf).toString('hex') +
+      ' transaction ' + buf.toString('hex') +
+      ' ' + JSON.stringify(tr_object)
+    )
+  })
+}
+
+delete Steem.prototype.broadcastTransaction // not supported
+delete Steem.prototype.broadcastTransactionWithCallback // not supported
 
 Promise.promisifyAll(Steem.prototype);
 
