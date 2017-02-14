@@ -46,14 +46,21 @@ ChainTypes.operations= {
     cancel_transfer_from_savings: 34,
     custom_binary: 35,
     decline_voting_rights: 36,
-    fill_convert_request: 37,
-    author_reward: 38,
-    curation_reward: 39,
-    comment_reward: 40,
-    liquidity_reward: 41,
-    interest: 42,
-    fill_vesting_withdraw: 43,
-    fill_order: 44
+    reset_account: 37,
+    set_reset_account: 38,
+    claim_reward_balance: 39,
+    fill_convert_request: 40,
+    author_reward: 41,
+    curation_reward: 42,
+    comment_reward: 43,
+    liquidity_reward: 44,
+    interest: 45,
+    fill_vesting_withdraw: 46,
+    fill_order: 47,
+    shutdown_witness: 48,
+    fill_transfer_from_savings: 49,
+    hardfork: 50,
+    comment_payout_update: 51
 };
 
 //types.hpp
