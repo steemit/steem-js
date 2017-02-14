@@ -1,9 +1,18 @@
 
 // This file is merge updated from steemd's js_operation_serializer program.
+/*
+
+./js_operation_serializer |
+sed 's/void/future_extensions/g'|
+sed 's/steemit_protocol:://g'|
+sed 's/14static_variantIJNS_12fixed_stringISt4pairImmEEEEEE/string/g'|
+sed 's/steemit_future_extensions/future_extensions/g'|
+sed 's/steemit_protocol_//g' > tmp.coffee
+
+*/
+// coffee tmp.coffee # fix errors until you see: `ChainTypes is not defined`
 
 // npm i -g decaffeinate
-// ./js_operation_serializer |sed 's/void/future_extensions/g'>tmp.coffee
-// coffee tmp.coffee # fix any indenting errors
 // decaffeinate tmp.coffee
 
 // Merge tmp.js - See "Generated code follows" below
@@ -16,7 +25,7 @@ const {
     //varint32, uint8, int64, fixed_array, object_id_type, vote_id, address,
     uint16, uint32, int16, uint64,
     string, string_binary, bytes, bool, array,
-    protocol_id_type,
+    // protocol_id_type,
     static_variant, map, set,
     public_key,
     time_point_sec,
@@ -46,7 +55,7 @@ const Serializer=function(operation_name, serilization_types_object){
 // -------------------------------
 /*
 When updating generated code (fix closing notation)
-Replace:  let operation = static_variant([
+Replace:  var operation = static_variant([
 with:     operation.st_operations = [
 
 Delete (these are custom types instead):
@@ -61,9 +70,8 @@ let asset = new Serializer(
     symbol: uint64}
 );
 
-// Make sure all local tests pass
-npm run mocha -- shared/serializer/test/*.js
-
+Replace: authority.prototype.account_authority_map
+With: map((string), (uint16))
 */
 let signed_transaction = new Serializer( 
     "signed_transaction",{
@@ -404,6 +412,7 @@ let escrow_dispute = new Serializer(
     "escrow_dispute",{
     from: string,
     to: string,
+    agent: string,
     who: string,
     escrow_id: uint32
 }
@@ -413,7 +422,9 @@ let escrow_release = new Serializer(
     "escrow_release",{
     from: string,
     to: string,
+    agent: string,
     who: string,
+    receiver: string,
     escrow_id: uint32,
     sbd_amount: asset,
     steem_amount: asset
@@ -431,6 +442,24 @@ let pow2_input = new Serializer(
 let pow2 = new Serializer( 
     "pow2",{
     input: pow2_input,
+    pow_summary: uint32
+}
+);
+
+let equihash_proof = new Serializer( 
+    "equihash_proof",{
+    n: uint32,
+    k: uint32,
+    seed: bytes(32),
+    inputs: array(uint32)
+}
+);
+
+let equihash_pow = new Serializer( 
+    "equihash_pow",{
+    input: pow2_input,
+    proof: equihash_proof,
+    prev_block: bytes(20),
     pow_summary: uint32
 }
 );
@@ -490,6 +519,31 @@ let decline_voting_rights = new Serializer(
 }
 );
 
+let reset_account = new Serializer( 
+    "reset_account",{
+    reset_account: string,
+    account_to_reset: string,
+    new_owner_authority: authority
+}
+);
+
+let set_reset_account = new Serializer( 
+    "set_reset_account",{
+    account: string,
+    current_reset_account: string,
+    reset_account: string
+}
+);
+
+let claim_reward_balance = new Serializer( 
+    "claim_reward_balance",{
+    account: string,
+    reward_steem: asset,
+    reward_sbd: asset,
+    reward_vests: asset
+}
+);
+
 let fill_convert_request = new Serializer( 
     "fill_convert_request",{
     owner: string,
@@ -504,6 +558,7 @@ let author_reward = new Serializer(
     author: string,
     permlink: string,
     sbd_payout: asset,
+    steem_payout: asset,
     vesting_payout: asset
 }
 );
@@ -559,6 +614,33 @@ let fill_order = new Serializer(
 }
 );
 
+let shutdown_witness = new Serializer( 
+    "shutdown_witness",
+    {owner: string}
+);
+
+let fill_transfer_from_savings = new Serializer( 
+    "fill_transfer_from_savings",{
+    from: string,
+    to: string,
+    amount: asset,
+    request_id: uint32,
+    memo: string
+}
+);
+
+let hardfork = new Serializer( 
+    "hardfork",
+    {hardfork_id: uint32}
+);
+
+let comment_payout_update = new Serializer( 
+    "comment_payout_update",{
+    author: string,
+    permlink: string
+}
+);
+
 operation.st_operations = [
     vote,    
     comment,    
@@ -597,6 +679,9 @@ operation.st_operations = [
     cancel_transfer_from_savings,    
     custom_binary,    
     decline_voting_rights,    
+    reset_account,    
+    set_reset_account,    
+    claim_reward_balance,    
     fill_convert_request,    
     author_reward,    
     curation_reward,    
@@ -604,8 +689,12 @@ operation.st_operations = [
     liquidity_reward,    
     interest,    
     fill_vesting_withdraw,    
-    fill_order
-];
+    fill_order,    
+    shutdown_witness,    
+    fill_transfer_from_savings,    
+    hardfork,    
+    comment_payout_update
+]
 
 let transaction = new Serializer( 
     "transaction",{
@@ -631,3 +720,10 @@ const encrypted_memo = new Serializer(
     check: uint32,
     encrypted: string_binary}
 );
+/*
+
+// Make sure all tests pass
+
+npm test
+
+*/
