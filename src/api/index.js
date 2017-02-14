@@ -29,7 +29,11 @@ class Steem extends EventEmitter {
     };
     fetch(this.uri, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+          "Accept": "application/json",
+        },
         body: JSON.stringify(payload),
       })
       .then((res) => {
