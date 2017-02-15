@@ -1,6 +1,5 @@
 import Promise from 'bluebird';
 import newDebug from 'debug';
-import noop from 'lodash/noop';
 
 import formatter from '../formatter';
 import operations from './operations.json';
@@ -9,6 +8,7 @@ import steemAuth from '../auth';
 import { camelCase } from '../util';
 
 const debug = newDebug('steem:broadcast');
+const noop = function() {}
 
 const steemBroadcast = {};
 
