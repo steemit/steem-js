@@ -15,7 +15,7 @@ describe('steem', function () {
   describe('setUri', () => {
     it('works', () => {
       steem.setUri('http://localhost');
-      steem.setUri(config.uri);
+      steem.setUri(config.dev_uri);
     });
   });
 
@@ -146,9 +146,11 @@ describe('steem', function () {
   describe('writeOperations', () => {
     it('broadcast', (done) => {
       const wif = auth.toWif('username', 'password', 'posting');
-      broadcast.vote(wif, 'voter', 'author', 'permlink', 0, function(err, result) {
-        console.log(err, result);
-        done()
+      broadcast.vote(wif, 'voter', 'author', 'permlink', 0, (err, result) => {
+        if(err && /tx_missing_posting_auth/.test(err.message))
+          done()
+        else
+          console.log(err, result);
       });
     });
   });
