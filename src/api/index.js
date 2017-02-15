@@ -42,7 +42,9 @@ class Steem extends EventEmitter {
         return res.json();
       })
       .then((json) => {
-        callback('', json.result);
+        const err = json.error || '';
+        const result = json.result || '';
+        callback(err, result);
       });
   }
 
@@ -157,41 +159,44 @@ methods.forEach((method) => {
         return memo;
       }, {});
       const callback = args[methodParams.length];
-
       return this[`${methodName}With`](options, callback);
     };
 });
 
 /*
-  Wrap transaction broadcast: serializes the object and adds error reporting
-*/
-const _broadcastTransactionSynchronous = Steem.prototype.broadcastTransactionSynchronous
-Steem.prototype.broadcastTransactionSynchronous = (signed_tr) => {
-  // console.log('-- broadcastTransactionSynchronous -->', JSON.stringify(signed_transaction.toObject(signed_tr), null, 2));
-  const {signed_transaction} = ops
-  
-  // toObject converts objects into serializable types
-  const tr_object = signed_transaction.toObject(signed_tr)
-  
-  return Promise
-  .resolve(_broadcastTransactionSynchronous(tr_object))
-  .catch(error => {
-    // console.error may be redundant for network errors, however, other errors could occur
-    //console.error(error)
-    let message = error.message
-    if (!message) message = ''
-    const buf = signed_transaction.toBuffer(signed_tr)
-    throw new Error(
-      message + '\n' +
-      ' digest ' + hash.sha256(buf).toString('hex') +
-      ' transaction ' + buf.toString('hex') +
-      ' ' + JSON.stringify(tr_object)
-    )
-  })
-}
+ Wrap transaction broadcast: serializes the object and adds error reporting
+ */
+Steem.prototype.broadcastTransactionSynchronousWith =
+  function Steem$$specializedSendWith(options, callback) {
+    const trx = options.trx;
+    return this.send('network_api', {
+      method: 'broadcast_transaction_synchronous',
+      params: [trx],
+    }, (err, result) => {
+      callback(err, result);
 
-delete Steem.prototype.broadcastTransaction // not supported
-delete Steem.prototype.broadcastTransactionWithCallback // not supported
+      if (err) {
+        const {signed_transaction} = ops;
+        // console.log('-- broadcastTransactionSynchronous -->', JSON.stringify(signed_transaction.toObject(trx), null, 2));
+
+        // toObject converts objects into serializable types
+        const trObject = signed_transaction.toObject(trx);
+
+        const message = err.message || '';
+        const buf = signed_transaction.toBuffer(trx);
+
+        throw new Error(
+          message + '\n' +
+          ' digest ' + hash.sha256(buf).toString('hex') +
+          ' transaction ' + buf.toString('hex') +
+          ' ' + JSON.stringify(trObject)
+        );
+      }
+    });
+  };
+
+delete Steem.prototype.broadcastTransaction; // not supported
+delete Steem.prototype.broadcastTransactionWithCallback; // not supported
 
 Promise.promisifyAll(Steem.prototype);
 
