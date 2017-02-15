@@ -169,7 +169,7 @@ methods.forEach((method) => {
 Steem.prototype.broadcastTransactionSynchronousWith =
   function Steem$$specializedSendWith(options, callback) {
     const trx = options.trx;
-    return this.send('network_api', {
+    return this.send('network_broadcast_api', {
       method: 'broadcast_transaction_synchronous',
       params: [trx],
     }, (err, result) => {
