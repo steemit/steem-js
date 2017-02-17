@@ -4,8 +4,6 @@ import should from 'should';
 import testPost from './test-post.json';
 import config from '../config.json';
 import api from '../src/api';
-import auth from '../src/auth';
-import broadcast from '../src/broadcast';
 
 describe('steem', function () {
   this.timeout(30 * 1000);
@@ -137,18 +135,6 @@ describe('steem', function () {
           release();
           done();
         }
-      });
-    });
-  });
-
-  describe('writeOperations', () => {
-    it('broadcast', (done) => {
-      const wif = auth.toWif('username', 'password', 'posting');
-      broadcast.vote(wif, 'voter', 'author', 'permlink', 0, (err, result) => {
-        if(err && /tx_missing_posting_auth/.test(err.message))
-          done()
-        else
-          console.log(err, result);
       });
     });
   });
