@@ -405,8 +405,8 @@ Types.time_point_sec = {
         if(typeof object !== "string")
             throw new Error("Unknown date type: " + object)
 
-        // if(typeof object === "string" && !/Z$/.test(object))
-        //     object = object + "Z"
+        if(typeof object === "string" && !/Z$/.test(object))
+            object = object + "Z"
 
         return Math.floor( new Date(object).getTime() / 1000 );
     },

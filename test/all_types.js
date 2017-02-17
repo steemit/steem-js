@@ -34,6 +34,7 @@ let AllTypes = new Serilizer("all_types", {
     time_optional: optional( time_point_sec ),
     time_point_sec1: time_point_sec,
     time_point_sec2: time_point_sec,
+    time_point_sec3: time_point_sec,
 })
 
 // Must stay in sync with AllTypes above.
@@ -59,6 +60,7 @@ let allTypes = {
     time_optional: undefined,
     time_point_sec1: new Date(),
     time_point_sec2: Math.floor(Date.now()/1000),
+    time_point_sec3: '2017-02-16T20:27:12',
 }
 
 describe("all types", ()=> {
