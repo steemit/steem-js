@@ -158,8 +158,7 @@ describe('steem.broadcast', () => {
       broadcast.vote(wif, 'voter', 'author', 'permlink', 0, (err, result) => {
         if(err && /tx_missing_posting_auth/.test(err.message))
           done();
-        else
-          console.log(err, result);
+        console.log(err, result);
       });
     });
   });
