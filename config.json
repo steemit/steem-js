@@ -1,6 +1,8 @@
 {
-  "uri": "https://steemit.com/wspa",
+  "websocket": "wss://steemd.steemit.com",
+  "uri": "https://steemd.steemit.com",
   "dev_uri": "https://steemd.steemitdev.com",
+  "stage_uri": "https://steemd.steemitstage.com",
   "address_prefix": "STM",
   "chain_id": "0000000000000000000000000000000000000000000000000000000000000000"
 }
