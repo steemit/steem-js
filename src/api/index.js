@@ -45,6 +45,8 @@ class Steem extends EventEmitter {
         const err = json.error || '';
         const result = json.result || '';
         callback(err, result);
+      }).catch((err) => {
+        callback(err, '');
       });
   }
 
@@ -173,24 +175,18 @@ Steem.prototype.broadcastTransactionSynchronousWith =
       method: 'broadcast_transaction_synchronous',
       params: [trx],
     }, (err, result) => {
-      callback(err, result);
-
       if (err) {
         const {signed_transaction} = ops;
         // console.log('-- broadcastTransactionSynchronous -->', JSON.stringify(signed_transaction.toObject(trx), null, 2));
-
         // toObject converts objects into serializable types
         const trObject = signed_transaction.toObject(trx);
-
-        const message = err.message || '';
         const buf = signed_transaction.toBuffer(trx);
-
-        throw new Error(
-          message + '\n' +
-          ' digest ' + hash.sha256(buf).toString('hex') +
-          ' transaction ' + buf.toString('hex') +
-          ' ' + JSON.stringify(trObject)
-        );
+        err.digest = hash.sha256(buf).toString('hex');
+        err.transaction_id = buf.toString('hex');
+        err.transaction = JSON.stringify(trObject);
+        callback(err, '');
+      } else {
+        callback('', result);
       }
     });
   };
