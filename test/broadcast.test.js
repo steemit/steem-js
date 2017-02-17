@@ -155,10 +155,15 @@ describe('steem.broadcast', () => {
   describe('writeOperations', () => {
     it('wrong', (done) => {
       const wif = auth.toWif('username', 'password', 'posting');
-      broadcast.vote(wif, 'voter', 'author', 'permlink', 0, (err, result) => {
-        if(err && /tx_missing_posting_auth/.test(err.message))
+      broadcast.vote(wif, 'voter', 'author', 'permlink', 0, (err) => {
+        if(err && /tx_missing_posting_auth/.test(err.message)) {
+          should.exist(err.digest);
+          should.exist(err.transaction);
+          should.exist(err.transaction_id);
           done();
-        console.log(err, result);
+        } else {
+          console.log(err);
+        }
       });
     });
   });
