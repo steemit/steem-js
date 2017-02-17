@@ -50,7 +50,7 @@ $ npm install steem --save
 ```
 
 ## WebSockets
-wss://steemit.com/wspa By Default<br/>
+wss://steemd.steemit.com By Default<br/>
 wss://node.steem.ws<br/>
 wss://this.piston.rocks<br/>
 
