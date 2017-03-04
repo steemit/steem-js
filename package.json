@@ -34,7 +34,6 @@
     "bluebird": "^3.4.6",
     "bs58": "^4.0.0",
     "bytebuffer": "^5.0.1",
-    "crypto": "0.0.3",
     "debug": "^2.2.0",
     "detect-node": "^2.0.3",
     "ecurve": "^1.0.5",
