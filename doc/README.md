@@ -50,7 +50,7 @@ steem.config.set('address_prefix','STM');
 ```
 ### get
 ```
-steem.api.setWebSocket(url);
+steem.config.get('chain_id');
 ```
 
 # API
