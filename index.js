@@ -3,4 +3,5 @@ module.exports = {
   auth: require('./lib/auth'),
   broadcast: require('./lib/broadcast'),
   formatter: require('./lib/formatter'),
+  config: require('./lib/config')
 };

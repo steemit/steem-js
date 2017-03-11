@@ -1,5 +1,5 @@
 const assert = require('assert');
-const config = require('../../../../config.json');
+const config = require('../../../config');
 const hash = require('./hash');
 const base58 = require('bs58');
 
@@ -16,7 +16,7 @@ class Address {
         return new Address(addy);
     }
 
-    static fromString(string, address_prefix = config.address_prefix) {
+    static fromString(string, address_prefix = config.get('address_prefix')) {
         const prefix = string.slice(0, address_prefix.length);
         assert.equal(address_prefix, prefix, `Expecting key to begin with ${address_prefix}, instead got ${prefix}`);
         let addy = string.slice(address_prefix.length);
@@ -46,7 +46,7 @@ class Address {
         return this.addy;
     }
 
-    toString(address_prefix = config.address_prefix) {
+    toString(address_prefix = config.get('address_prefix')) {
         const checksum = hash.ripemd160(this.addy);
         const addy = Buffer.concat([this.addy, checksum.slice(0, 4)]);
         return address_prefix + base58.encode(addy);
