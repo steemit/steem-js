@@ -1,31 +1,32 @@
 # Steem.js
 Steem.js the JavaScript API for Steem blockchain
 
-## Documentation 
+# Documentation
 
-- [Install](https://github.com/steemit/steem-js/tree/dev/doc#install)
-- [Browser](https://github.com/steemit/steem-js/tree/dev/doc#browser)
-- [Database API](https://github.com/steemit/steem-js/tree/dev/doc#api)
-    - [WebSocket](https://github.com/steemit/steem-js/tree/dev/doc#websocket)
-    - [Subscriptions](https://github.com/steemit/steem-js/tree/dev/doc#subscriptions)
-    - [Tags](https://github.com/steemit/steem-js/tree/dev/doc#tags)
-    - [Blocks and transactions](https://github.com/steemit/steem-js/tree/dev/doc#blocks-and-transactions)
-    - [Globals](https://github.com/steemit/steem-js/tree/dev/doc#globals)
-    - [Keys](https://github.com/steemit/steem-js/tree/dev/doc#keys)
-    - [Accounts](https://github.com/steemit/steem-js/tree/dev/doc#accounts)
-    - [Market](https://github.com/steemit/steem-js/tree/dev/doc#market)
-    - [Authority / validation](https://github.com/steemit/steem-js/tree/dev/doc#authority--validation)
-    - [Votes](https://github.com/steemit/steem-js/tree/dev/doc#votes)
-    - [Content](https://github.com/steemit/steem-js/tree/dev/doc#content)
-    - [Witnesses](https://github.com/steemit/steem-js/tree/dev/doc#witnesses)
-- [Login API](https://github.com/steemit/steem-js/tree/dev/doc#login)
-- [Follow API](https://github.com/steemit/steem-js/tree/dev/doc#follow-api)
-- [Broadcast API](https://github.com/steemit/steem-js/tree/dev/doc#broadcast-api)
-- [Broadcast](https://github.com/steemit/steem-js/tree/dev/doc#broadcast)
-- [Auth](https://github.com/steemit/steem-js/tree/dev/doc#auth)
+- [Install](https://github.com/steemit/steem-js/tree/master/doc#install)
+- [Browser](https://github.com/steemit/steem-js/tree/master/doc#browser)
+- [Config](https://github.com/steemit/steem-js/tree/master/doc#config)
+- [Database API](https://github.com/steemit/steem-js/tree/master/doc#api)
+    - [Subscriptions](https://github.com/steemit/steem-js/tree/master/doc#subscriptions)
+    - [Tags](https://github.com/steemit/steem-js/tree/master/doc#tags)
+    - [Blocks and transactions](https://github.com/steemit/steem-js/tree/master/doc#blocks-and-transactions)
+    - [Globals](https://github.com/steemit/steem-js/tree/master/doc#globals)
+    - [Keys](https://github.com/steemit/steem-js/tree/master/doc#keys)
+    - [Accounts](https://github.com/steemit/steem-js/tree/master/doc#accounts)
+    - [Market](https://github.com/steemit/steem-js/tree/master/doc#market)
+    - [Authority / validation](https://github.com/steemit/steem-js/tree/master/doc#authority--validation)
+    - [Votes](https://github.com/steemit/steem-js/tree/master/doc#votes)
+    - [Content](https://github.com/steemit/steem-js/tree/master/doc#content)
+    - [Witnesses](https://github.com/steemit/steem-js/tree/master/doc#witnesses)
+- [Login API](https://github.com/steemit/steem-js/tree/master/doc#login)
+- [Follow API](https://github.com/steemit/steem-js/tree/master/doc#follow-api)
+- [Broadcast API](https://github.com/steemit/steem-js/tree/master/doc#broadcast-api)
+- [Broadcast](https://github.com/steemit/steem-js/tree/master/doc#broadcast)
+- [Auth](https://github.com/steemit/steem-js/tree/master/doc#auth)
+
 
 Here is full documentation:
-https://github.com/steemit/steem-js/tree/dev/doc
+https://github.com/steemit/steem-js/tree/master/doc
 
 ## Browser 
 ```html 
