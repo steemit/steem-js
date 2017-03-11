@@ -4,7 +4,7 @@ var secp256k1 = ecurve.getCurveByName('secp256k1');
 BigInteger = require('bigi');
 var base58 = require('bs58');
 var hash = require('./hash');
-var config = require('../../../../config.json');
+var config = require('../../../config');
 var assert = require('assert');
 
 var G = secp256k1.G
@@ -44,7 +44,7 @@ class PublicKey {
         return hash.ripemd160(pub_sha);
     }
 
-    toString(address_prefix = config.address_prefix) {
+    toString(address_prefix = config.get('address_prefix')) {
         return this.toPublicKeyString(address_prefix)
     }
 
@@ -52,7 +52,7 @@ class PublicKey {
         Full public key
         {return} string
     */
-    toPublicKeyString(address_prefix = config.address_prefix) {
+    toPublicKeyString(address_prefix = config.get('address_prefix')) {
         if(this.pubdata) return address_prefix + this.pubdata
         const pub_buf = this.toBuffer();
         const checksum = hash.ripemd160(pub_buf);
@@ -67,7 +67,7 @@ class PublicKey {
         @return PublicKey or `null` (if the public_key string is invalid)
         @deprecated fromPublicKeyString (use fromString instead)
     */
-    static fromString(public_key, address_prefix = config.address_prefix) {
+    static fromString(public_key, address_prefix = config.get('address_prefix')) {
         try {
             return PublicKey.fromStringOrThrow(public_key, address_prefix)
         } catch (e) {
@@ -81,7 +81,7 @@ class PublicKey {
         @throws {Error} if public key is invalid
         @return PublicKey
     */
-    static fromStringOrThrow(public_key, address_prefix = config.address_prefix) {
+    static fromStringOrThrow(public_key, address_prefix = config.get('address_prefix')) {
         var prefix = public_key.slice(0, address_prefix.length);
         assert.equal(
             address_prefix, prefix,
@@ -97,7 +97,7 @@ class PublicKey {
         return PublicKey.fromBuffer(public_key);
     }
 
-    toAddressString(address_prefix = config.address_prefix) {
+    toAddressString(address_prefix = config.get('address_prefix')) {
         var pub_buf = this.toBuffer();
         var pub_sha = hash.sha512(pub_buf);
         var addy = hash.ripemd160(pub_sha);
