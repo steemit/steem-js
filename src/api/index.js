@@ -52,6 +52,7 @@ class Steem extends EventEmitter {
   }
 
   setWebSocket(url) {
+    console.warn("steem.api.setWebSocket(url) is now deprecated instead use steem.config.set('websocket',url)");
     debugSetup('Setting WS', url);
     this.options.url = url;
     this.stop();
@@ -226,7 +227,7 @@ class Steem extends EventEmitter {
             const err = new Error(
               // eslint-disable-next-line prefer-template
               (errorCause.message || 'Failed to complete operation') +
-                ' (see err.payload for the full error payload)'
+              ' (see err.payload for the full error payload)'
             );
             err.payload = message;
             reject(err);
@@ -236,7 +237,7 @@ class Steem extends EventEmitter {
           if (api === 'login_api' && data.method === 'login') {
             debugApiIds(
               'network_broadcast_api API ID depends on the WS\' session. ' +
-                'Triggering a refresh...'
+              'Triggering a refresh...'
             );
             this.getApiIds('network_broadcast_api', true);
           }
