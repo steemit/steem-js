@@ -5,6 +5,7 @@ import makeStub from 'mocha-make-stub'
 import should from 'should';
 
 import steem, { Steem } from '../src/api/index';
+import config from '../src/config';
 import testPost from './test-post.json';
 
 describe('steem', function () {
@@ -30,7 +31,8 @@ describe('steem', function () {
   describe('setWebSocket', () => {
     it('works', () => {
       steem.setWebSocket('ws://localhost');
-      steem.setWebSocket(steem.Steem.DEFAULTS.url);
+      config.get('websocket').should.be.eql('ws://localhost');
+      config.set('websocket', 'wss://steemd.steemit.com')
     });
   });
 
@@ -49,9 +51,9 @@ describe('steem', function () {
       it('the startFollower parameter has an impact on the result', async () => {
         // Get the first 5
         const result1 = await steem.getFollowersAsync('ned', 0, 'blog', 5)
-          result1.should.have.lengthOf(5);
+        result1.should.have.lengthOf(5);
         const result2 = await steem.getFollowersAsync('ned', result1[result1.length - 1].follower, 'blog', 5)
-          result2.should.have.lengthOf(5);
+        result2.should.have.lengthOf(5);
         result1.should.not.be.eql(result2);
       });
 
