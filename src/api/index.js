@@ -24,7 +24,6 @@ if (isNode) {
 }
 
 const DEFAULTS = {
-  url: config.get('websocket'),
   apiIds: {
     database_api: 0,
     login_api: 1,
@@ -54,7 +53,7 @@ class Steem extends EventEmitter {
   setWebSocket(url) {
     console.warn("steem.api.setWebSocket(url) is now deprecated instead use steem.config.set('websocket',url)");
     debugSetup('Setting WS', url);
-    this.options.url = url;
+    config.set('websocket', url);
     this.stop();
   }
 
@@ -65,7 +64,7 @@ class Steem extends EventEmitter {
 
     const startP = new Promise((resolve, reject) => {
       if (startP !== this.startP) return;
-      const url = this.options.url;
+      const url = config.get('websocket');
       this.ws = new WebSocket(url);
 
       const releaseOpen = this.listenTo(this.ws, 'open', () => {
