@@ -49,10 +49,13 @@ class Steem extends EventEmitter {
 
     // A Map of api name to a promise to it's API ID refresh call
     this.apiIdsP = {};
+    config.listen('websocket', (url) => this.setWebSocket(url));
   }
 
   setWebSocket(url) {
-    console.warn("steem.api.setWebSocket(url) is now deprecated instead use steem.config.set('websocket',url)");
+    if (config.get('websocket') !== url) {
+      console.warn("steem.api.setWebSocket(url) is now deprecated instead use steem.config.set('websocket',url)");
+    }
     debugSetup('Setting WS', url);
     this.options.url = url;
     this.stop();
