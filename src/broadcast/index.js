@@ -44,11 +44,7 @@ steemBroadcast.send = function steemBroadcast$send(tx, privKeys, callback) {
 };
 
 steemBroadcast._prepareTransaction = function steemBroadcast$_prepareTransaction(tx) {
-  // Login and get global properties
-  const loginP = steemApi.loginAsync('', '');
-  const propertiesP = loginP.then(() => {
-    return steemApi.getDynamicGlobalPropertiesAsync()
-  });
+  const propertiesP = steemApi.getDynamicGlobalPropertiesAsync();
   return propertiesP
     .then((properties) => {
       // Set defaults on the transaction
