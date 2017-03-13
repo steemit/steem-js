@@ -137,7 +137,7 @@ class Steem extends EventEmitter {
 
 // Generate Methods from methods.json
 methods.forEach((method) => {
-  const methodName = camelCase(method.method);
+  const methodName = method.method_name || camelCase(method.method);
   const methodParams = method.params || [];
 
   Steem.prototype[`${methodName}With`] =
