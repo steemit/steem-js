@@ -91,6 +91,10 @@ Auth.wifToPublic = function (privWif) {
 	return pubWif;
 };
 
+Auth.isPubkey = function(pubkey, address_prefix) {
+	return PublicKey.fromString(pubkey, address_prefix) != null
+}
+
 Auth.signTransaction = function (trx, keys) {
 	var signatures = [];
 	if (trx.signatures) {
