@@ -7,7 +7,8 @@ var bigi = require('bigi'),
 	config = require('../../config.json'),
 	operations = require('./serializer/src/operations'),
 	Signature = require('./ecc/src/signature'),
-	KeyPrivate = require('./ecc/src/key_private');
+	KeyPrivate = require('./ecc/src/key_private'),
+	PublicKey = require('./ecc/src/key_public');
 
 var Auth = {};
 var transaction = operations.transaction;
