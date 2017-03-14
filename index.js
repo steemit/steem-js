@@ -4,5 +4,6 @@ module.exports = {
   broadcast: require('./lib/broadcast'),
   formatter: require('./lib/formatter'),
   config: require('./lib/config'),
-  ecc: require('./lib/auth/ecc')
+  serializer: require('./lib/auth/serializer'),
+  ecc: require('./lib/auth/ecc'),
 };
