@@ -7,7 +7,8 @@ var bigi = require('bigi'),
 	config = require('../config'),
 	operations = require('./serializer/src/operations'),
 	Signature = require('./ecc/src/signature'),
-	KeyPrivate = require('./ecc/src/key_private');
+	KeyPrivate = require('./ecc/src/key_private'),
+	PublicKey = require('./ecc/src/key_public');
 
 var Auth = {};
 var transaction = operations.transaction;
@@ -90,6 +91,10 @@ Auth.wifToPublic = function (privWif) {
 	pubWif = pubWif.toPublic().toString();
 	return pubWif;
 };
+
+Auth.isPubkey = function(pubkey, address_prefix) {
+	return PublicKey.fromString(pubkey, address_prefix) != null
+}
 
 Auth.signTransaction = function (trx, keys) {
 	var signatures = [];
