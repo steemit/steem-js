@@ -36,12 +36,12 @@ export function decode(private_key, memo) {
     const mbuf = ByteBuffer.fromBinary(memo.toString('binary'), ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN)
     try {
         mbuf.mark()
-        return mbuf.readVString()
+        return '#' + mbuf.readVString()
     } catch(e) {
         mbuf.reset()
         // Sender did not length-prefix the memo
         memo = new Buffer(mbuf.toString('binary'), 'binary').toString('utf-8')
-        return memo
+        return '#' + memo
     }
 }
 
@@ -96,12 +96,12 @@ function checkEncryption() {
     try {
       const wif = '5JdeC9P7Pbd1uGdFVEsJ41EkEnADbbHGq6p1BwFxm6txNBsQnsw'
       const pubkey = 'STM8m5UgaFAAYQRuaNejYdS8FVLVp9Ss3K1qAVk5de6F8s3HnVbvA'
-      const cyphertext = encode(wif, pubkey, '#memo')
+      const cyphertext = encode(wif, pubkey, '#memo爱')
       plaintext = decode(wif, cyphertext)
     } catch(e) {
       console.error(e);
     } finally {
-      encodeTest = plaintext === 'memo'
+      encodeTest = plaintext === '#memo爱'
     }
   }
   if(encodeTest === false)
