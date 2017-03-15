@@ -4,8 +4,7 @@ import ByteBuffer from 'bytebuffer'
 const PublicKey = require('./key_public')
 const PrivateKey = require('./key_private')
 
-// https://code.google.com/p/crypto-js
-const CryptoJS = require("crypto");
+const crypto = require("crypto");
 const assert = require("assert");
 const hash = require('./hash');
 
@@ -84,8 +83,8 @@ function crypt(private_key, public_key, nonce, message, checksum) {
     //     encryption_key: encryption_key.toString('hex'),
     // })
 
-    const iv = CryptoJS.enc.Hex.parse(encryption_key.toString('hex').substring(64, 96))
-    const key = CryptoJS.enc.Hex.parse(encryption_key.toString('hex').substring(0, 64))
+    const iv = encryption_key.slice(32, 48)
+    const key = encryption_key.slice(0, 32)
 
     // check is first 64 bit of sha256 hash treated as uint64_t truncated to 32 bits.
     let check = hash.sha256(encryption_key)
@@ -105,14 +104,15 @@ function crypt(private_key, public_key, nonce, message, checksum) {
 
 /** This method does not use a checksum, the returned data must be validated some other way.
     @arg {string|Buffer} ciphertext - binary format
-    @return {Buffer} hex
+    @return {Buffer}
 */
 function cryptoJsDecrypt(message, key, iv) {
     assert(message, "Missing cipher text")
     message = toBinaryBuffer(message)
-    message = CryptoJS.enc.Base64.parse(message.toString('base64'))
-    message = CryptoJS.AES.decrypt({ciphertext: message, salt: null}, key, {iv})
-    return new Buffer(message.toString(), 'hex')
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
+    // decipher.setAutoPadding(true)
+    message = Buffer.concat([decipher.update(message), decipher.final()])
+    return message
 }
 
 /** This method does not use a checksum, the returned data must be validated some other way.
@@ -122,10 +122,10 @@ function cryptoJsDecrypt(message, key, iv) {
 function cryptoJsEncrypt(message, key, iv) {
     assert(message, "Missing plain text")
     message = toBinaryBuffer(message)
-    message = CryptoJS.lib.WordArray.create(message)
-    // https://code.google.com/p/crypto-js/#Custom_Key_and_IV
-    message = CryptoJS.AES.encrypt(message, key, {iv})
-    return new Buffer(message.toString(), 'base64')
+    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
+    // cipher.setAutoPadding(true)
+    message = Buffer.concat([cipher.update(message), cipher.final()])
+    return message
 }
 
 /** @return {string} unique 64 bit unsigned number string.  Being time based, this is careful to never choose the same nonce twice.  This value could be recorded in the blockchain for a long time.

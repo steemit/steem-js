@@ -6,4 +6,5 @@ module.exports = {
   config: require('./lib/config'),
   serializer: require('./lib/auth/serializer'),
   ecc: require('./lib/auth/ecc'),
+  memo: require('./lib/auth/memo'),
 };
