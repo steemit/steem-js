@@ -2,7 +2,7 @@
 import ByteBuffer from 'bytebuffer'
 import assert from 'assert'
 import base58 from 'bs58'
-import {Aes} from './ecc'
+import {Aes, PrivateKey, PublicKey} from './ecc'
 import {ops} from './serializer'
 
 const encMemo = ops.encrypted_memo
@@ -20,6 +20,8 @@ export function decode(private_key, memo) {
     memo = memo.substring(1)
 
     assert(private_key, 'private_key is required')
+
+    private_key = toPrivateObj(private_key)
 
     memo = base58.decode(memo)
     memo = encMemo.fromBuffer(new Buffer(memo, 'binary'))
@@ -59,6 +61,9 @@ export function encode(private_key, public_key, memo, testNonce) {
     assert(private_key, 'private_key is required')
     assert(public_key, 'public_key is required')
 
+    private_key = toPrivateObj(private_key)
+    public_key = toPublicObj(public_key)
+
     const mbuf = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN)
     mbuf.writeVString(memo)
     memo = new Buffer(mbuf.copy(0, mbuf.offset).toBinary(), 'binary')
@@ -75,3 +80,6 @@ export function encode(private_key, public_key, memo, testNonce) {
     memo = encMemo.toBuffer(memo)
     return '#' + base58.encode(new Buffer(memo, 'binary'))
 }
+
+const toPrivateObj = o => (o ? o.d ? o : PrivateKey.fromWif(o) : o/*null or undefined*/)
+const toPublicObj = o => (o ? o.Q ? o : PublicKey.fromString(o) : o/*null or undefined*/)
