@@ -7,10 +7,15 @@ const private_key = PrivateKey.fromSeed("")
 const public_key = private_key.toPublicKey()
 
 describe('memo', ()=> {
-    it('encryption', () => {
+    it('encryption obj params', () => {
         const cypertext = encode(private_key, public_key, '#memo')
         const plaintext = decode(private_key, cypertext)
         assert.equal(plaintext, 'memo')
+    })
+    it('encryption string params', () => {
+        const cypertext = encode(private_key.toWif(), public_key.toPublicKeyString(), '#memo2')
+        const plaintext = decode(private_key.toWif(), cypertext)
+        assert.equal(plaintext, 'memo2')
     })
     it('known encryption', () => {
         const base58 = '#HU6pdQ4Hh8cFrDVooekRPVZu4BdrhAe9RxrWrei2CwfAApAPdM4PT5mSV9cV3tTuWKotYQF6suyM4JHFBZz4pcwyezPzuZ2na7uwhRcLqFoqCam1VU3eCLjVNqcgUNbH3'
