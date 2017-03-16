@@ -46,10 +46,16 @@ Auth.generateKeys = function (name, password, roles) {
 	return pubKeys;
 };
 
-Auth.getPrivateKeys = function (name, password, roles) {
+/**
+	@arg {string} name - blockchain account name
+	@arg {string} password - very strong password typically no shorter than a private key
+	@arg {array} roles - defaults to standard Steem blockchain-level roles
+*/
+Auth.getPrivateKeys = function (name, password, roles = ['owner', 'active', 'posting', 'memo']) {
 	var privKeys = {};
 	roles.forEach(function (role) {
 		privKeys[role] = this.toWif(name, password, role);
+		privKeys[role + 'Pubkey'] = this.wifToPublic(privKeys[role]);
 	}.bind(this));
 	return privKeys;
 };
