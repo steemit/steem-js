@@ -88,7 +88,7 @@ operations.forEach((operation) => {
           {},
           options,
           options.json_metadata != null ? {
-            json_metadata: JSON.stringify(options.json_metadata),
+            json_metadata: toString(options.json_metadata),
           } : {},
           useCommentPermlink && options.permlink == null ? {
             permlink: formatter.commentPermlink(options.parent_author, options.parent_permlink),
@@ -108,6 +108,8 @@ operations.forEach((operation) => {
       return steemBroadcast[`${operationName}With`](wif, options, callback);
     };
 });
+
+const toString = obj => typeof obj === 'object' ? JSON.stringify(obj) : obj;
 
 Promise.promisifyAll(steemBroadcast);
 
