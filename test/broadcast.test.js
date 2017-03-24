@@ -1,41 +1,41 @@
 import Promise from 'bluebird';
 import should from 'should';
-import steemAuth from '../src/auth';
-import steemBroadcast from '../src/broadcast';
-import steemFormatter from '../src/formatter';
-import packageJson from '../package.json';
+import auth from '../src/auth';
+import broadcast from '../src/broadcast';
+import formatter from '../src/formatter';
+import pkg from '../package.json';
 
 const username = process.env.STEEM_USERNAME || 'guest123';
 const password = process.env.STEEM_PASSWORD;
 const postingWif = password
-  ? steemAuth.toWif(username, password, 'posting')
+  ? auth.toWif(username, password, 'posting')
   : '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg';
 
 describe('steem.broadcast', () => {
   it('exists', () => {
-    should.exist(steemBroadcast);
+    should.exist(broadcast);
   });
 
   it('has generated methods', () => {
-    should.exist(steemBroadcast.vote);
-    should.exist(steemBroadcast.voteWith);
-    should.exist(steemBroadcast.comment);
-    should.exist(steemBroadcast.transfer);
+    should.exist(broadcast.vote);
+    should.exist(broadcast.voteWith);
+    should.exist(broadcast.comment);
+    should.exist(broadcast.transfer);
   });
 
   it('has backing methods', () => {
-    should.exist(steemBroadcast.send);
+    should.exist(broadcast.send);
   });
 
   it('has promise methods', () => {
-    should.exist(steemBroadcast.sendAsync);
-    should.exist(steemBroadcast.voteAsync);
-    should.exist(steemBroadcast.transferAsync);
+    should.exist(broadcast.sendAsync);
+    should.exist(broadcast.voteAsync);
+    should.exist(broadcast.transferAsync);
   });
 
   describe('patching transaction with default global properties', () => {
     it('works', async () => {
-      const tx = await steemBroadcast._prepareTransaction({
+      const tx = await broadcast._prepareTransaction({
         extensions: [],
         operations: [['vote', {
           voter: 'yamadapc',
@@ -56,7 +56,7 @@ describe('steem.broadcast', () => {
 
   describe('downvoting', () => {
     it('works', async () => {
-      const tx = await steemBroadcast.voteAsync(
+      const tx = await broadcast.voteAsync(
         postingWif,
         username,
         'yamadapc',
@@ -81,7 +81,7 @@ describe('steem.broadcast', () => {
     });
 
     it('works', async () => {
-      const tx = await steemBroadcast.voteAsync(
+      const tx = await broadcast.voteAsync(
         postingWif,
         username,
         'yamadapc',
@@ -100,7 +100,7 @@ describe('steem.broadcast', () => {
     });
 
     it('works with callbacks', (done) => {
-      steemBroadcast.vote(
+      broadcast.vote(
         postingWif,
         username,
         'yamadapc',
@@ -128,7 +128,7 @@ describe('steem.broadcast', () => {
     });
 
     it('works', async () => {
-      const tx = await steemBroadcast.customJsonAsync(
+      const tx = await broadcast.customJsonAsync(
         postingWif,
         [],
         [username],
@@ -160,15 +160,15 @@ describe('steem.broadcast', () => {
     });
 
     it('works', async () => {
-      const tx = await steemBroadcast.commentAsync(
+      const tx = await broadcast.commentAsync(
         postingWif,
         'siol',
         '3xxvvs-test',
         username,
-        steemFormatter.commentPermlink('siol', '3xxvvs-test'),
+        formatter.commentPermlink('siol', '3xxvvs-test'),
         'Test',
         'This is a test!',
-        JSON.stringify({ app: `steemjs/${packageJson.version}` }),
+        JSON.stringify({ app: `steemjs/${pkg.version}` }),
       );
 
       tx.should.have.properties([
@@ -179,6 +179,22 @@ describe('steem.broadcast', () => {
         'operations',
         'signatures',
       ]);
+    });
+  });
+
+  describe('writeOperations', () => {
+    it('wrong', (done) => {
+      const wif = auth.toWif('username', 'password', 'posting');
+      broadcast.vote(wif, 'voter', 'author', 'permlink', 0, (err) => {
+        if(err && /tx_missing_posting_auth/.test(err.message)) {
+          should.exist(err.digest);
+          should.exist(err.transaction);
+          should.exist(err.transaction_id);
+          done();
+        } else {
+          console.log(err);
+        }
+      });
     });
   });
 });
