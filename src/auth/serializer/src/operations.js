@@ -50,6 +50,7 @@ const {
 const future_extensions = types.void
 const hardfork_version_vote = types.void
 const version = types.void
+const comment_payout_beneficiaries = types.void
 
 // Place-holder, their are dependencies on "operation" .. The final list of
 // operations is not avialble until the very end of the generated code.
