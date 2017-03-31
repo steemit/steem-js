@@ -5,12 +5,26 @@
 ./js_operation_serializer |
 sed 's/void/future_extensions/g'|
 sed 's/steemit_protocol:://g'|
-sed 's/14static_variantIJNS_12fixed_stringISt4pairImmEEEEEE/string/g'|
+sed 's/14static_variantIJNS_12fixed_stringINSt3__14pairIyyEEEEEEE/string/g'|
 sed 's/steemit_future_extensions/future_extensions/g'|
 sed 's/steemit_protocol_//g' > tmp.coffee
 
 */
 // coffee tmp.coffee # fix errors until you see: `ChainTypes is not defined`
+
+/*
+
+   remove these 7 lines from tmp.coffee:
+
+static_variant [
+    pow2
+    equihash_pow
+] = static_variant [
+    pow2
+    equihash_pow
+]
+
+*/
 
 // npm i -g decaffeinate
 // decaffeinate tmp.coffee
