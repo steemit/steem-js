@@ -532,6 +532,18 @@ steem.broadcast.accountCreate(wif, fee, creator, newAccountName, owner, active, 
   console.log(err, result);
 });
 ```
+### Account Create With Delegation
+```
+steem.broadcast.accountCreateWithDelegation(wif, fee, delegation, creator, newAccountName, owner, active, posting, memoKey, jsonMetadata, extensions, function(err, result) {
+  console.log(err, result);
+});
+```
+### Delegate Vesting Shares
+```
+steem.broadcast.delegateVestingShares(wif, delegator, delegatee, vesting_shares, function(err, result) {
+  console.log(err, result);
+});
+```
 ### Account Update
 ```
 steem.broadcast.accountUpdate(wif, account, owner, active, posting, memoKey, jsonMetadata, function(err, result) {
