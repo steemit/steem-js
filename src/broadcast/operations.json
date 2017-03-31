@@ -1,5 +1,100 @@
 [
   {
+    "roles": ["posting"],
+    "operation": "vote",
+    "params": [
+      "voter",
+      "author",
+      "permlink",
+      "weight"
+    ]
+  },
+  {
+    "roles": ["posting"],
+    "operation": "comment",
+    "params": [
+      "parent_author",
+      "parent_permlink",
+      "author",
+      "permlink",
+      "title",
+      "body",
+      "json_metadata"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "transfer",
+    "params": [
+      "from",
+      "to",
+      "amount",
+      "memo"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "transfer_to_vesting",
+    "params": [
+      "from",
+      "to",
+      "amount"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "withdraw_vesting",
+    "params": [
+      "account",
+      "vesting_shares"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "limit_order_create",
+    "params": [
+      "owner",
+      "orderid",
+      "amount_to_sell",
+      "min_to_receive",
+      "fill_or_kill",
+      "expiration"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "limit_order_cancel",
+    "params": [
+      "owner",
+      "orderid"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "price",
+    "params": [
+      "base",
+      "quote"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "feed_publish",
+    "params": [
+      "publisher",
+      "exchange_rate"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "convert",
+    "params": [
+      "owner",
+      "requestid",
+      "amount"
+    ]
+  },
+  {
     "roles": ["active"],
     "operation": "account_create",
     "params": [
@@ -26,11 +121,14 @@
     ]
   },
   {
-    "roles": ["posting"],
-    "operation": "account_witness_proxy",
+    "roles": ["active"],
+    "operation": "witness_update",
     "params": [
-      "account",
-      "proxy"
+      "owner",
+      "url",
+      "block_signing_key",
+      "props",
+      "fee"
     ]
   },
   {
@@ -44,33 +142,47 @@
   },
   {
     "roles": ["posting"],
-    "operation": "challenge_authority",
+    "operation": "account_witness_proxy",
     "params": [
-      "challenger",
-      "challenged",
-      "require_owner"
+      "account",
+      "proxy"
     ]
   },
   {
-    "roles": ["owner"],
-    "operation": "change_recovery_account",
+    "roles": ["active"],
+    "operation": "pow",
     "params": [
-      "account_to_recover",
-      "new_recovery_account",
-      "extensions"
+      "worker",
+      "input",
+      "signature",
+      "work"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "custom",
+    "params": [
+      "required_auths",
+      "id",
+      "data"
     ]
   },
   {
     "roles": ["posting"],
-    "operation": "comment",
+    "operation": "delete_comment",
     "params": [
-      "parent_author",
-      "parent_permlink",
       "author",
-      "permlink",
-      "title",
-      "body",
-      "json_metadata"
+      "permlink"
+    ]
+  },
+  {
+    "roles": ["posting", "active"],
+    "operation": "custom_json",
+    "params": [
+      "required_auths",
+      "required_posting_auths",
+      "id",
+      "json"
     ]
   },
   {
@@ -87,76 +199,61 @@
     ]
   },
   {
-    "roles": ["posting"],
-    "operation": "comment_payout",
+    "roles": ["active"],
+    "operation": "set_withdraw_vesting_route",
     "params": [
-      "author",
-      "permlink",
-      "payout"
-    ]
-  },
-  {
-    "roles": ["posting"],
-    "operation": "comment_reward",
-    "params": [
-      "author",
-      "permlink",
-      "sbd_payout",
-      "vesting_payout"
+      "from_account",
+      "to_account",
+      "percent",
+      "auto_vest"
     ]
   },
   {
     "roles": ["active"],
-    "operation": "convert",
+    "operation": "limit_order_create2",
     "params": [
       "owner",
-      "requestid",
-      "amount"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "curate_reward",
-    "params": [
-      "curator",
-      "reward",
-      "comment_author",
-      "comment_permlink"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "custom",
-    "params": [
-      "required_auths",
-      "id",
-      "data"
-    ]
-  },
-  {
-    "roles": ["posting", "active", "owner"],
-    "operation": "custom_binary",
-    "params": [
-      "id",
-      "data"
-    ]
-  },
-  {
-    "roles": ["posting", "active"],
-    "operation": "custom_json",
-    "params": [
-      "required_auths",
-      "required_posting_auths",
-      "id",
-      "json"
+      "orderid",
+      "amount_to_sell",
+      "exchange_rate",
+      "fill_or_kill",
+      "expiration"
     ]
   },
   {
     "roles": ["posting"],
-    "operation": "delete_comment",
+    "operation": "challenge_authority",
     "params": [
-      "author",
-      "permlink"
+      "challenger",
+      "challenged",
+      "require_owner"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "prove_authority",
+    "params": [
+      "challenged",
+      "require_owner"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "request_account_recovery",
+    "params": [
+      "recovery_account",
+      "account_to_recover",
+      "new_owner_authority",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["owner"],
+    "operation": "change_recovery_account",
+    "params": [
+      "account_to_recover",
+      "new_recovery_account",
+      "extensions"
     ]
   },
   {
@@ -173,18 +270,6 @@
       "ratification_deadline",
       "escrow_expiration",
       "json_meta"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "escrow_approve",
-    "params": [
-      "from",
-      "to",
-      "agent",
-      "who",
-      "escrow_id",
-      "approve"
     ]
   },
   {
@@ -214,19 +299,120 @@
   },
   {
     "roles": ["active"],
-    "operation": "feed_publish",
+    "operation": "pow2",
     "params": [
-      "publisher",
-      "exchange_rate"
+      "input",
+      "pow_summary"
     ]
   },
   {
     "roles": ["active"],
-    "operation": "pow2",
+    "operation": "escrow_approve",
     "params": [
-      "work",
-      "new_owner_key",
-      "props"
+      "from",
+      "to",
+      "agent",
+      "who",
+      "escrow_id",
+      "approve"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "transfer_to_savings",
+    "params": [
+      "from",
+      "to",
+      "amount",
+      "memo"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "transfer_from_savings",
+    "params": [
+      "from",
+      "request_id",
+      "to",
+      "amount",
+      "memo"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "cancel_transfer_from_savings",
+    "params": [
+      "from",
+      "request_id"
+    ]
+  },
+  {
+    "roles": ["posting", "active", "owner"],
+    "operation": "custom_binary",
+    "params": [
+      "id",
+      "data"
+    ]
+  },
+  {
+    "roles": ["owner"],
+    "operation": "decline_voting_rights",
+    "params": [
+      "account",
+      "decline"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "reset_account",
+    "params": [
+      "reset_account",
+      "account_to_reset",
+      "new_owner_authority"
+    ]
+  },
+  {
+    "roles": ["owner", "posting"],
+    "operation": "set_reset_account",
+    "params": [
+      "account",
+      "current_reset_account",
+      "reset_account"
+    ]
+  },
+  {
+    "roles": ["posting"],
+    "operation": "claim_reward_balance",
+    "params": [
+      "account",
+      "reward_steem",
+      "reward_sbd",
+      "reward_vests"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "delegate_vesting_shares",
+    "params": [
+      "delegator",
+      "delegatee",
+      "vesting_shares"
+    ]
+  },
+  {
+    "roles": ["active"],
+    "operation": "account_create_with_delegation",
+    "params": [
+      "fee",
+      "delegation",
+      "creator",
+      "new_account_name",
+      "owner",
+      "active",
+      "posting",
+      "memo_key",
+      "json_metadata",
+      "extensions"
     ]
   },
   {
@@ -241,64 +427,11 @@
   },
   {
     "roles": ["posting"],
-    "operation": "fill_order",
+    "operation": "comment_reward",
     "params": [
-      "current_owner",
-      "current_orderid",
-      "current_pays",
-      "open_owner",
-      "open_orderid",
-      "open_pays"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "fill_vesting_withdraw",
-    "params": [
-      "from_account",
-      "to_account",
-      "withdrawn",
-      "deposited"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "interest",
-    "params": [
-      "owner",
-      "interest"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "limit_order_cancel",
-    "params": [
-      "owner",
-      "orderid"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "limit_order_create",
-    "params": [
-      "owner",
-      "orderid",
-      "amount_to_sell",
-      "min_to_receive",
-      "fill_or_kill",
-      "expiration"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "limit_order_create2",
-    "params": [
-      "owner",
-      "orderid",
-      "amount_to_sell",
-      "exchange_rate",
-      "fill_or_kill",
-      "expiration"
+      "author",
+      "permlink",
+      "payout"
     ]
   },
   {
@@ -311,119 +444,10 @@
   },
   {
     "roles": ["active"],
-    "operation": "pow",
-    "params": [
-      "worker",
-      "input",
-      "signature",
-      "work"
-    ]
-  },
-  {
-    "roles": ["active", "owner"],
-    "operation": "prove_authority",
-    "params": [
-      "challenged",
-      "require_owner"
-    ]
-  },
-  {
-    "roles": [],
-    "operation": "recover_account",
-    "params": [
-      "account_to_recover",
-      "new_owner_authority",
-      "recent_owner_authority",
-      "extensions"
-    ]
-  },
-  {
-    "roles": [],
-    "operation": "report_over_production",
-    "params": [
-      "reporter",
-      "first_block",
-      "second_block"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "request_account_recovery",
-    "params": [
-      "recovery_account",
-      "account_to_recover",
-      "new_owner_authority",
-      "extensions"
-    ]
-  },
-  {
-    "operation": "escrow_approve",
-    "roles": ["active"],
-    "params": [
-      "from",
-      "to",
-      "agent",
-      "who",
-      "escrow_id",
-      "approve"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "set_withdraw_vesting_route",
-    "params": [
-      "from_account",
-      "to_account",
-      "percent",
-      "auto_vest"
-    ]
-  },
-  {
-    "roles": ["active", "owner"],
-    "operation": "transfer",
-    "params": [
-      "from",
-      "to",
-      "amount",
-      "memo"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "transfer_to_vesting",
-    "params": [
-      "from",
-      "to",
-      "amount"
-    ]
-  },
-  {
-    "roles": ["posting"],
-    "operation": "vote",
-    "params": [
-      "voter",
-      "author",
-      "permlink",
-      "weight"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "withdraw_vesting",
-    "params": [
-      "account",
-      "vesting_shares"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "witness_update",
+    "operation": "interest",
     "params": [
       "owner",
-      "url",
-      "block_signing_key",
-      "props",
-      "fee"
+      "interest"
     ]
   },
   {
@@ -457,44 +481,6 @@
       "amount",
       "request_id",
       "memo"
-    ]
-  },
-  {
-    "roles": ["posting"],
-    "operation": "comment_payout",
-    "params": [
-      "author",
-      "permlink",
-      "payout"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "transfer_to_savings",
-    "params": [
-      "from",
-      "to",
-      "amount",
-      "memo"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "transfer_from_savings",
-    "params": [
-      "from",
-      "request_id",
-      "to",
-      "amount",
-      "memo"
-    ]
-  },
-  {
-    "roles": ["active"],
-    "operation": "cancel_transfer_from_savings",
-    "params": [
-      "from",
-      "request_id"
     ]
   }
 ]
