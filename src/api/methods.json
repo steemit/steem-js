@@ -166,7 +166,7 @@
     "method": "get_next_scheduled_hardfork"
   },
   {
-    "api": "database_api",
+    "api": "account_by_key_api",
     "method": "get_key_references",
     "params": ["key"]
   },
