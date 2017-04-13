@@ -246,11 +246,10 @@ class Steem extends EventEmitter {
         });
 
         debugWs('Sending message', payload);
+        this.inFlight += 1;
         this.ws.send(payload);
       }))
       .nodeify(callback);
-
-    this.inFlight += 1;
 
     return this.currentP;
   }
