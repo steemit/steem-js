@@ -53,11 +53,12 @@ steemBroadcast._prepareTransaction = function steemBroadcast$_prepareTransaction
   return propertiesP
     .then((properties) => {
       // Set defaults on the transaction
+      const chainDate = new Date(properties.time + 'Z');
       return Object.assign({
         ref_block_num: properties.head_block_number & 0xFFFF,
         ref_block_prefix: new Buffer(properties.head_block_id, 'hex').readUInt32LE(4),
         expiration: new Date(
-          (properties.timestamp || Date.now()) +
+          chainDate.getTime() +
             15 * 1000
         ),
       }, tx);
