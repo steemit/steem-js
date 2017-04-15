@@ -17,7 +17,7 @@ describe('steem.broadcast', () => {
     });
 
     it('works', async () => {
-      const permlink = new Date().toISOString().toLowerCase();
+      const permlink = new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
       const operations = [
         ['comment',
           {
