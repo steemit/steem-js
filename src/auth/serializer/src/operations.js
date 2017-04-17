@@ -50,7 +50,6 @@ const {
 const future_extensions = types.void
 const hardfork_version_vote = types.void
 const version = types.void
-const comment_payout_beneficiaries = types.void
 
 // Place-holder, their are dependencies on "operation" .. The final list of
 // operations is not avialble until the very end of the generated code.
@@ -63,6 +62,15 @@ const Serializer=function(operation_name, serilization_types_object){
     const s = new SerializerImpl(operation_name, serilization_types_object);
     return module.exports[operation_name] = s;
 }
+
+const beneficiaries = new Serializer("beneficiaries", {
+  account: string,
+  weight: uint16
+});
+
+const comment_payout_beneficiaries = new Serializer(0, {
+  beneficiaries: set(beneficiaries)
+});
 
 // Custom-types after Generated code
 
