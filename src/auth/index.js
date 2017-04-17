@@ -1,5 +1,4 @@
 var bigi = require('bigi'),
-	crypto = require('crypto'),
 	bs58 = require('bs58'),
 	ecurve = require('ecurve'),
 	Point = ecurve.Point,
@@ -8,7 +7,8 @@ var bigi = require('bigi'),
 	operations = require('./serializer/src/operations'),
 	Signature = require('./ecc/src/signature'),
 	KeyPrivate = require('./ecc/src/key_private'),
-	PublicKey = require('./ecc/src/key_public');
+	PublicKey = require('./ecc/src/key_public'),
+  hash = require('./ecc/src/hash');
 
 var Auth = {};
 var transaction = operations.transaction;
@@ -34,12 +34,12 @@ Auth.generateKeys = function (name, password, roles) {
 	roles.forEach(function (role) {
 		var seed = name + role + password;
 		var brainKey = seed.trim().split(/[\t\n\v\f\r ]+/).join(' ');
-		var hashSha256 = crypto.createHash('sha256').update(brainKey).digest();
+		var hashSha256 = hash.sha256(brainKey);
 		var bigInt = bigi.fromBuffer(hashSha256);
 		var toPubKey = secp256k1.G.multiply(bigInt);
 		var point = new Point(toPubKey.curve, toPubKey.x, toPubKey.y, toPubKey.z);
 		var pubBuf = point.getEncoded(toPubKey.compressed);
-		var checksum = crypto.createHash('rmd160').update(pubBuf).digest();
+		var checksum = hash.ripemd160(pubBuf);
 		var addy = Buffer.concat([pubBuf, checksum.slice(0, 4)]);
 		pubKeys[role] = config.get('address_prefix') + bs58.encode(addy);
 	});
@@ -66,8 +66,8 @@ Auth.isWif = function (privWif) {
 		var bufWif = new Buffer(bs58.decode(privWif));
 		var privKey = bufWif.slice(0, -4);
 		var checksum = bufWif.slice(-4);
-		var newChecksum = crypto.createHash('sha256').update(privKey).digest();
-		newChecksum = crypto.createHash('sha256').update(newChecksum).digest();
+		var newChecksum = hash.sha256(privKey);
+		newChecksum = hash.sha256(newChecksum);
 		newChecksum = newChecksum.slice(0, 4);
 		if (checksum.toString() == newChecksum.toString()) {
 			isWif = true;
@@ -79,10 +79,10 @@ Auth.isWif = function (privWif) {
 Auth.toWif = function (name, password, role) {
 	var seed = name + role + password;
 	var brainKey = seed.trim().split(/[\t\n\v\f\r ]+/).join(' ');
-	var hashSha256 = crypto.createHash('sha256').update(brainKey).digest();
+	var hashSha256 = hash.sha256(brainKey);
 	var privKey = Buffer.concat([new Buffer([0x80]), hashSha256]);
-	var checksum = crypto.createHash('sha256').update(privKey).digest();
-	checksum = crypto.createHash('sha256').update(checksum).digest();
+	var checksum = hash.sha256(privKey);
+	checksum = hash.sha256(checksum);
 	checksum = checksum.slice(0, 4);
 	var privWif = Buffer.concat([privKey, checksum]);
 	return bs58.encode(privWif);
