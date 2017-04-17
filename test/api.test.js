@@ -8,7 +8,7 @@ import steem, { Steem } from '../src/api/index';
 import config from '../src/config';
 import testPost from './test-post.json';
 
-describe('steem', function () {
+describe('steem.api:', function () {
   this.timeout(30 * 1000);
 
   describe('new Steem', () => {

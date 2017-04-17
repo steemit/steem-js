@@ -6,7 +6,7 @@ var type = require('../src/auth/serializer/src/types');
 var p = require('../src/auth/serializer/src/precision');
 var th = require('./test_helper');
 
-describe("types", function() {
+describe("steem.auth: types", function() {
 
     it("vote_id",function() {
         var toHex=function(id){

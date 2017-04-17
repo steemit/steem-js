@@ -63,7 +63,7 @@ let allTypes = {
     time_point_sec3: '2017-02-16T20:27:12',
 }
 
-describe("all types", ()=> {
+describe("steem.auth: all types", ()=> {
 
     let { toObject, fromObject, toBuffer, fromBuffer } = AllTypes
 

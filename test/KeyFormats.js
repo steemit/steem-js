@@ -2,7 +2,7 @@ import { PrivateKey, PublicKey, Address } from "../src/auth/ecc";
 import assert from "assert"
 
 var test = function(key) {
-    describe("key_formats", function() {
+    describe("steem.auth: key_formats", function() {
         
         it("Calcualtes public key from private key", function() {
             var private_key = PrivateKey.fromHex(key.private_key);

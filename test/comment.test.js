@@ -9,7 +9,7 @@ const postingWif = password
   ? steemAuth.toWif(username, password, 'posting')
   : '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg';
 
-describe('steem.broadcast', () => {
+describe('steem.broadcast:', () => {
 
   describe('comment with options', () => {
     before(() => {
