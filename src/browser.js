@@ -2,6 +2,7 @@ const steem = {
   api: require('./api'),
   auth: require('./auth'),
   broadcast: require('./broadcast'),
+  config: require('./config'),
   formatter: require('./formatter'),
 };
 
