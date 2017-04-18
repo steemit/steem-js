@@ -30,6 +30,16 @@
   },
   {
     "api": "database_api",
+    "method": "get_post_discussions_by_payout",
+    "params": ["query"]
+  },
+  {
+    "api": "database_api",
+    "method": "get_comment_discussions_by_payout",
+    "params": ["query"]
+  },
+  {
+    "api": "database_api",
     "method": "get_discussions_by_trending",
     "params": ["query"]
   },
