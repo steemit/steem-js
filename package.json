@@ -11,7 +11,8 @@
     "prepublish": "npm run test && npm run build"
   },
   "browser": {
-    "ws": false
+    "ws": false,
+    "crypto": false
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,7 @@
   "dependencies": {
     "bigi": "^1.4.2",
     "bluebird": "^3.4.6",
+    "browserify-aes": "^1.0.6",
     "bs58": "^4.0.0",
     "bytebuffer": "^5.0.1",
     "create-hash": "^1.1.2",
