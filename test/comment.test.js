@@ -2,6 +2,7 @@ import Promise from 'bluebird';
 import should from 'should';
 import steemAuth from '../src/auth';
 import steemBroadcast from '../src/broadcast';
+import pkg from '../package.json';
 
 const username = process.env.STEEM_USERNAME || 'guest123';
 const password = process.env.STEEM_PASSWORD;
@@ -26,8 +27,11 @@ describe('steem.broadcast:', () => {
             author: username,
             permlink,
             title: 'Test',
-            body: 'Hello!',
-            json_metadata :"{\"tags\":[\"steem\"],\"app\":\"steemjs\/0.5.3\",\"format\":\"markdown\"}"
+            body: `This is a test using Steem.js v${pkg.version}.`,
+            json_metadata : JSON.stringify({
+              tags: ['test'],
+              app: `steemjs/${pkg.version}`
+            })
           }
         ],
         ['comment_options', {
