@@ -1,14 +1,12 @@
-import secureRandom from 'secure-random'
-import ByteBuffer from 'bytebuffer'
+import secureRandom from 'secure-random';
+import ByteBuffer from 'bytebuffer';
+import crypto from 'browserify-aes';
+import assert from 'assert';
+import PublicKey from './key_public';
+import PrivateKey from './key_private';
+import hash from './hash';
 
-const PublicKey = require('./key_public')
-const PrivateKey = require('./key_private')
-
-const crypto = require("crypto");
-const assert = require("assert");
-const hash = require('./hash');
-
-const Long = ByteBuffer.Long
+const Long = ByteBuffer.Long;
 
 /**
     Spec: http://localhost:3002/steem/@dantheman/how-to-encrypt-a-memo-when-transferring-steem
