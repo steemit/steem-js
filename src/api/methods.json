@@ -358,7 +358,8 @@
   },
   {
     "api": "database_api",
-    "method": "get_reward_fund"
+    "method": "get_reward_fund",
+    "params": ["name"]
   },
   {
     "api": "login_api",
