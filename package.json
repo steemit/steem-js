@@ -41,7 +41,7 @@
     "bytebuffer": "^5.0.1",
     "create-hash": "^1.1.2",
     "create-hmac": "^1.1.4",
-    "debug": "^2.2.0",
+    "debug": "^2.6.8",
     "detect-node": "^2.0.3",
     "ecurve": "^1.0.5",
     "lodash": "^4.16.4",
