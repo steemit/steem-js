@@ -2,6 +2,7 @@
 console.log('Running post install.js');
 try {
     const root = __dirname.substr(0, __dirname.indexOf('node_modules/'));
+    if (root === undefined || root.length === 0) { return; }
     const packageJSON = require(`${root}package.json`);
     const path = require('path');
     if (packageJSON.dependencies['react-native']) {
