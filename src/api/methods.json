@@ -357,6 +357,11 @@
     "method": "get_miner_queue"
   },
   {
+    "api": "database_api",
+    "method": "get_reward_fund",
+    "params": ["name"]
+  },
+  {
     "api": "login_api",
     "method": "login",
     "params": ["username", "password"]
