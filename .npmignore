@@ -1,7 +1,8 @@
-.save
 .idea
 npm-debug.log
 test.js
 .github
 doc
 examples
+.babelrc
+src
