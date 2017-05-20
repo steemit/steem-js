@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/adcpm/steem.git"
+    "url": "git+https://github.com/steemit/steem-js.git"
   },
   "keywords": [
     "steem",
@@ -26,7 +26,7 @@
     "blockchain",
     "steemjs"
   ],
-  "author": "Bonustrack <fabien@bonustrack.co> (https://github.com/bonustrack)",
+  "author": "Fabien (https://github.com/bonustrack)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/steemit/steem-js/issues"
@@ -69,9 +69,8 @@
     "webpack-visualizer-plugin": "^0.1.5"
   },
   "contributors": [
-    "Bonustrack (https://github.com/bonustrack)",
-    "KaptainKrayola (https://github.com/KaptainKrayola)",
-    "heimindanger (https://github.com/skzap)",
+    "Fabien (https://github.com/bonustrack)",
+    "James Calfee (https://github.com/jcalfee)",
     "Nilesh Suthar (https://github.com/nil1511)",
     "Pedro Tacla Yamada (https://github.com/yamadapc)"
   ]
