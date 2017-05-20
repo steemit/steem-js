@@ -1,6 +1,6 @@
 {
   "name": "steem",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "description": "Steem.js the JavaScript API for Steem blockchain",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,8 @@
     "build": "npm run build-browser && npm run build-node",
     "build-browser": "rm -rf dist && NODE_ENV=production webpack && gzip -k -f ./dist/*.js && du -h ./dist/*",
     "build-node": "mkdir -p ./lib && cp -r ./src/* ./lib/ && babel ./src --out-dir ./lib",
-    "prepublish": "npm run test && npm run build"
+    "prepublish": "npm run test && npm run build",
+    "postinstall": "scripts/post-install.js"
   },
   "browser": {
     "ws": false,
@@ -36,10 +37,11 @@
     "bluebird": "^3.4.6",
     "browserify-aes": "^1.0.6",
     "bs58": "^4.0.0",
+    "buffer": "^5.0.6",
     "bytebuffer": "^5.0.1",
     "create-hash": "^1.1.2",
     "create-hmac": "^1.1.4",
-    "debug": "^2.2.0",
+    "debug": "^2.6.8",
     "detect-node": "^2.0.3",
     "ecurve": "^1.0.5",
     "lodash": "^4.16.4",
