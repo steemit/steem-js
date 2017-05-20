@@ -246,6 +246,12 @@ steem.api.getNextScheduledHardfork(function(err, result) {
   console.log(err, result);
 });
 ```
+### Get Reward Fund
+```
+steem.api.getRewardFund(name, function(err, result) {
+  console.log(err, result);
+});
+```
 
 ## Keys
 

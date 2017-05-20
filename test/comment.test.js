@@ -22,7 +22,7 @@ describe('steem.broadcast:', () => {
       const operations = [
         ['comment',
           {
-            parent_author: '',
+            parent_author: 'siol',
             parent_permlink: 'test',
             author: username,
             permlink,
