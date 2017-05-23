@@ -252,6 +252,12 @@ steem.api.getRewardFund(name, function(err, result) {
   console.log(err, result);
 });
 ```
+### Get Vesting Delegations
+```
+steem.api.getVestingDelegations(account, from, limit, function(err, result) {
+  console.log(err, result);
+});
+```
 
 ## Keys
 
