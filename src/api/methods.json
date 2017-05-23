@@ -362,6 +362,11 @@
     "params": ["name"]
   },
   {
+    "api": "database_api",
+    "method": "get_vesting_delegations",
+    "params": ["account", "from", "limit"]
+  },
+  {
     "api": "login_api",
     "method": "login",
     "params": ["username", "password"]
