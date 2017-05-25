@@ -59,7 +59,7 @@ steemBroadcast._prepareTransaction = function steemBroadcast$_prepareTransaction
         ref_block_prefix: new Buffer(properties.head_block_id, 'hex').readUInt32LE(4),
         expiration: new Date(
           chainDate.getTime() +
-            15 * 1000
+            60 * 1000
         ),
       }, tx);
     });
