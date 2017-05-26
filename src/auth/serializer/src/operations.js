@@ -258,6 +258,21 @@ let account_create = new Serializer(
 }
 );
 
+let account_create_with_delegation = new Serializer(
+  "account_create_with_delegation",{
+      fee: asset,
+      delegation: asset,
+      creator: string,
+      new_account_name: string,
+      owner: authority,
+      active: authority,
+      posting: authority,
+      memo_key: public_key,
+      json_metadata: string,
+      extensions: set(future_extensions)
+  }
+);
+
 let account_update = new Serializer( 
     "account_update", {
     account: string,
@@ -715,7 +730,8 @@ operation.st_operations = [
     limit_order_cancel,    
     feed_publish,    
     convert,    
-    account_create,    
+    account_create,
+    account_create_with_delegation,
     account_update,    
     witness_update,    
     account_witness_vote,    
