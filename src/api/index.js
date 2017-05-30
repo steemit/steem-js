@@ -33,6 +33,8 @@ const DEFAULTS = {
   id: 0,
 };
 
+const expectedResponseMs = process.env.EXPECTED_RESPONSE_MS || 2000;
+
 class Steem extends EventEmitter {
   constructor(options = {}) {
     super(options);
@@ -45,6 +47,7 @@ class Steem extends EventEmitter {
     this.apiIds = this.options.apiIds;
     this.isOpen = false;
     this.releases = [];
+    this.requestsTime = {};
 
     // A Map of api name to a promise to it's API ID refresh call
     this.apiIdsP = {};
@@ -89,6 +92,12 @@ class Steem extends EventEmitter {
 
       const releaseMessage = this.listenTo(this.ws, 'message', (message) => {
         debugWs('Received message', message.data);
+        const id = JSON.parse(message.data).id;
+        const msToRespond = Date.now() - this.requestsTime[id];
+        delete this.requestsTime[id];
+        if (msToRespond > expectedResponseMs) {
+          debugWs(`Message received in ${msToRespond}ms, it's over the expected response time of ${expectedResponseMs}ms`, message.data);
+        }
         this.emit('message', JSON.parse(message.data));
       });
 
@@ -246,6 +255,8 @@ class Steem extends EventEmitter {
         });
 
         debugWs('Sending message', payload);
+        this.requestsTime[id] = Date.now();
+
         this.inFlight += 1;
         this.ws.send(payload);
       }))
