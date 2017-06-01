@@ -249,6 +249,15 @@
   },
   {
     "roles": ["owner"],
+    "operation": "recover_account",
+    "params": [
+      "account_to_recover",
+      "recent_authority",
+      "new_authority"
+    ]
+  },
+  {
+    "roles": ["owner"],
     "operation": "change_recovery_account",
     "params": [
       "account_to_recover",
