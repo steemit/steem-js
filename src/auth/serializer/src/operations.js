@@ -401,12 +401,11 @@ let request_account_recovery = new Serializer(
 }
 );
 
-let recover_account = new Serializer( 
+let recover_account = new Serializer(
     "recover_account", {
     account_to_recover: string,
-    new_owner_authority: authority,
-    recent_owner_authority: authority,
-    extensions: set(future_extensions)
+    new_authority: authority,
+    recent_authority: authority,
 }
 );
 
