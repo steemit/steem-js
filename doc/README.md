@@ -477,11 +477,15 @@ steem.api.getMinerQueue(function(err, result) {
 ## Login API
 
 ### Login
+
+/!\ It's **not safe** to use this method with your username and password. This method always return `true` and is only used in intern with empty values to enable broadcast.
+
 ```
-steem.api.login(username, password, function(err, result) {
+steem.api.login('', '', function(err, result) {
   console.log(err, result);
 });
 ```
+
 ### Get Api By Name
 ```
 steem.api.getApiByName(apiName, function(err, result) {
