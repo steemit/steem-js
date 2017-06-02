@@ -34,8 +34,51 @@
     username, // Author
     permlink, // Permlink
     '', // Title
-    'This is a test!', // Body,
-    { tags: ['test'], app: `steemjs/examples` }, // Json Metadata
+    'This is a test!', // Body
+    { tags: ['test'], app: 'steemjs/examples' }, // Json Metadata
+    function(err, result) {
+      console.log(err, result);
+    }
+  );
+
+  /** Follow an user */
+  var follower = username; // Your username
+  var following = 'steemjs'; // User to follow
+
+  var json = JSON.stringify(
+    ['follow', {
+      follower: follower,
+      following: following,
+      what: ['blog']
+    }]
+  );
+
+  steem.broadcast.customJson(
+    postingWif,
+    [], // Required_auths
+    [follower], // Required Posting Auths
+    'follow', // Id
+    json, //
+    function(err, result) {
+      console.log(err, result);
+    }
+  );
+
+  /** Unfollow an user */
+  var json = JSON.stringify(
+    ['follow', {
+      follower: follower,
+      following: following,
+      what: []
+    }]
+  );
+
+  steem.broadcast.customJson(
+    postingWif,
+    [], // Required_auths
+    [follower], // Required Posting Auths
+    'follow', // Id
+    json, //
     function(err, result) {
       console.log(err, result);
     }
