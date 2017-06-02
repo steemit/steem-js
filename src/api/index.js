@@ -169,21 +169,21 @@ class Steem extends EventEmitter {
     return Promise.props(this.apiIdsP);
   }
 
-  waitForSlot() {
-    if (this.inFlight < 10) {
-      debugEmitters('Less than 10 in-flight messages, moving on');
-      return null;
-    }
-
-    debugEmitters('More than 10 in-flight messages, waiting');
-    return Promise.delay(100).then(() => {
-      if (this.inFlight < 10) {
-        debugEmitters('Less than 10 in-flight messages, moving on');
-        return null;
-      }
-      return this.waitForSlot();
-    });
-  }
+  // waitForSlot() {
+  //   if (this.inFlight < 10) {
+  //     debugEmitters('Less than 10 in-flight messages, moving on');
+  //     return null;
+  //   }
+  //
+  //   debugEmitters('More than 10 in-flight messages, waiting');
+  //   return Promise.delay(100).then(() => {
+  //     if (this.inFlight < 10) {
+  //       debugEmitters('Less than 10 in-flight messages, moving on');
+  //       return null;
+  //     }
+  //     return this.waitForSlot();
+  //   });
+  // }
 
   send(api, data, callback) {
     debugSetup('Steem::send', api, data);
@@ -200,7 +200,7 @@ class Steem extends EventEmitter {
       debugApiIds('Going to wait for setup messages to resolve');
     }
 
-    this.currentP = Promise.join(startP, apiIdsP, this.waitForSlot())
+    this.currentP = Promise.join(startP, apiIdsP)
       .then(() => new Promise((resolve, reject) => {
         if (!this.ws) {
           reject(new Error(
