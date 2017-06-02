@@ -252,8 +252,9 @@
     "operation": "recover_account",
     "params": [
       "account_to_recover",
-      "recent_authority",
-      "new_authority"
+      "new_owner_authority",
+      "recent_owner_authority",
+      "extensions"
     ]
   },
   {
