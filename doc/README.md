@@ -742,7 +742,7 @@ steem.broadcast.proveAuthority(wif, challenged, requireOwner, function(err, resu
 ```
 ### Recover Account
 ```
-steem.broadcast.recoverAccount(wif, accountToRecover, recentAuthority, newAuthority, function(err, result) {
+steem.broadcast.recoverAccount(wif, accountToRecover, newOwnerAuthority, recentOwnerAuthority, extensions, function(err, result) {
   console.log(err, result);
 });
 ```
