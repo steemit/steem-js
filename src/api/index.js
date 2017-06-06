@@ -281,9 +281,19 @@ class Steem extends EventEmitter {
           const blockId = mode === 'irreversible'
             ? result.last_irreversible_block_num
             : result.head_block_number;
+
           if (blockId !== current) {
-            current = blockId;
-            callback(null, current);
+            if (current) {
+              for (let i = current; i < blockId; i++) {
+                if (i !== current) {
+                  callback(null, i);
+                }
+                current = i;
+              }
+            } else {
+              current = blockId;
+              callback(null, blockId);
+            }
           }
 
           Promise.delay(ts).then(() => {
