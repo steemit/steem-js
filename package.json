@@ -10,7 +10,7 @@
     "build-browser": "rm -rf dist && NODE_ENV=production webpack && gzip -k -f ./dist/*.js && du -h ./dist/*",
     "build-node": "mkdir -p ./lib && cp -r ./src/* ./lib/ && babel ./src --out-dir ./lib",
     "prepublish": "npm run test && npm run build",
-    "postinstall": "scripts/post-install.js"
+    "postinstall": "cross-env scripts/post-install.js"
   },
   "browser": {
     "ws": false,
@@ -41,6 +41,7 @@
     "bytebuffer": "^5.0.1",
     "create-hash": "^1.1.2",
     "create-hmac": "^1.1.4",
+    "cross-env": "^5.0.0",
     "debug": "^2.6.8",
     "detect-node": "^2.0.3",
     "ecurve": "^1.0.5",
