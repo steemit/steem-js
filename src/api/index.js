@@ -265,7 +265,11 @@ class Steem extends EventEmitter {
     return this.currentP;
   }
 
-  streamBlockNumber(callback, ts = 200) {
+  streamBlockNumber(mode = 'head', callback, ts = 200) {
+    if (typeof mode === 'function') {
+      callback = mode;
+      mode = 'head';
+    }
     let current = '';
     let running = true;
 
@@ -274,7 +278,9 @@ class Steem extends EventEmitter {
 
       this.getDynamicGlobalPropertiesAsync()
         .then((result) => {
-          const blockId = result.head_block_number;
+          const blockId = mode === 'irreversible'
+            ? result.last_irreversible_block_num
+            : result.head_block_number;
           if (blockId !== current) {
             current = blockId;
             callback(null, current);
@@ -295,11 +301,16 @@ class Steem extends EventEmitter {
     };
   }
 
-  streamBlock(callback) {
+  streamBlock(mode = 'head', callback) {
+    if (typeof mode === 'function') {
+      callback = mode;
+      mode = 'head';
+    }
+
     let current = '';
     let last = '';
 
-    const release = this.streamBlockNumber((err, id) => {
+    const release = this.streamBlockNumber(mode, (err, id) => {
       if (err) {
         release();
         callback(err);
@@ -316,8 +327,13 @@ class Steem extends EventEmitter {
     return release;
   }
 
-  streamTransactions(callback) {
-    const release = this.streamBlock((err, result) => {
+  streamTransactions(mode = 'head', callback) {
+    if (typeof mode === 'function') {
+      callback = mode;
+      mode = 'head';
+    }
+
+    const release = this.streamBlock(mode, (err, result) => {
       if (err) {
         release();
         callback(err);
@@ -334,8 +350,13 @@ class Steem extends EventEmitter {
     return release;
   }
 
-  streamOperations(callback) {
-    const release = this.streamTransactions((err, transaction) => {
+  streamOperations(mode = 'head', callback) {
+    if (typeof mode === 'function') {
+      callback = mode;
+      mode = 'head';
+    }
+
+    const release = this.streamTransactions(mode, (err, transaction) => {
       if (err) {
         release();
         callback(err);
