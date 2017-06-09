@@ -54,14 +54,18 @@ steemBroadcast._prepareTransaction = function steemBroadcast$_prepareTransaction
     .then((properties) => {
       // Set defaults on the transaction
       const chainDate = new Date(properties.time + 'Z');
-      return Object.assign({
-        ref_block_num: properties.head_block_number & 0xFFFF,
-        ref_block_prefix: new Buffer(properties.head_block_id, 'hex').readUInt32LE(4),
-        expiration: new Date(
-          chainDate.getTime() +
+      const refBlockNum = (properties.head_block_number - 3) & 0xFFFF;
+      return steemApi.getBlockAsync(properties.head_block_number - 2).then((block) => {
+        const headBlockId = block.previous;
+        return Object.assign({
+          ref_block_num: refBlockNum,
+          ref_block_prefix: new Buffer(headBlockId, 'hex').readUInt32LE(4),
+          expiration: new Date(
+            chainDate.getTime() +
             60 * 1000
-        ),
-      }, tx);
+          ),
+        }, tx);
+      });
     });
 };
 
