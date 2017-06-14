@@ -94,6 +94,7 @@ module.exports = steemAPI => {
       return amount.toFixed(3) + " " + asset;
     },
     numberWithCommas,
+    vestingSteem,
     estimateAccountValue: function estimateAccountValue(
       account,
       { gprops, feed_price, open_orders, savings_withdraws, vesting_steem } = {}
