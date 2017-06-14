@@ -181,13 +181,8 @@ module.exports = steemAPI => {
           saving_balance_steem +
           savings.savings_pending +
           orders.steemOrders;
-        const total_value =
-          "$" +
-          numberWithCommas(
-            (total_steem * price_per_steem + total_sbd).toFixed(2)
-          );
 
-        return total_value;
+        return (total_steem * price_per_steem + total_sbd).toFixed(2);
       });
     }
   };
