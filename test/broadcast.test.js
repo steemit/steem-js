@@ -2,7 +2,6 @@ import Promise from 'bluebird';
 import should from 'should';
 import steemAuth from '../src/auth';
 import steemBroadcast from '../src/broadcast';
-import steemFormatter from '../src/formatter';
 import packageJson from '../package.json';
 
 const username = process.env.STEEM_USERNAME || 'guest123';
