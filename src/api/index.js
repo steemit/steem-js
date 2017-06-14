@@ -92,13 +92,14 @@ class Steem extends EventEmitter {
 
       const releaseMessage = this.listenTo(this.ws, 'message', (message) => {
         debugWs('Received message', message.data);
-        const id = JSON.parse(message.data).id;
+        const data = JSON.parse(message.data);
+        const id = data.id;
         const msToRespond = Date.now() - this.requestsTime[id];
         delete this.requestsTime[id];
         if (msToRespond > expectedResponseMs) {
           debugWs(`Message received in ${msToRespond}ms, it's over the expected response time of ${expectedResponseMs}ms`, message.data);
         }
-        this.emit('message', JSON.parse(message.data));
+        this.emit('message', data);
       });
 
       this.releases = this.releases.concat([
@@ -226,7 +227,7 @@ class Steem extends EventEmitter {
             return;
           }
 
-          this.inFlight -= 1;
+          // this.inFlight -= 1;
           release();
 
           // Our message's response came back
@@ -257,7 +258,7 @@ class Steem extends EventEmitter {
         debugWs('Sending message', payload);
         this.requestsTime[id] = Date.now();
 
-        this.inFlight += 1;
+        // this.inFlight += 1;
         this.ws.send(payload);
       }))
       .nodeify(callback);
