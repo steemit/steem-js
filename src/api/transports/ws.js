@@ -27,7 +27,7 @@ const DEFAULTS = {
   id: 0,
 };
 
-export class WsTransport extends Transport {
+export default class WsTransport extends Transport {
   constructor(options = {}) {
     defaults(options, DEFAULTS);
     super(options);
