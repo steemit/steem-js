@@ -5,7 +5,7 @@ import config from '../src/config';
 import testPost from './test-post.json';
 import api from '../src/api';
 
-describe('steem', function () {
+describe('steem.api:', function () {
   this.timeout(30 * 1000);
 
   describe('setUri', () => {

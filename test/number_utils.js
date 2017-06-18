@@ -1,7 +1,7 @@
 import assert from "assert"
 import { toImpliedDecimal, fromImpliedDecimal } from "../src/auth/serializer/src/number_utils"
 
-describe("Number utils", () => {
+describe("steem.auth: Number utils", () => {
     
 
     it("to implied decimal", ()=> {
