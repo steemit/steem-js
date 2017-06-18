@@ -1,7 +1,12 @@
 import Promise from 'bluebird';
+import defaults from 'lodash/defaults';
+import {camelCase} from '../util';
 import fetch from 'isomorphic-fetch';
-import Websocket from 'ws';
+import isNode from 'detect-node';
+import EventEmitter from 'events';
 import newDebug from 'debug';
+import each from 'lodash/each';
+import methods from './methods.json';
 
 const debugSetup = newDebug('steem:setup');
 const debugWs = newDebug('steem:ws');
@@ -10,11 +15,12 @@ const expectedResponseMs = process.env.EXPECTED_RESPONSE_MS || 2000;
 class Transport extends EventEmitter {
   constructor(options = {}) {
     super(options);
-    this.url = options.url;
+    this.options = options;
+    this.id = 0;
   }
 
-  setOptions({url}) {
-    this.url = url;
+  setOptions(options) {
+    each(options, (value, key) => this.options.set(key, value));
     this.stop();
   }
 
@@ -34,6 +40,37 @@ class Transport extends EventEmitter {
   stop() {}
 }
 
+// Generate Methods from methods.json
+methods.forEach(method => {
+  const methodName = method.method_name || camelCase(method.method);
+  const methodParams = method.params || [];
+
+  Transport.prototype[
+    `${methodName}With`
+  ] = function Steem$$specializedSendWith(options, callback) {
+    const params = methodParams.map(param => options[param]);
+    return this.send(
+      method.api,
+      {
+        method: method.method,
+        params,
+      },
+      callback,
+    );
+  };
+
+  Transport.prototype[methodName] = function Steem$specializedSend(...args) {
+    const options = methodParams.reduce((memo, param, i) => {
+      memo[param] = args[i]; // eslint-disable-line no-param-reassign
+      return memo;
+    }, {});
+    const callback = args[methodParams.length];
+    return this[`${methodName}With`](options, callback);
+  };
+});
+
+Promise.promisifyAll(Transport.prototype);
+
 export class HttpTransport extends Transport {
   send(api, data, callback) {
     debugSetup('Steem::send', api, data);
@@ -43,7 +80,7 @@ export class HttpTransport extends Transport {
       method: 'call',
       params: [api, data.method, data.params],
     };
-    fetch(this.uri, {
+    fetch(this.options.get('uri'), {
       method: 'POST',
       body: JSON.stringify(payload),
     })
@@ -61,8 +98,28 @@ export class HttpTransport extends Transport {
   }
 }
 
+let WebSocket;
+if (isNode) {
+  WebSocket = require('ws'); // eslint-disable-line global-require
+} else if (typeof window !== 'undefined') {
+  WebSocket = window.WebSocket;
+} else {
+  throw new Error("Couldn't decide on a `WebSocket` class");
+}
+
+const DEFAULTS = {
+  apiIds: {
+    database_api: 0,
+    login_api: 1,
+    follow_api: 2,
+    network_broadcast_api: 4,
+  },
+  id: 0,
+};
+
 export class WsTransport extends Transport {
   constructor(options = {}) {
+    defaults(options, DEFAULTS);
     super(options);
 
     this.apiIds = options.apiIds;
@@ -84,7 +141,7 @@ export class WsTransport extends Transport {
 
     const startP = new Promise((resolve, reject) => {
       if (startP !== this.startP) return;
-      const url = this.url;
+      const url = this.options.get('websocket');
       this.ws = new WebSocket(url);
 
       const releaseOpen = this.listenTo(this.ws, 'open', () => {
@@ -247,7 +304,7 @@ export class WsTransport extends Transport {
   }
 }
 
-export default const transports = {
-  'http': HttpTransport,
-  'ws': WsTransport,
+export default {
+  http: HttpTransport,
+  ws: WsTransport,
 };

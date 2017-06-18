@@ -60,11 +60,11 @@ class Steem extends EventEmitter {
   }
 
   setWebSocket(url) {
-    this.setOptions({url});
+    this.setOptions({websocket: url});
   }
 
-  setUri(uri) {
-    this.setOptions({url});
+  setUri(url) {
+    this.setOptions({uri: url});
   }
 
   streamBlockNumber(mode = 'head', callback, ts = 200) {
@@ -254,6 +254,6 @@ delete Steem.prototype.broadcastTransactionWithCallback; // not supported
 Promise.promisifyAll(Steem.prototype);
 
 // Export singleton instance
-const steem = new Steem();
+const steem = new Steem(config);
 exports = module.exports = steem;
 exports.Steem = Steem;

@@ -47,7 +47,8 @@
     "ecurve": "^1.0.5",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.16.4",
-    "secure-random": "^1.1.1"
+    "secure-random": "^1.1.1",
+    "ws": "^3.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.16.0",
