@@ -1,3 +1,4 @@
+import each from 'lodash/each';
 const defaultConfig = require('../config.json');
 
 module.exports = (function () {
@@ -6,5 +7,15 @@ module.exports = (function () {
   const set = (key, value) => {
     config[key] = value;
   };
-  return { get, set };
+  const c = {
+    get,
+    set
+  };
+  each(config, (value, key) => {
+    Object.defineProperty(c, key, {
+      get: () => get(key),
+      set: (value) => set(key, value),
+    });
+  });
+  return c;
 })();
