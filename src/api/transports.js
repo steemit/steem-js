@@ -6,7 +6,6 @@ import isNode from 'detect-node';
 import EventEmitter from 'events';
 import newDebug from 'debug';
 import each from 'lodash/each';
-import methods from './methods.json';
 
 const debugSetup = newDebug('steem:setup');
 const debugWs = newDebug('steem:ws');
@@ -39,35 +38,6 @@ class Transport extends EventEmitter {
   start() {}
   stop() {}
 }
-
-// Generate Methods from methods.json
-methods.forEach(method => {
-  const methodName = method.method_name || camelCase(method.method);
-  const methodParams = method.params || [];
-
-  Transport.prototype[
-    `${methodName}With`
-  ] = function Steem$$specializedSendWith(options, callback) {
-    const params = methodParams.map(param => options[param]);
-    return this.send(
-      method.api,
-      {
-        method: method.method,
-        params,
-      },
-      callback,
-    );
-  };
-
-  Transport.prototype[methodName] = function Steem$specializedSend(...args) {
-    const options = methodParams.reduce((memo, param, i) => {
-      memo[param] = args[i]; // eslint-disable-line no-param-reassign
-      return memo;
-    }, {});
-    const callback = args[methodParams.length];
-    return this[`${methodName}With`](options, callback);
-  };
-});
 
 Promise.promisifyAll(Transport.prototype);
 
@@ -219,7 +189,10 @@ export class WsTransport extends Transport {
       ? [requestName]
       : Object.keys(this.apiIds);
     apiNamesToRefresh.forEach(name => {
-      this.apiIdsP[name] = this.getApiByNameAsync(name).then(result => {
+      this.apiIdsP[name] = this.sendAsync('login_api', {
+        method: 'get_api_by_name',
+        params: [name],
+      }).then(result => {
         if (result != null) {
           this.apiIds[name] = result;
         }
