@@ -1,72 +1,9 @@
 import Promise from 'bluebird';
 import defaults from 'lodash/defaults';
-import {camelCase} from '../util';
-import fetch from 'isomorphic-fetch';
 import isNode from 'detect-node';
-import EventEmitter from 'events';
 import newDebug from 'debug';
-import each from 'lodash/each';
 
-const debugSetup = newDebug('steem:setup');
-const debugWs = newDebug('steem:ws');
-const expectedResponseMs = process.env.EXPECTED_RESPONSE_MS || 2000;
-
-class Transport extends EventEmitter {
-  constructor(options = {}) {
-    super(options);
-    this.options = options;
-    this.id = 0;
-  }
-
-  setOptions(options) {
-    each(options, (value, key) => this.options.set(key, value));
-    this.stop();
-  }
-
-  listenTo(target, eventName, callback) {
-    if (target.addEventListener) target.addEventListener(eventName, callback);
-    else target.on(eventName, callback);
-
-    return () => {
-      if (target.removeEventListener)
-        target.removeEventListener(eventName, callback);
-      else target.removeListener(eventName, callback);
-    };
-  }
-
-  send() {}
-  start() {}
-  stop() {}
-}
-
-Promise.promisifyAll(Transport.prototype);
-
-export class HttpTransport extends Transport {
-  send(api, data, callback) {
-    debugSetup('Steem::send', api, data);
-    const id = data.id || this.id++;
-    const payload = {
-      id,
-      method: 'call',
-      params: [api, data.method, data.params],
-    };
-    fetch(this.options.get('uri'), {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    })
-      .then(res => {
-        return res.json();
-      })
-      .then(json => {
-        const err = json.error || '';
-        const result = json.result || '';
-        callback(err, result);
-      })
-      .catch(err => {
-        callback(err, '');
-      });
-  }
-}
+import Transport from './base';
 
 let WebSocket;
 if (isNode) {
@@ -76,6 +13,9 @@ if (isNode) {
 } else {
   throw new Error("Couldn't decide on a `WebSocket` class");
 }
+
+const debug = newDebug('steem:ws');
+const expectedResponseMs = process.env.EXPECTED_RESPONSE_MS || 2000;
 
 const DEFAULTS = {
   apiIds: {
@@ -115,14 +55,14 @@ export class WsTransport extends Transport {
       this.ws = new WebSocket(url);
 
       const releaseOpen = this.listenTo(this.ws, 'open', () => {
-        debugWs('Opened WS connection with', url);
+        debug('Opened WS connection with', url);
         this.isOpen = true;
         releaseOpen();
         resolve();
       });
 
       const releaseClose = this.listenTo(this.ws, 'close', () => {
-        debugWs('Closed WS connection with', url);
+        debug('Closed WS connection with', url);
         this.isOpen = false;
         delete this.ws;
         this.stop();
@@ -137,12 +77,12 @@ export class WsTransport extends Transport {
       });
 
       const releaseMessage = this.listenTo(this.ws, 'message', message => {
-        debugWs('Received message', message.data);
+        debug('Received message', message.data);
         const id = JSON.parse(message.data).id;
         const msToRespond = Date.now() - this.requestsTime[id];
         delete this.requestsTime[id];
         if (msToRespond > expectedResponseMs) {
-          debugWs(
+          debug(
             `Message received in ${msToRespond}ms, it's over the expected response time of ${expectedResponseMs}ms`,
             message.data,
           );
@@ -164,7 +104,7 @@ export class WsTransport extends Transport {
   }
 
   stop() {
-    debugSetup('Stopping...');
+    debug('Stopping...');
     if (this.ws) this.ws.close();
     this.apiIdsP = {};
     delete this.startP;
@@ -264,7 +204,7 @@ export class WsTransport extends Transport {
               resolve(message.result);
             });
 
-            debugWs('Sending message', payload);
+            debug('Sending message', payload);
             this.requestsTime[id] = Date.now();
 
             this.inFlight += 1;
@@ -276,8 +216,3 @@ export class WsTransport extends Transport {
     return this.currentP;
   }
 }
-
-export default {
-  http: HttpTransport,
-  ws: WsTransport,
-};
