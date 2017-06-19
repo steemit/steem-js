@@ -1,5 +1,5 @@
 {
-  "transport": "ws",
+  "transport": "http",
   "websocket": "wss://steemd.steemit.com",
   "uri": "https://steemd.steemit.com",
   "dev_uri": "https://steemd.steemitdev.com",

@@ -1,8 +1,15 @@
+const api = require("./lib/api");
+const auth = require("./lib/auth");
+const broadcast = require("./lib/broadcast");
+const formatter = require("./lib/formatter")(api);
+const memo = require("./lib/auth/memo");
+const config = require("./lib/config");
+
 module.exports = {
-  api: require('./lib/api'),
-  auth: require('./lib/auth'),
-  broadcast: require('./lib/broadcast'),
-  formatter: require('./lib/formatter'),
-  memo: require('./lib/auth/memo'),
-  config: require('./lib/config'),
+  api: api,
+  auth: auth,
+  broadcast: broadcast,
+  formatter: formatter,
+  memo: memo,
+  config: config
 };
