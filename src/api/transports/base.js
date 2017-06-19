@@ -10,7 +10,13 @@ export default class Transport extends EventEmitter {
   }
 
   setOptions(options) {
-    each(options, (value, key) => this.options.set(key, value));
+    each(options, (value, key) => {
+      if (this.options.set) {
+        this.options.set(key, value);
+      } else {
+        this.options[key] = value;
+      }
+    });
     this.stop();
   }
 
