@@ -14,7 +14,7 @@ export default class HttpTransport extends Transport {
       method: 'call',
       params: [api, data.method, data.params],
     };
-    fetch(this.options.get('uri'), {
+    fetch(this.options.uri, {
       method: 'POST',
       body: JSON.stringify(payload),
     })

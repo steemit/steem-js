@@ -17,6 +17,7 @@ class Steem extends EventEmitter {
   constructor(options = {}) {
     super(options);
     this._setTransport(options);
+    this.options = options;
   }
 
   _setTransport(options) {
@@ -55,8 +56,9 @@ class Steem extends EventEmitter {
   }
 
   setOptions(options) {
-    this._setTransport(options);
-    this.transport.setOptions(options);
+    Object.assign(this.options, options);
+    this._setTransport(this.options);
+    this.transport.setOptions(this.options);
   }
 
   setWebSocket(url) {

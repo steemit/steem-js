@@ -1,21 +1,20 @@
 import each from 'lodash/each';
 const defaultConfig = require('../config.json');
 
-module.exports = (function () {
-  const config = defaultConfig;
-  const get = (key) => config[key];
-  const set = (key, value) => {
-    config[key] = value;
-  };
-  const c = {
-    get,
-    set
-  };
-  each(config, (value, key) => {
-    Object.defineProperty(c, key, {
-      get: () => get(key),
-      set: (value) => set(key, value),
+class Config {
+  constructor(c) {
+    each(c, (value, key) => {
+      this[key] = value;
     });
-  });
-  return c;
-})();
+  }
+
+  get(k) {
+    return this[k];
+  }
+
+  set(k, v) {
+    this[k] = v;
+  }
+}
+
+module.exports = new Config(defaultConfig);
