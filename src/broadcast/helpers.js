@@ -1,7 +1,7 @@
-import _ from "lodash";
 import api from "../api";
 
-const weight = 1;
+const defaultWeight = 1;
+
 exports = module.exports = steemBroadcast => {
   steemBroadcast.addAccountAuth = async (
     activeWif,
@@ -22,7 +22,7 @@ exports = module.exports = steemBroadcast => {
       const error = `${authorizedUsername} is already authorized`;
       cb({ error });
     } else {
-      updatedAuthority.account_auths.push([authorizedUsername, weight]);
+      updatedAuthority.account_auths.push([authorizedUsername, defaultWeight]);
       const owner = role === "owner" ? updatedAuthority : undefined;
       const active = role === "active" ? updatedAuthority : undefined;
       const posting = role === "posting" ? updatedAuthority : undefined;

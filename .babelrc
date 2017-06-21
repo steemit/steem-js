@@ -4,6 +4,7 @@
     "es2017"
   ],
   "plugins": [
-    "transform-async-to-generator"
+    "transform-async-to-generator",
+    "transform-regenerator"
   ]
 }

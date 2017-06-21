@@ -1,3 +1,5 @@
+require("babel-polyfill");
+
 const api = require("./lib/api");
 const auth = require("./lib/auth");
 const broadcast = require("./lib/broadcast");
