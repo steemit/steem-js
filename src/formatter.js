@@ -1,4 +1,5 @@
 import get from "lodash/get";
+import { key_utils } from "./auth/ecc";
 
 module.exports = steemAPI => {
   function numberWithCommas(x) {
@@ -140,6 +141,12 @@ module.exports = steemAPI => {
     });
   }
 
+  function createSuggestedPassword() {
+    const PASSWORD_LENGTH = 32;
+    const privateKey = key_utils.get_random_key();
+    return privateKey.toWif().substring(3, 3 + PASSWORD_LENGTH);
+  }
+
   return {
     reputation: function(reputation) {
       if (reputation == null) return reputation;
@@ -185,6 +192,7 @@ module.exports = steemAPI => {
     },
     numberWithCommas,
     vestingSteem,
-    estimateAccountValue
+    estimateAccountValue,
+    createSuggestedPassword
   };
 };
