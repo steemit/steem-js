@@ -99,7 +99,7 @@ class Steem extends EventEmitter {
         if (msToRespond > expectedResponseMs) {
           debugWs(`Message received in ${msToRespond}ms, it's over the expected response time of ${expectedResponseMs}ms`, message.data);
         }
-        this.emit('message', data);
+        this.emit('message', data, msToRespond);
       });
 
       this.releases = this.releases.concat([
@@ -220,7 +220,7 @@ class Steem extends EventEmitter {
           ],
         });
 
-        const release = this.listenTo(this, 'message', (message) => {
+        const release = this.listenTo(this, 'message', (message, time_taken) => {
           // We're still seeing old messages
           if (message.id !== id) {
             debugProtocol('Different message was dropped', message);
@@ -252,6 +252,7 @@ class Steem extends EventEmitter {
           }
 
           debugProtocol('Resolved', api, data, '->', message);
+          this.emit('track-performance', data.method, time_taken);
           resolve(message.result);
         });
 
