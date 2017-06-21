@@ -2,6 +2,7 @@ import Promise from 'bluebird';
 import newDebug from 'debug';
 import noop from 'lodash/noop';
 
+import customBroadcastOperation from './customBroadcastOperation';
 import formatterFactory from '../formatter';
 import operations from './operations.json';
 import steemApi from '../api';
@@ -116,6 +117,7 @@ operations.forEach((operation) => {
 });
 
 const toString = obj => typeof obj === 'object' ? JSON.stringify(obj) : obj;
+customBroadcastOperation(steemBroadcast);
 
 Promise.promisifyAll(steemBroadcast);
 
