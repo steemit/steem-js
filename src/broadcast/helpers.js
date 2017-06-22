@@ -3,7 +3,7 @@ import api from "../api";
 const defaultWeight = 1;
 
 exports = module.exports = steemBroadcast => {
-  steemBroadcast.addAccountAuth = async (
+  steemBroadcast.addAccountAuth = (
     activeWif,
     username,
     authorizedUsername,
@@ -40,7 +40,7 @@ exports = module.exports = steemBroadcast => {
     });
   };
 
-  steemBroadcast.removeAccountAuth = async (
+  steemBroadcast.removeAccountAuth = (
     activeWif,
     username,
     authorizedUsername,
