@@ -33,7 +33,6 @@
   },
   "homepage": "https://github.com/steemit/steem-js#readme",
   "dependencies": {
-    "babel-polyfill": "^6.23.0",
     "bigi": "^1.4.2",
     "bluebird": "^3.4.6",
     "browserify-aes": "^1.0.6",
@@ -54,8 +53,7 @@
     "babel-cli": "^6.16.0",
     "babel-eslint": "^7.1.1",
     "babel-loader": "^6.2.5",
-    "babel-plugin-transform-async-to-generator": "^6.24.1",
-    "babel-plugin-transform-regenerator": "^6.24.1",
+    "babel-polyfill": "^6.23.0",
     "babel-preset-es2015": "^6.16.0",
     "babel-preset-es2017": "^6.16.0",
     "babel-register": "^6.14.0",
