@@ -19,25 +19,24 @@ exports = module.exports = steemBroadcast => {
     const hasAuthority = authorizedAccounts.indexOf(authorizedUsername) !== -1;
 
     if (hasAuthority) {
-      const error = `${authorizedUsername} is already authorized`;
-      cb({ error });
-    } else {
-      updatedAuthority.account_auths.push([authorizedUsername, defaultWeight]);
-      const owner = role === "owner" ? updatedAuthority : undefined;
-      const active = role === "active" ? updatedAuthority : undefined;
-      const posting = role === "posting" ? updatedAuthority : undefined;
-      /** Add authority on user account */
-      steemBroadcast.accountUpdate(
-        activeWif,
-        userAccount.name,
-        owner,
-        active,
-        posting,
-        userAccount.memo_key,
-        userAccount.json_metadata,
-        cb
-      );
+      // user does already exist in authorized list
+      return cb(null, null);
     }
+    updatedAuthority.account_auths.push([authorizedUsername, defaultWeight]);
+    const owner = role === "owner" ? updatedAuthority : undefined;
+    const active = role === "active" ? updatedAuthority : undefined;
+    const posting = role === "posting" ? updatedAuthority : undefined;
+    /** Add authority on user account */
+    steemBroadcast.accountUpdate(
+      activeWif,
+      userAccount.name,
+      owner,
+      active,
+      posting,
+      userAccount.memo_key,
+      userAccount.json_metadata,
+      cb
+    );
   };
 
   steemBroadcast.removeAccountAuth = async (
@@ -59,7 +58,7 @@ exports = module.exports = steemBroadcast => {
     }
     // user does not exist in authorized list
     if (totalAuthorizedUser === updatedAuthority.account_auths.length) {
-      return cb();
+      return cb(null, null);
     }
 
     const owner = role === "owner" ? updatedAuthority : undefined;
