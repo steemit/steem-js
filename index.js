@@ -4,6 +4,7 @@ var broadcast = require("./lib/broadcast");
 var formatter = require("./lib/formatter")(api);
 var memo = require("./lib/auth/memo");
 var config = require("./lib/config");
+var utils = require("./lib/utils");
 
 module.exports = {
   api: api,
@@ -11,5 +12,6 @@ module.exports = {
   broadcast: broadcast,
   formatter: formatter,
   memo: memo,
-  config: config
+  config: config,
+  utils: utils
 };
