@@ -47,7 +47,7 @@ class Steem extends EventEmitter {
     this.apiIds = this.options.apiIds;
     this.isOpen = false;
     this.releases = [];
-    this.requestsTime = {};
+    this.requests = {};
 
     // A Map of api name to a promise to it's API ID refresh call
     this.apiIdsP = {};
@@ -94,12 +94,13 @@ class Steem extends EventEmitter {
         debugWs('Received message', message.data);
         const data = JSON.parse(message.data);
         const id = data.id;
-        const msToRespond = Date.now() - this.requestsTime[id];
-        delete this.requestsTime[id];
-        if (msToRespond > expectedResponseMs) {
-          debugWs(`Message received in ${msToRespond}ms, it's over the expected response time of ${expectedResponseMs}ms`, message.data);
+        const request = this.requests[id];
+        if (!request) {
+          console.error('Steem.onMessage error: unknown request ', id);
+          return;
         }
-        this.emit('message', data, msToRespond);
+        delete this.requests[id];
+        this.onMessage(data, request);
       });
 
       this.releases = this.releases.concat([
@@ -170,21 +171,35 @@ class Steem extends EventEmitter {
     return Promise.props(this.apiIdsP);
   }
 
-  // waitForSlot() {
-  //   if (this.inFlight < 10) {
-  //     debugEmitters('Less than 10 in-flight messages, moving on');
-  //     return null;
-  //   }
-  //
-  //   debugEmitters('More than 10 in-flight messages, waiting');
-  //   return Promise.delay(100).then(() => {
-  //     if (this.inFlight < 10) {
-  //       debugEmitters('Less than 10 in-flight messages, moving on');
-  //       return null;
-  //     }
-  //     return this.waitForSlot();
-  //   });
-  // }
+
+  onMessage(message, request) {
+    const {api, data, resolve, reject, start_time} = request;
+    console.log('-- Steem.onMessage -->', message.id);
+    const errorCause = message.error;
+    if (errorCause) {
+      const err = new Error(
+        // eslint-disable-next-line prefer-template
+        (errorCause.message || 'Failed to complete operation') +
+        ' (see err.payload for the full error payload)'
+      );
+      err.payload = message;
+      reject(err);
+      return;
+    }
+
+    if (api === 'login_api' && data.method === 'login') {
+      debugApiIds(
+        'network_broadcast_api API ID depends on the WS\' session. ' +
+        'Triggering a refresh...'
+      );
+      this.getApiIds('network_broadcast_api', true);
+    }
+
+    debugProtocol('Resolved', api, data, '->', message);
+    this.emit('track-performance', data.method, Date.now() - start_time);
+    delete this.requests[message.id];
+    resolve(message.result);
+  }
 
   send(api, data, callback) {
     debugSetup('Steem::send', api, data);
@@ -220,44 +235,14 @@ class Steem extends EventEmitter {
           ],
         });
 
-        const release = this.listenTo(this, 'message', (message, time_taken) => {
-          // We're still seeing old messages
-          if (message.id !== id) {
-            debugProtocol('Different message was dropped', message);
-            return;
-          }
-
-          // this.inFlight -= 1;
-          release();
-
-          // Our message's response came back
-          const errorCause = message.error;
-          if (errorCause) {
-            const err = new Error(
-              // eslint-disable-next-line prefer-template
-              (errorCause.message || 'Failed to complete operation') +
-              ' (see err.payload for the full error payload)'
-            );
-            err.payload = message;
-            reject(err);
-            return;
-          }
-
-          if (api === 'login_api' && data.method === 'login') {
-            debugApiIds(
-              'network_broadcast_api API ID depends on the WS\' session. ' +
-              'Triggering a refresh...'
-            );
-            this.getApiIds('network_broadcast_api', true);
-          }
-
-          debugProtocol('Resolved', api, data, '->', message);
-          this.emit('track-performance', data.method, time_taken);
-          resolve(message.result);
-        });
-
         debugWs('Sending message', payload);
-        this.requestsTime[id] = Date.now();
+        this.requests[id] = {
+          api,
+          data,
+          resolve,
+          reject,
+          start_time: Date.now()
+        };
 
         // this.inFlight += 1;
         this.ws.send(payload);
