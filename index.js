@@ -1,9 +1,9 @@
-const api = require("./lib/api");
-const auth = require("./lib/auth");
-const broadcast = require("./lib/broadcast");
-const formatter = require("./lib/formatter")(api);
-const memo = require("./lib/auth/memo");
-const config = require("./lib/config");
+var api = require("./lib/api");
+var auth = require("./lib/auth");
+var broadcast = require("./lib/broadcast");
+var formatter = require("./lib/formatter")(api);
+var memo = require("./lib/auth/memo");
+var config = require("./lib/config");
 
 module.exports = {
   api: api,
