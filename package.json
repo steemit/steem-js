@@ -1,6 +1,6 @@
 {
   "name": "steem",
-  "version": "0.5.15",
+  "version": "0.5.18",
   "description": "Steem.js the JavaScript API for Steem blockchain",
   "main": "index.js",
   "scripts": {
@@ -54,7 +54,7 @@
     "babel-cli": "^6.16.0",
     "babel-eslint": "^7.1.1",
     "babel-loader": "^6.2.5",
-    "babel-polyfill": "^6.16.0",
+    "babel-polyfill": "^6.23.0",
     "babel-preset-es2015": "^6.16.0",
     "babel-preset-es2017": "^6.16.0",
     "babel-register": "^6.14.0",

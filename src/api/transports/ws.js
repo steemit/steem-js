@@ -15,7 +15,6 @@ if (isNode) {
 }
 
 const debug = newDebug('steem:ws');
-const expectedResponseMs = process.env.EXPECTED_RESPONSE_MS || 2000;
 
 const DEFAULTS = {
   apiIds: {
@@ -38,6 +37,7 @@ export default class WsTransport extends Transport {
     this.currentP = Promise.fulfilled();
     this.isOpen = false;
     this.releases = [];
+    this.requests = {};
     this.requestsTime = {};
 
     // A Map of api name to a promise to it's API ID refresh call
@@ -78,16 +78,14 @@ export default class WsTransport extends Transport {
 
       const releaseMessage = this.listenTo(this.ws, 'message', message => {
         debug('Received message', message.data);
-        const id = JSON.parse(message.data).id;
-        const msToRespond = Date.now() - this.requestsTime[id];
-        delete this.requestsTime[id];
-        if (msToRespond > expectedResponseMs) {
-          debug(
-            `Message received in ${msToRespond}ms, it's over the expected response time of ${expectedResponseMs}ms`,
-            message.data,
-          );
+        const data = JSON.parse(message.data);
+        const id = data.id;
+        const request = this.requests[id];
+        if (!request) {
+          debug('Steem.onMessage: unknown request ', id);
         }
-        this.emit('message', JSON.parse(message.data));
+        delete this.requests[id];
+        this.onMessage(data, request);
       });
 
       this.releases = this.releases.concat([
@@ -149,12 +147,19 @@ export default class WsTransport extends Transport {
   }
 
   send(api, data, callback) {
+    debug('Steem::send', api, data);
     const id = data.id || this.id++;
     const startP = this.start();
 
     const apiIdsP = api === 'login_api' && data.method === 'get_api_by_name'
       ? Promise.fulfilled()
       : this.getApiIds(api);
+
+    if (api === 'login_api' && data.method === 'get_api_by_name') {
+      debug('Sending setup message');
+    } else {
+      debug('Going to wait for setup messages to resolve');
+    }
 
     this.currentP = Promise.join(startP, apiIdsP)
       .then(
@@ -175,44 +180,50 @@ export default class WsTransport extends Transport {
               params: [this.apiIds[api], data.method, data.params],
             });
 
-            const release = this.listenTo(this, 'message', message => {
-              // We're still seeing old messages
-              if (message.id !== id) {
-                return;
-              }
-
-              this.inFlight -= 1;
-              release();
-
-              // Our message's response came back
-              const errorCause = message.error;
-              if (errorCause) {
-                const err = new Error(
-                  // eslint-disable-next-line prefer-template
-                  (errorCause.message || 'Failed to complete operation') +
-                    ' (see err.payload for the full error payload)',
-                );
-                err.payload = message;
-                reject(err);
-                return;
-              }
-
-              if (api === 'login_api' && data.method === 'login') {
-                this.getApiIds('network_broadcast_api', true);
-              }
-
-              resolve(message.result);
-            });
-
             debug('Sending message', payload);
-            this.requestsTime[id] = Date.now();
+            this.requests[id] = {
+              api,
+              data,
+              resolve,
+              reject,
+              start_time: Date.now(),
+            };
 
-            this.inFlight += 1;
+            // this.inFlight += 1;
             this.ws.send(payload);
           }),
       )
       .nodeify(callback);
 
     return this.currentP;
+  }
+
+  onMessage(message, request) {
+    const {api, data, resolve, reject, start_time} = request;
+    debug('-- Steem.onMessage -->', message.id);
+    const errorCause = message.error;
+    if (errorCause) {
+      const err = new Error(
+        // eslint-disable-next-line prefer-template
+        (errorCause.message || 'Failed to complete operation') +
+          ' (see err.payload for the full error payload)',
+      );
+      err.payload = message;
+      reject(err);
+      return;
+    }
+
+    if (api === 'login_api' && data.method === 'login') {
+      debug(
+        "network_broadcast_api API ID depends on the WS' session. " +
+          'Triggering a refresh...',
+      );
+      this.getApiIds('network_broadcast_api', true);
+    }
+
+    debug('Resolved', api, data, '->', message);
+    this.emit('track-performance', data.method, Date.now() - start_time);
+    delete this.requests[message.id];
+    resolve(message.result);
   }
 }

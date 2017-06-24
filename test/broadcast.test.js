@@ -105,7 +105,7 @@ describe('steem.broadcast:', () => {
         username,
         'yamadapc',
         'test-1-2-3-4-5-6-7-9',
-        10000,
+        5000,
         (err, tx) => {
           if (err) return done(err);
           tx.should.have.properties([

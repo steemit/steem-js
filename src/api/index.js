@@ -1,17 +1,11 @@
 import EventEmitter from 'events';
 import Promise from 'bluebird';
 import config from '../config';
-import fetch from 'isomorphic-fetch';
 import methods from './methods';
-import newDebug from 'debug';
 import {camelCase} from '../util';
 import {hash} from '../auth/ecc';
 import {ops} from '../auth/serializer';
 import transports from './transports';
-
-const debugSetup = newDebug('steem:setup');
-
-const expectedResponseMs = process.env.EXPECTED_RESPONSE_MS || 2000;
 
 class Steem extends EventEmitter {
   constructor(options = {}) {

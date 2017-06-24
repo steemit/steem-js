@@ -20,6 +20,7 @@
 - [Broadcast API](#broadcast-api)
 - [Broadcast](#broadcast)
 - [Auth](#auth)
+- [Formatter](#formatter)
 
 # Install
 ```
@@ -872,4 +873,40 @@ steem.auth.wifToPublic(privWif);
 ### Sign Transaction
 ```
 steem.auth.signTransaction(trx, keys);
+```
+
+# Formatter
+
+### Create Suggested Password
+```
+var password = steem.formatter.createSuggestedPassword();
+console.log(password);
+// => 'GAz3GYFvvQvgm7t2fQmwMDuXEzDqTzn9'
+```
+
+### Comment Permlink
+```
+var parentAuthor = 'ned';
+var parentPermlink = 'a-selfie';
+var commentPermlink = steem.formatter.commentPermlink(parentAuthor, parentPermlink);
+console.log(commentPermlink);
+// => 're-ned-a-selfie-20170621t080403765z'
+```
+
+### Estimate Account Value
+```
+var steemPower = steem.formatter.estimateAccountValue(account);
+```
+
+### Reputation
+```
+var reputation = steem.formatter.reputation(3512485230915);
+console.log(reputation);
+// => 56
+```
+
+### Vest To Steem
+```
+var steemPower = steem.formatter.vestToSteem(vestingShares, totalVestingShares, totalVestingFundSteem);
+console.log(steemPower);
 ```
