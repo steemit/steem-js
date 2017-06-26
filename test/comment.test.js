@@ -1,13 +1,12 @@
 import Promise from 'bluebird';
 import should from 'should';
-import steemAuth from '../src/auth';
-import steemBroadcast from '../src/broadcast';
+import steem from '../src';
 import pkg from '../package.json';
 
 const username = process.env.STEEM_USERNAME || 'guest123';
 const password = process.env.STEEM_PASSWORD;
 const postingWif = password
-  ? steemAuth.toWif(username, password, 'posting')
+  ? steem.auth.toWif(username, password, 'posting')
   : '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg';
 
 describe('steem.broadcast:', () => {
@@ -18,7 +17,7 @@ describe('steem.broadcast:', () => {
     });
 
     it('works', async () => {
-      const permlink = new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
+      const permlink = steem.formatter.commentPermlink('siol', 'test');
       const operations = [
         ['comment',
           {
@@ -52,7 +51,7 @@ describe('steem.broadcast:', () => {
         }]
       ];
 
-      const tx = await steemBroadcast.sendAsync(
+      const tx = await steem.broadcast.sendAsync(
         { operations, extensions: [] },
         { posting: postingWif }
       );
