@@ -1,4 +1,4 @@
-const steem = require('..');
+const steem = require('../lib');
 
 const username = process.env.STEEM_USERNAME;
 const password = process.env.STEEM_PASSWORD;
