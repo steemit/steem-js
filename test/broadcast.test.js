@@ -1,41 +1,38 @@
 import Promise from 'bluebird';
 import should from 'should';
-import auth from '../src/auth';
-import broadcast from '../src/broadcast';
-import formatter from '../src/formatter';
-import pkg from '../package.json';
+import steem from '../src';
 
 const username = process.env.STEEM_USERNAME || 'guest123';
 const password = process.env.STEEM_PASSWORD;
 const postingWif = password
-  ? auth.toWif(username, password, 'posting')
+  ? steem.auth.toWif(username, password, 'posting')
   : '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg';
 
 describe('steem.broadcast:', () => {
   it('exists', () => {
-    should.exist(broadcast);
+    should.exist(steem.broadcast);
   });
 
   it('has generated methods', () => {
-    should.exist(broadcast.vote);
-    should.exist(broadcast.voteWith);
-    should.exist(broadcast.comment);
-    should.exist(broadcast.transfer);
+    should.exist(steem.broadcast.vote);
+    should.exist(steem.broadcast.voteWith);
+    should.exist(steem.broadcast.comment);
+    should.exist(steem.broadcast.transfer);
   });
 
   it('has backing methods', () => {
-    should.exist(broadcast.send);
+    should.exist(steem.broadcast.send);
   });
 
   it('has promise methods', () => {
-    should.exist(broadcast.sendAsync);
-    should.exist(broadcast.voteAsync);
-    should.exist(broadcast.transferAsync);
+    should.exist(steem.broadcast.sendAsync);
+    should.exist(steem.broadcast.voteAsync);
+    should.exist(steem.broadcast.transferAsync);
   });
 
   describe('patching transaction with default global properties', () => {
     it('works', async () => {
-      const tx = await broadcast._prepareTransaction({
+      const tx = await steem.broadcast._prepareTransaction({
         extensions: [],
         operations: [['vote', {
           voter: 'yamadapc',
@@ -56,7 +53,7 @@ describe('steem.broadcast:', () => {
 
   describe('downvoting', () => {
     it('works', async () => {
-      const tx = await broadcast.voteAsync(
+      const tx = await steem.broadcast.voteAsync(
         postingWif,
         username,
         'yamadapc',
@@ -81,7 +78,7 @@ describe('steem.broadcast:', () => {
     });
 
     it('works', async () => {
-      const tx = await broadcast.voteAsync(
+      const tx = await steem.broadcast.voteAsync(
         postingWif,
         username,
         'yamadapc',
@@ -100,7 +97,7 @@ describe('steem.broadcast:', () => {
     });
 
     it('works with callbacks', (done) => {
-      broadcast.vote(
+      steem.broadcast.vote(
         postingWif,
         username,
         'yamadapc',
@@ -128,7 +125,7 @@ describe('steem.broadcast:', () => {
     });
 
     it('works', async () => {
-      const tx = await broadcast.customJsonAsync(
+      const tx = await steem.broadcast.customJsonAsync(
         postingWif,
         [],
         [username],
@@ -160,15 +157,15 @@ describe('steem.broadcast:', () => {
     });
 
     it('works', async () => {
-      const tx = await broadcast.commentAsync(
+      const tx = await steem.broadcast.commentAsync(
         postingWif,
         'siol',
         '3xxvvs-test',
         username,
-        formatter.commentPermlink('siol', '3xxvvs-test'),
+        steem.formatter.commentPermlink('siol', '3xxvvs-test'),
         'Test',
         'This is a test!',
-        JSON.stringify({ app: `steemjs/${pkg.version}` }),
+        JSON.stringify({ app: `steemjs/${require('../package.json').version}` }),
       );
 
       tx.should.have.properties([
@@ -184,8 +181,8 @@ describe('steem.broadcast:', () => {
 
   describe('writeOperations', () => {
     it('wrong', (done) => {
-      const wif = auth.toWif('username', 'password', 'posting');
-      broadcast.vote(wif, 'voter', 'author', 'permlink', 0, (err) => {
+      const wif = steem.auth.toWif('username', 'password', 'posting');
+      steem.broadcast.vote(wif, 'voter', 'author', 'permlink', 0, (err) => {
         if(err && /tx_missing_posting_auth/.test(err.message)) {
           should.exist(err.digest);
           should.exist(err.transaction);

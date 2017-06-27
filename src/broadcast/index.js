@@ -6,7 +6,7 @@ import formatterFactory from '../formatter';
 import operations from './operations.json';
 import steemApi from '../api';
 import steemAuth from '../auth';
-import { camelCase } from '../util';
+import { camelCase } from '../utils';
 
 const debug = newDebug('steem:broadcast');
 const noop = function() {}

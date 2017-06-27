@@ -910,3 +910,16 @@ console.log(reputation);
 var steemPower = steem.formatter.vestToSteem(vestingShares, totalVestingShares, totalVestingFundSteem);
 console.log(steemPower);
 ```
+
+# Utils
+
+### Validate Username
+```
+var isValidUsername = steem.utils.validateAccountName('test1234');
+console.log(isValidUsername);
+// => 'null'
+
+var isValidUsername = steem.utils.validateAccountName('a1');
+console.log(isValidUsername);
+// => 'Account name should be longer.'
+```
