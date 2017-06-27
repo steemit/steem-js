@@ -96,7 +96,7 @@ class Steem extends EventEmitter {
         const id = data.id;
         const request = this.requests[id];
         if (!request) {
-          console.error('Steem.onMessage error: unknown request ', id);
+          debugWs('Steem.onMessage error: unknown request ', id);
           return;
         }
         delete this.requests[id];
@@ -174,7 +174,7 @@ class Steem extends EventEmitter {
 
   onMessage(message, request) {
     const {api, data, resolve, reject, start_time} = request;
-    console.log('-- Steem.onMessage -->', message.id);
+    debugWs('-- Steem.onMessage -->', message.id);
     const errorCause = message.error;
     if (errorCause) {
       const err = new Error(
