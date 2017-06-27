@@ -5,7 +5,7 @@ import methods from './methods';
 import transports from './transports';
 import {camelCase} from '../utils';
 import {hash} from '../auth/ecc';
-import {ops} from '../auth/ecc';
+import {ops} from '../auth/serializer';
 
 class Steem extends EventEmitter {
   constructor(options = {}) {
