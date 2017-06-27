@@ -150,35 +150,7 @@ describe('steem.broadcast:', () => {
       ]);
     });
   });
-
-  describe('comment', () => {
-    before(() => {
-      return Promise.delay(2000);
-    });
-
-    it('works', async () => {
-      const tx = await steem.broadcast.commentAsync(
-        postingWif,
-        'siol',
-        '3xxvvs-test',
-        username,
-        steem.formatter.commentPermlink('siol', '3xxvvs-test'),
-        'Test',
-        'This is a test!',
-        JSON.stringify({ app: `steemjs/${require('../package.json').version}` }),
-      );
-
-      tx.should.have.properties([
-        'expiration',
-        'ref_block_num',
-        'ref_block_prefix',
-        'extensions',
-        'operations',
-        'signatures',
-      ]);
-    });
-  });
-
+  
   describe('writeOperations', () => {
     it('wrong', (done) => {
       const wif = steem.auth.toWif('username', 'password', 'posting');
