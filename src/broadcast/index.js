@@ -1,14 +1,16 @@
 import Promise from 'bluebird';
 import newDebug from 'debug';
 
-import formatter from '../formatter';
+import broadcastHelpers from './helpers';
+import formatterFactory from '../formatter';
 import operations from './operations.json';
 import steemApi from '../api';
 import steemAuth from '../auth';
-import { camelCase } from '../util';
+import { camelCase } from '../utils';
 
 const debug = newDebug('steem:broadcast');
 const noop = function() {}
+const formatter = formatterFactory(steemApi);
 
 const steemBroadcast = {};
 
@@ -48,14 +50,19 @@ steemBroadcast._prepareTransaction = function steemBroadcast$_prepareTransaction
   return propertiesP
     .then((properties) => {
       // Set defaults on the transaction
-      return Object.assign({
-        ref_block_num: properties.head_block_number & 0xFFFF,
-        ref_block_prefix: new Buffer(properties.head_block_id, 'hex').readUInt32LE(4),
-        expiration: new Date(
-          (properties.timestamp || Date.now()) +
-            15 * 1000
-        ),
-      }, tx);
+      const chainDate = new Date(properties.time + 'Z');
+      const refBlockNum = (properties.head_block_number - 3) & 0xFFFF;
+      return steemApi.getBlockAsync(properties.head_block_number - 2).then((block) => {
+        const headBlockId = block.previous;
+        return Object.assign({
+          ref_block_num: refBlockNum,
+          ref_block_prefix: new Buffer(headBlockId, 'hex').readUInt32LE(4),
+          expiration: new Date(
+            chainDate.getTime() +
+            60 * 1000
+          ),
+        }, tx);
+      });
     });
 };
 
@@ -105,6 +112,7 @@ operations.forEach((operation) => {
 });
 
 const toString = obj => typeof obj === 'object' ? JSON.stringify(obj) : obj;
+broadcastHelpers(steemBroadcast);
 
 Promise.promisifyAll(steemBroadcast);
 

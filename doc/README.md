@@ -1,25 +1,26 @@
 # Documentation
 
-- [Install](https://github.com/steemit/steem-js/tree/master/doc#install)
-- [Browser](https://github.com/steemit/steem-js/tree/master/doc#browser)
-- [Config](https://github.com/steemit/steem-js/tree/master/doc#config)
-- [Database API](https://github.com/steemit/steem-js/tree/master/doc#api)
-    - [Subscriptions](https://github.com/steemit/steem-js/tree/master/doc#subscriptions)
-    - [Tags](https://github.com/steemit/steem-js/tree/master/doc#tags)
-    - [Blocks and transactions](https://github.com/steemit/steem-js/tree/master/doc#blocks-and-transactions)
-    - [Globals](https://github.com/steemit/steem-js/tree/master/doc#globals)
-    - [Keys](https://github.com/steemit/steem-js/tree/master/doc#keys)
-    - [Accounts](https://github.com/steemit/steem-js/tree/master/doc#accounts)
-    - [Market](https://github.com/steemit/steem-js/tree/master/doc#market)
-    - [Authority / validation](https://github.com/steemit/steem-js/tree/master/doc#authority--validation)
-    - [Votes](https://github.com/steemit/steem-js/tree/master/doc#votes)
-    - [Content](https://github.com/steemit/steem-js/tree/master/doc#content)
-    - [Witnesses](https://github.com/steemit/steem-js/tree/master/doc#witnesses)
-- [Login API](https://github.com/steemit/steem-js/tree/master/doc#login)
-- [Follow API](https://github.com/steemit/steem-js/tree/master/doc#follow-api)
-- [Broadcast API](https://github.com/steemit/steem-js/tree/master/doc#broadcast-api)
-- [Broadcast](https://github.com/steemit/steem-js/tree/master/doc#broadcast)
-- [Auth](https://github.com/steemit/steem-js/tree/master/doc#auth)
+- [Install](#install)
+- [Browser](#browser)
+- [Config](#config)
+- [Database API](#api)
+    - [Subscriptions](#subscriptions)
+    - [Tags](#tags)
+    - [Blocks and transactions](#blocks-and-transactions)
+    - [Globals](#globals)
+    - [Keys](#keys)
+    - [Accounts](#accounts)
+    - [Market](#market)
+    - [Authority / validation](#authority--validation)
+    - [Votes](#votes)
+    - [Content](#content)
+    - [Witnesses](#witnesses)
+- [Login API](#login)
+- [Follow API](#follow-api)
+- [Broadcast API](#broadcast-api)
+- [Broadcast](#broadcast)
+- [Auth](#auth)
+- [Formatter](#formatter)
 
 # Install
 ```
@@ -246,6 +247,18 @@ steem.api.getNextScheduledHardfork(function(err, result) {
   console.log(err, result);
 });
 ```
+### Get Reward Fund
+```
+steem.api.getRewardFund(name, function(err, result) {
+  console.log(err, result);
+});
+```
+### Get Vesting Delegations
+```
+steem.api.getVestingDelegations(account, from, limit, function(err, result) {
+  console.log(err, result);
+});
+```
 
 ## Keys
 
@@ -465,11 +478,15 @@ steem.api.getMinerQueue(function(err, result) {
 ## Login API
 
 ### Login
+
+/!\ It's **not safe** to use this method with your username and password. This method always return `true` and is only used in intern with empty values to enable broadcast.
+
 ```
-steem.api.login(username, password, function(err, result) {
+steem.api.login('', '', function(err, result) {
   console.log(err, result);
 });
 ```
+
 ### Get Api By Name
 ```
 steem.api.getApiByName(apiName, function(err, result) {
@@ -518,6 +535,18 @@ steem.api.broadcastBlock(b, function(err, result) {
 ### Account Create
 ```
 steem.broadcast.accountCreate(wif, fee, creator, newAccountName, owner, active, posting, memoKey, jsonMetadata, function(err, result) {
+  console.log(err, result);
+});
+```
+### Account Create With Delegation
+```
+steem.broadcast.accountCreateWithDelegation(wif, fee, delegation, creator, newAccountName, owner, active, posting, memoKey, jsonMetadata, extensions, function(err, result) {
+  console.log(err, result);
+});
+```
+### Delegate Vesting Shares
+```
+steem.broadcast.delegateVestingShares(wif, delegator, delegatee, vesting_shares, function(err, result) {
   console.log(err, result);
 });
 ```
@@ -844,4 +873,53 @@ steem.auth.wifToPublic(privWif);
 ### Sign Transaction
 ```
 steem.auth.signTransaction(trx, keys);
+```
+
+# Formatter
+
+### Create Suggested Password
+```
+var password = steem.formatter.createSuggestedPassword();
+console.log(password);
+// => 'GAz3GYFvvQvgm7t2fQmwMDuXEzDqTzn9'
+```
+
+### Comment Permlink
+```
+var parentAuthor = 'ned';
+var parentPermlink = 'a-selfie';
+var commentPermlink = steem.formatter.commentPermlink(parentAuthor, parentPermlink);
+console.log(commentPermlink);
+// => 're-ned-a-selfie-20170621t080403765z'
+```
+
+### Estimate Account Value
+```
+var steemPower = steem.formatter.estimateAccountValue(account);
+```
+
+### Reputation
+```
+var reputation = steem.formatter.reputation(3512485230915);
+console.log(reputation);
+// => 56
+```
+
+### Vest To Steem
+```
+var steemPower = steem.formatter.vestToSteem(vestingShares, totalVestingShares, totalVestingFundSteem);
+console.log(steemPower);
+```
+
+# Utils
+
+### Validate Username
+```
+var isValidUsername = steem.utils.validateAccountName('test1234');
+console.log(isValidUsername);
+// => 'null'
+
+var isValidUsername = steem.utils.validateAccountName('a1');
+console.log(isValidUsername);
+// => 'Account name should be longer.'
 ```

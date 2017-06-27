@@ -1,15 +1,24 @@
+const api = require("./api");
+const auth = require("./auth");
+const broadcast = require("./broadcast");
+const config = require("./config");
+const formatter = require("./formatter")(api);
+const utils = require("./utils");
+
 const steem = {
-  api: require('./api'),
-  auth: require('./auth'),
-  broadcast: require('./broadcast'),
-  formatter: require('./formatter'),
+  api,
+  auth,
+  broadcast,
+  config,
+  formatter,
+  utils
 };
 
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.steem = steem;
 }
 
-if (typeof global !== 'undefined') {
+if (typeof global !== "undefined") {
   global.steem = steem;
 }
 

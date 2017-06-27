@@ -30,6 +30,16 @@
   },
   {
     "api": "database_api",
+    "method": "get_post_discussions_by_payout",
+    "params": ["query"]
+  },
+  {
+    "api": "database_api",
+    "method": "get_comment_discussions_by_payout",
+    "params": ["query"]
+  },
+  {
+    "api": "database_api",
     "method": "get_discussions_by_trending",
     "params": ["query"]
   },
@@ -166,7 +176,7 @@
     "method": "get_next_scheduled_hardfork"
   },
   {
-    "api": "database_api",
+    "api": "account_by_key_api",
     "method": "get_key_references",
     "params": ["key"]
   },
@@ -345,6 +355,16 @@
   {
     "api": "database_api",
     "method": "get_miner_queue"
+  },
+  {
+    "api": "database_api",
+    "method": "get_reward_fund",
+    "params": ["name"]
+  },
+  {
+    "api": "database_api",
+    "method": "get_vesting_delegations",
+    "params": ["account", "from", "limit"]
   },
   {
     "api": "login_api",

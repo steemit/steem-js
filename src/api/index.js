@@ -1,75 +1,107 @@
-import fetch from 'isomorphic-fetch';
 import EventEmitter from 'events';
 import Promise from 'bluebird';
-import newDebug from 'debug';
 import config from '../config';
 import methods from './methods';
-import { hash } from '../auth/ecc';
-import { ops } from '../auth/serializer';
-import { camelCase } from '../util';
-
-const debugSetup = newDebug('steem:setup');
+import transports from './transports';
+import {camelCase} from '../utils';
+import {hash} from '../auth/ecc';
+import {ops} from '../auth/serializer';
 
 class Steem extends EventEmitter {
   constructor(options = {}) {
     super(options);
-    this.id = 0;
-    this.uri = config.get('uri');
+    this._setTransport(options);
+    this.options = options;
+  }
+
+  _setTransport(options) {
+    if (options.transport) {
+      if (this.transport && this._transportType !== options.transport) {
+        this.transport.stop();
+      }
+
+      this._transportType = options.transport;
+
+      if (typeof options.transport === 'string') {
+        if (!transports[options.transport]) {
+          throw new TypeError(
+            'Invalid `transport`, valid values are `http`, `ws` or a class',
+          );
+        }
+        this.transport = new transports[options.transport](options);
+      } else {
+        this.transport = new options.transport(options);
+      }
+    } else {
+      this.transport = new transports.ws(options);
+    }
+  }
+
+  start() {
+    return this.transport.start();
+  }
+
+  stop() {
+    return this.transport.stop();
   }
 
   send(api, data, callback) {
-    debugSetup('Steem::send', api, data);
-    const id = data.id || this.id++;
-    const payload = {
-      id,
-      method: 'call',
-      params: [
-        api,
-        data.method,
-        data.params,
-      ],
-    };
-    fetch(this.uri, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        const err = json.error || '';
-        const result = json.result || '';
-        callback(err, result);
-      }).catch((err) => {
-        callback(err, '');
-      });
+    return this.transport.send(api, data, callback);
   }
 
-  setUri(uri) {
-    this.uri = uri;
+  setOptions(options) {
+    Object.assign(this.options, options);
+    this._setTransport(this.options);
+    this.transport.setOptions(this.options);
   }
 
-  streamBlockNumber(callback, ts = 200) {
+  setWebSocket(url) {
+    this.setOptions({websocket: url});
+  }
+
+  setUri(url) {
+    this.setOptions({uri: url});
+  }
+
+  streamBlockNumber(mode = 'head', callback, ts = 200) {
+    if (typeof mode === 'function') {
+      callback = mode;
+      mode = 'head';
+    }
     let current = '';
     let running = true;
 
     const update = () => {
       if (!running) return;
 
-      this.getDynamicGlobalPropertiesAsync()
-        .then((result) => {
-          const blockId = result.head_block_number;
+      this.getDynamicGlobalPropertiesAsync().then(
+        result => {
+          const blockId = mode === 'irreversible'
+            ? result.last_irreversible_block_num
+            : result.head_block_number;
+
           if (blockId !== current) {
-            current = blockId;
-            callback(null, current);
+            if (current) {
+              for (let i = current; i < blockId; i++) {
+                if (i !== current) {
+                  callback(null, i);
+                }
+                current = i;
+              }
+            } else {
+              current = blockId;
+              callback(null, blockId);
+            }
           }
 
           Promise.delay(ts).then(() => {
             update();
           });
-        }, (err) => {
+        },
+        err => {
           callback(err);
-        });
+        },
+      );
     };
 
     update();
@@ -79,11 +111,16 @@ class Steem extends EventEmitter {
     };
   }
 
-  streamBlock(callback) {
+  streamBlock(mode = 'head', callback) {
+    if (typeof mode === 'function') {
+      callback = mode;
+      mode = 'head';
+    }
+
     let current = '';
     let last = '';
 
-    const release = this.streamBlockNumber((err, id) => {
+    const release = this.streamBlockNumber(mode, (err, id) => {
       if (err) {
         release();
         callback(err);
@@ -100,8 +137,13 @@ class Steem extends EventEmitter {
     return release;
   }
 
-  streamTransactions(callback) {
-    const release = this.streamBlock((err, result) => {
+  streamTransactions(mode = 'head', callback) {
+    if (typeof mode === 'function') {
+      callback = mode;
+      mode = 'head';
+    }
+
+    const release = this.streamBlock(mode, (err, result) => {
       if (err) {
         release();
         callback(err);
@@ -109,7 +151,7 @@ class Steem extends EventEmitter {
       }
 
       if (result && result.transactions) {
-        result.transactions.forEach((transaction) => {
+        result.transactions.forEach(transaction => {
           callback(null, transaction);
         });
       }
@@ -118,15 +160,20 @@ class Steem extends EventEmitter {
     return release;
   }
 
-  streamOperations(callback) {
-    const release = this.streamTransactions((err, transaction) => {
+  streamOperations(mode = 'head', callback) {
+    if (typeof mode === 'function') {
+      callback = mode;
+      mode = 'head';
+    }
+
+    const release = this.streamTransactions(mode, (err, transaction) => {
       if (err) {
         release();
         callback(err);
         return;
       }
 
-      transaction.operations.forEach((operation) => {
+      transaction.operations.forEach(operation => {
         callback(null, operation);
       });
     });
@@ -136,40 +183,51 @@ class Steem extends EventEmitter {
 }
 
 // Generate Methods from methods.json
-methods.forEach((method) => {
+methods.forEach(method => {
   const methodName = method.method_name || camelCase(method.method);
   const methodParams = method.params || [];
 
-  Steem.prototype[`${methodName}With`] =
-    function Steem$$specializedSendWith(options, callback) {
-      const params = methodParams.map((param) => options[param]);
-      return this.send(method.api, {
+  Steem.prototype[`${methodName}With`] = function Steem$$specializedSendWith(
+    options,
+    callback,
+  ) {
+    const params = methodParams.map(param => options[param]);
+    return this.send(
+      method.api,
+      {
         method: method.method,
         params,
-      }, callback);
-    };
+      },
+      callback,
+    );
+  };
 
-  Steem.prototype[methodName] =
-    function Steem$specializedSend(...args) {
-      const options = methodParams.reduce((memo, param, i) => {
-        memo[param] = args[i]; // eslint-disable-line no-param-reassign
-        return memo;
-      }, {});
-      const callback = args[methodParams.length];
-      return this[`${methodName}With`](options, callback);
-    };
+  Steem.prototype[methodName] = function Steem$specializedSend(...args) {
+    const options = methodParams.reduce((memo, param, i) => {
+      memo[param] = args[i]; // eslint-disable-line no-param-reassign
+      return memo;
+    }, {});
+    const callback = args[methodParams.length];
+    return this[`${methodName}With`](options, callback);
+  };
 });
 
-/*
- Wrap transaction broadcast: serializes the object and adds error reporting
+/**
+ * Wrap transaction broadcast: serializes the object and adds error reporting
  */
-Steem.prototype.broadcastTransactionSynchronousWith =
-  function Steem$$specializedSendWith(options, callback) {
-    const trx = options.trx;
-    return this.send('network_broadcast_api', {
+
+Steem.prototype.broadcastTransactionSynchronousWith = function Steem$$specializedSendWith(
+  options,
+  callback,
+) {
+  const trx = options.trx;
+  return this.send(
+    'network_broadcast_api',
+    {
       method: 'broadcast_transaction_synchronous',
       params: [trx],
-    }, (err, result) => {
+    },
+    (err, result) => {
       if (err) {
         const {signed_transaction} = ops;
         // console.log('-- broadcastTransactionSynchronous -->', JSON.stringify(signed_transaction.toObject(trx), null, 2));
@@ -183,15 +241,13 @@ Steem.prototype.broadcastTransactionSynchronousWith =
       } else {
         callback('', result);
       }
-    });
-  };
-
-delete Steem.prototype.broadcastTransaction; // not supported
-delete Steem.prototype.broadcastTransactionWithCallback; // not supported
+    },
+  );
+};
 
 Promise.promisifyAll(Steem.prototype);
 
 // Export singleton instance
-const steem = new Steem();
+const steem = new Steem(config);
 exports = module.exports = steem;
 exports.Steem = Steem;

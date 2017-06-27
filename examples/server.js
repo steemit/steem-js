@@ -1,4 +1,4 @@
-var steem = require('./../index');
+var steem = require('../lib');
 
 steem.api.getAccountCount(function(err, result) {
 	console.log(err, result);
