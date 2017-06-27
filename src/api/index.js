@@ -3,7 +3,9 @@ import Promise from 'bluebird';
 import config from '../config';
 import methods from './methods';
 import transports from './transports';
-import { camelCase } from '../utils';
+import {camelCase} from '../utils';
+import {hash} from '../auth/ecc';
+import {ops} from '../auth/ecc';
 
 class Steem extends EventEmitter {
   constructor(options = {}) {
@@ -209,6 +211,39 @@ methods.forEach(method => {
     return this[`${methodName}With`](options, callback);
   };
 });
+
+/**
+ * Wrap transaction broadcast: serializes the object and adds error reporting
+ */
+
+Steem.prototype.broadcastTransactionSynchronousWith = function Steem$$specializedSendWith(
+  options,
+  callback,
+) {
+  const trx = options.trx;
+  return this.send(
+    'network_broadcast_api',
+    {
+      method: 'broadcast_transaction_synchronous',
+      params: [trx],
+    },
+    (err, result) => {
+      if (err) {
+        const {signed_transaction} = ops;
+        // console.log('-- broadcastTransactionSynchronous -->', JSON.stringify(signed_transaction.toObject(trx), null, 2));
+        // toObject converts objects into serializable types
+        const trObject = signed_transaction.toObject(trx);
+        const buf = signed_transaction.toBuffer(trx);
+        err.digest = hash.sha256(buf).toString('hex');
+        err.transaction_id = buf.toString('hex');
+        err.transaction = JSON.stringify(trObject);
+        callback(err, '');
+      } else {
+        callback('', result);
+      }
+    },
+  );
+};
 
 Promise.promisifyAll(Steem.prototype);
 
