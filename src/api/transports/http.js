@@ -11,14 +11,15 @@ export default class HttpTransport extends Transport {
     const id = data.id || this.id++;
     const payload = {
       id,
-      method: 'call',
-      params: [api, data.method, data.params],
+      method: data.method,
+      params: data.params,
     };
     fetch(this.options.uri, {
       method: 'POST',
       body: JSON.stringify(payload),
     })
       .then(res => {
+        debug('Steem::receive', api, data);
         return res.json();
       })
       .then(json => {
