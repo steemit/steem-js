@@ -7,7 +7,7 @@ try {
     const path = require('path');
     if (packageJSON.dependencies['react-native']) {
         const fs = require('fs');
-        const index = path.join(__dirname, '..', 'index.js');
+        const index = path.join(__dirname, '..','lib', 'index.js');
         const RNIndex = path.join(__dirname, 'index.rn.js');
         const indexContent = fs.readFileSync(RNIndex, { encoding: 'utf8' })
         if (indexContent) {
