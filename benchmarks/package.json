@@ -1,0 +1,15 @@
+{
+  "name": "steem-js-benchmarks",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "benchmark": "^2.1.4",
+    "dsteem": "^0.3.1"
+  }
+}
