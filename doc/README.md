@@ -844,6 +844,23 @@ steem.broadcast.cancelTransferFromSavings(wif, from, requestId, function(err, re
 });
 ```
 
+### Multisig
+You can use multisignature to broadcast an operation.
+```
+steem.broadcast.send({
+  extensions: [],
+  operations: [
+    ['vote', {
+      voter: 'guest123',
+      author: 'fabien',
+      permlink: 'test',
+      weight: 1000
+    }]
+  ]}, [privPostingWif1, privPostingWif2], (err, result) => {
+  console.log(err, result);
+});
+```
+
 # Auth
 
 ### Verify
