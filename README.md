@@ -44,6 +44,9 @@ https://cdn.steemjs.com/lib/latest/steem.min.js<br/>
 <script src="//cdn.steemjs.com/lib/latest/steem.min.js"></script>
 ```
 
+## Webpack
+[Please have a look at the webpack usage example.](https://github.com/steemit/steem-js/blob/master/examples/webpack-example)
+
 ## Server
 ## Install
 ```

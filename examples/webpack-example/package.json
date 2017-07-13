@@ -1,0 +1,15 @@
+{
+  "name": "steem-js-webpack-example",
+  "scripts": {
+    "build": "npm run build-web && npm run build-node",
+    "build-web": "webpack",
+    "build-node": "USE_NODE=1 webpack"
+  },
+  "devDependencies": {
+    "json-loader": "^0.5.4",
+    "webpack": "^3.0.0"
+  },
+  "dependencies": {
+    "steem": "^0.5.20"
+  }
+}
