@@ -3,6 +3,7 @@
 - [Install](#install)
 - [Browser](#browser)
 - [Config](#config)
+- [JSON-RPC](#jsonrpc)
 - [Database API](#api)
     - [Subscriptions](#subscriptions)
     - [Tags](#tags)
@@ -52,6 +53,16 @@ steem.config.set('address_prefix','STM');
 ### get
 ```
 steem.config.get('chain_id');
+```
+
+## JSON-RPC
+Here is how to activate JSON-RPC transport:
+```js
+steem.api.setOptions({
+  transport: 'http',
+  uri: 'https://steemd.steemitdev.com' // Optional, by default https://steemd.steemit.com is used.
+});
+
 ```
 
 # API
