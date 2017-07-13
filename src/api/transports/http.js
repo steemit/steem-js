@@ -11,7 +11,7 @@ export default class HttpTransport extends Transport {
     const id = data.id || this.id++;
     const payload = {
       id,
-      "jsonrpc": '2.0',
+      jsonrpc: '2.0',
       method: data.method,
       params: data.params,
     };
