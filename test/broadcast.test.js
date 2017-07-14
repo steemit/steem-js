@@ -150,4 +150,20 @@ describe('steem.broadcast:', () => {
       ]);
     });
   });
+  
+  describe('writeOperations', () => {
+    it('wrong', (done) => {
+      const wif = steem.auth.toWif('username', 'password', 'posting');
+      steem.broadcast.vote(wif, 'voter', 'author', 'permlink', 0, (err) => {
+        if(err && /tx_missing_posting_auth/.test(err.message)) {
+          should.exist(err.digest);
+          should.exist(err.transaction);
+          should.exist(err.transaction_id);
+          done();
+        } else {
+          console.log(err);
+        }
+      });
+    });
+  });
 });

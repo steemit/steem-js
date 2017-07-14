@@ -3,6 +3,7 @@
 - [Install](#install)
 - [Browser](#browser)
 - [Config](#config)
+- [JSON-RPC](#jsonrpc)
 - [Database API](#api)
     - [Subscriptions](#subscriptions)
     - [Tags](#tags)
@@ -52,6 +53,16 @@ steem.config.set('address_prefix','STM');
 ### get
 ```
 steem.config.get('chain_id');
+```
+
+## JSON-RPC
+Here is how to activate JSON-RPC transport:
+```js
+steem.api.setOptions({
+  transport: 'http',
+  uri: 'https://steemd.steemitdev.com' // Optional, by default https://steemd.steemit.com is used.
+});
+
 ```
 
 # API
@@ -517,12 +528,6 @@ steem.api.getFollowCount(account, function(err, result) {
 
 ## Broadcast API
 
-### Broadcast Transaction
-```
-steem.api.broadcastTransaction(trx, function(err, result) {
-  console.log(err, result);
-});
-```
 ### Broadcast Transaction Synchronous
 ```
 steem.api.broadcastTransactionSynchronous(trx, function(err, result) {
@@ -535,12 +540,7 @@ steem.api.broadcastBlock(b, function(err, result) {
   console.log(err, result);
 });
 ```
-### Broadcast Transaction With Callback
-```
-steem.api.broadcastTransactionWithCallback(confirmationCallback, trx, function(err, result) {
-  console.log(err, result);
-});
-```
+
 # Broadcast
 
 ### Account Create
@@ -840,6 +840,23 @@ steem.broadcast.transferFromSavings(wif, from, requestId, to, amount, memo, func
 ### Cancel Transfer From Savings
 ```
 steem.broadcast.cancelTransferFromSavings(wif, from, requestId, function(err, result) {
+  console.log(err, result);
+});
+```
+
+### Multisig
+You can use multisignature to broadcast an operation.
+```
+steem.broadcast.send({
+  extensions: [],
+  operations: [
+    ['vote', {
+      voter: 'guest123',
+      author: 'fabien',
+      permlink: 'test',
+      weight: 1000
+    }]
+  ]}, [privPostingWif1, privPostingWif2], (err, result) => {
   console.log(err, result);
 });
 ```

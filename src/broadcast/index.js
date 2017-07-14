@@ -1,6 +1,5 @@
 import Promise from 'bluebird';
 import newDebug from 'debug';
-import noop from 'lodash/noop';
 
 import broadcastHelpers from './helpers';
 import formatterFactory from '../formatter';
@@ -10,6 +9,7 @@ import steemAuth from '../auth';
 import { camelCase } from '../utils';
 
 const debug = newDebug('steem:broadcast');
+const noop = function() {}
 const formatter = formatterFactory(steemApi);
 
 const steemBroadcast = {};
@@ -48,11 +48,7 @@ steemBroadcast.send = function steemBroadcast$send(tx, privKeys, callback) {
 };
 
 steemBroadcast._prepareTransaction = function steemBroadcast$_prepareTransaction(tx) {
-  // Login and get global properties
-  const loginP = steemApi.loginAsync('', '');
-  const propertiesP = loginP.then(() => {
-    return steemApi.getDynamicGlobalPropertiesAsync()
-  });
+  const propertiesP = steemApi.getDynamicGlobalPropertiesAsync();
   return propertiesP
     .then((properties) => {
       // Set defaults on the transaction
