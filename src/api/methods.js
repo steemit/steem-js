@@ -1,4 +1,4 @@
-[
+module.exports = [
   {
     "api": "database_api",
     "method": "set_subscribe_callback",
@@ -492,4 +492,4 @@
     "method": "get_market_history_buckets",
     "params": []
   }
-]
+];
