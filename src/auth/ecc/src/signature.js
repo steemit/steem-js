@@ -5,7 +5,8 @@ var assert = require('assert');
 var BigInteger = require('bigi');
 var PublicKey = require('./key_public');
 var PrivateKey = require('./key_private');
-const Buffer = require('buffer');
+const Buffer = require('buffer').Buffer;
+var base58 = require('bs58');
 
 const secp = require('secp256k1');
 
@@ -33,8 +34,8 @@ class Signature {
     var buf;
     buf = new Buffer(65);
     buf.writeUInt8(this.i, 0);
-    this.r.toBuffer(32).copy(buf, 1);
-    this.s.toBuffer(32).copy(buf, 33);
+    buf.writeUInt8(this.r, 1);
+    this.s.copy(buf, 33);
     return buf;
   }
 
@@ -73,12 +74,20 @@ class Signature {
   static signBufferSha256(buf, private_key) {
     let rv;
     let nonce = 0;
+    // console.log(buf.length);
+    // return;
+    private_key = new Buffer(base58.decode(private_key)).slice(1, -4);
     do {
-      rv = secp.sign(buf, private_key, {
-        data: Buffer.concat(buf, new Buffer(++nonce)),
+      console.log(buf);
+      console.log(private_key);
+      console.log(Buffer.concat([buf, new Buffer(++nonce)]));
+      rv = secp.sign(hash.sha256(buf), private_key, {
+        data: hash.sha256(Buffer.concat([buf, new Buffer(++nonce)])),
       });
     } while (!isCanonicalSignature(rv.signature));
-    return new Signature(rv.signature, rv.recovery, nonce);
+    console.log('rv = ', rv);
+    console.log('new Signature(', rv, ',', rv.recovery, ',', nonce);
+    return new Signature(rv.recovery, rv.signature, nonce);
     // if( buf_sha256.length !== 32 || ! Buffer.isBuffer(buf_sha256) )
     //     throw new Error("buf_sha256: 32 byte buffer requred")
     // private_key = toPrivateObj(private_key)
@@ -148,7 +157,7 @@ class Signature {
   }
 
   toHex() {
-    return this.toBuffer().toString('hex');
+    return this.toString('hex');
   }
 
   static signHex(hex, private_key) {

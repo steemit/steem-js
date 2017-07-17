@@ -8,7 +8,7 @@ const postingWif = password
   ? steem.auth.toWif(username, password, 'posting')
   : '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg';
 
-describe('steem.broadcast:', () => {
+describe.only('steem.broadcast:', () => {
   it('exists', () => {
     should.exist(steem.broadcast);
   });
