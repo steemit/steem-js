@@ -1,17 +1,16 @@
 const steem = require('../lib');
 
-const username = process.env.STEEM_USERNAME;
-const password = process.env.STEEM_PASSWORD;
-const wif = steem.auth.toWif(username, password, 'posting');
+const username = 'guest123';
+const wif = '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg';
 
 steem
   .broadcast
-  .upvote(
+  .vote(
     wif,
     username,
     'yamadapc',
     'test-post-bop-1-2-3-4-5-6',
-    null,
+    1,
     function(err, result) {
       console.log(err, result);
     }
