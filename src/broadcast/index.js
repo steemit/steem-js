@@ -39,7 +39,9 @@ steemBroadcast.send = function steemBroadcast$send(tx, privKeys, callback) {
       );
       return steemApi.broadcastTransactionSynchronousAsync(
         signedTransaction
-      ).then(() => signedTransaction);
+      ).then((result) => {
+        return Object.assign({}, result, signedTransaction);
+      });
     });
 
   resultP.nodeify(callback || noop);
