@@ -14,16 +14,14 @@ exports = module.exports = steemBroadcast => {
       if (!userAccount) { return cb('Invalid account name', null); }
 
       const updatedAuthority = userAccount[role];
-      const authorizedAccounts = updatedAuthority.account_auths.map(
-        auth => auth[0]
-      );
-      const hasAuthority =
-        authorizedAccounts.indexOf(authorizedUsername) !== -1;
 
+      /** Release callback if the account already exist in the account_auths array */
+      const authorizedAccounts = updatedAuthority.account_auths.map(auth => auth[0]);
+      const hasAuthority = authorizedAccounts.indexOf(authorizedUsername) !== -1;
       if (hasAuthority) {
-        // user does already exist in authorized list
         return cb(null, null);
       }
+
       updatedAuthority.account_auths.push([authorizedUsername, weight]);
       const owner = role === 'owner' ? updatedAuthority : undefined;
       const active = role === 'active' ? updatedAuthority : undefined;
@@ -64,7 +62,7 @@ exports = module.exports = steemBroadcast => {
         }
       }
 
-      // user does not exist in authorized list
+      /** Release callback if the account does not exist in the account_auths array */
       if (totalAuthorizedUser === updatedAuthority.account_auths.length) {
         return cb(null, null);
       }
@@ -99,16 +97,14 @@ exports = module.exports = steemBroadcast => {
       if (!userAccount) { return cb('Invalid account name', null); }
 
       const updatedAuthority = userAccount[role];
-      const authorizedKeys = updatedAuthority.key_auths.map(
-        auth => auth[0]
-      );
-      const hasAuthority =
-        authorizedKeys.indexOf(authorizedKey) !== -1;
 
+      /** Release callback if the key already exist in the key_auths array */
+      const authorizedKeys = updatedAuthority.key_auths.map(auth => auth[0]);
+      const hasAuthority = authorizedKeys.indexOf(authorizedKey) !== -1;
       if (hasAuthority) {
-        // key already exist in authorized list
         return cb(null, null);
       }
+
       updatedAuthority.key_auths.push([authorizedKey, weight]);
       const owner = role === 'owner' ? updatedAuthority : undefined;
       const active = role === 'active' ? updatedAuthority : undefined;
@@ -149,7 +145,7 @@ exports = module.exports = steemBroadcast => {
         }
       }
 
-      // key not exist in authorized list
+      /** Release callback if the key does not exist in the key_auths array */
       if (totalAuthorizedKey === updatedAuthority.key_auths.length) {
         return cb(null, null);
       }
