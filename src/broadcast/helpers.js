@@ -10,8 +10,8 @@ exports = module.exports = steemBroadcast => {
     cb
   ) => {
     api.getAccounts([username], (err, [userAccount]) => {
-      if (err) { return cb(err, null); }
-      if (!userAccount) { return cb('Invalid account name', null); }
+      if (err) { return cb(new Error(err), null); }
+      if (!userAccount) { return cb(new Error('Invalid account name'), null); }
 
       const updatedAuthority = userAccount[role];
 
@@ -49,8 +49,8 @@ exports = module.exports = steemBroadcast => {
     cb
   ) => {
     api.getAccounts([username], (err, [userAccount]) => {
-      if (err) { return cb(err, null); }
-      if (!userAccount) { return cb('Invalid account name', null); }
+      if (err) { return cb(new Error(err), null); }
+      if (!userAccount) { return cb(new Error('Invalid account name'), null); }
 
       const updatedAuthority = userAccount[role];
       const totalAuthorizedUser = updatedAuthority.account_auths.length;
@@ -93,8 +93,8 @@ exports = module.exports = steemBroadcast => {
     cb
   ) => {
     api.getAccounts([username], (err, [userAccount]) => {
-      if (err) { return cb(err, null); }
-      if (!userAccount) { return cb('Invalid account name', null); }
+      if (err) { return cb(new Error(err), null); }
+      if (!userAccount) { return cb(new Error('Invalid account name'), null); }
 
       const updatedAuthority = userAccount[role];
 
@@ -132,8 +132,8 @@ exports = module.exports = steemBroadcast => {
     cb
   ) => {
     api.getAccounts([username], (err, [userAccount]) => {
-      if (err) { return cb(err, null); }
-      if (!userAccount) { return cb('Invalid account name', null); }
+      if (err) { return cb(new Error(err), null); }
+      if (!userAccount) { return cb(new Error('Invalid account name'), null); }
 
       const updatedAuthority = userAccount[role];
       const totalAuthorizedKey = updatedAuthority.key_auths.length;
