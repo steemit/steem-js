@@ -38,7 +38,8 @@ class Steem extends EventEmitter {
           this.transport = new transports.http(options);
         }
         else {
-          this.websocket = this.uri;
+          if(this.uri)
+            this.websocket = this.uri;
           this.transport = new transports.ws(options);
         }
     }
