@@ -9,7 +9,10 @@ exports = module.exports = steemBroadcast => {
     weight = 1,
     cb
   ) => {
-    api.getAccountsAsync([username]).then(([userAccount]) => {
+    api.getAccounts([username], (err, [userAccount]) => {
+      if (err) { return cb(err, null); }
+      if (!userAccount) { return cb('Invalid account name', null); }
+
       const updatedAuthority = userAccount[role];
       const authorizedAccounts = updatedAuthority.account_auths.map(
         auth => auth[0]
@@ -47,7 +50,10 @@ exports = module.exports = steemBroadcast => {
     role = 'posting',
     cb
   ) => {
-    api.getAccountsAsync([username]).then(([userAccount]) => {
+    api.getAccounts([username], (err, [userAccount]) => {
+      if (err) { return cb(err, null); }
+      if (!userAccount) { return cb('Invalid account name', null); }
+
       const updatedAuthority = userAccount[role];
       const totalAuthorizedUser = updatedAuthority.account_auths.length;
       for (let i = 0; i < totalAuthorizedUser; i++) {
@@ -88,7 +94,10 @@ exports = module.exports = steemBroadcast => {
     weight = 1,
     cb
   ) => {
-    api.getAccountsAsync([username]).then(([userAccount]) => {
+    api.getAccounts([username], (err, [userAccount]) => {
+      if (err) { return cb(err, null); }
+      if (!userAccount) { return cb('Invalid account name', null); }
+
       const updatedAuthority = userAccount[role];
       const authorizedKeys = updatedAuthority.key_auths.map(
         auth => auth[0]
@@ -126,7 +135,10 @@ exports = module.exports = steemBroadcast => {
     role = 'posting',
     cb
   ) => {
-    api.getAccountsAsync([username]).then(([userAccount]) => {
+    api.getAccounts([username], (err, [userAccount]) => {
+      if (err) { return cb(err, null); }
+      if (!userAccount) { return cb('Invalid account name', null); }
+
       const updatedAuthority = userAccount[role];
       const totalAuthorizedKey = updatedAuthority.key_auths.length;
       for (let i = 0; i < totalAuthorizedKey; i++) {
