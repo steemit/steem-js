@@ -11,7 +11,7 @@
     "build-node": "mkdir -p ./lib && cp -r ./src/* ./lib/ && babel ./src --out-dir ./lib",
     "prepublish": "npm run build",
     "prepare": "npm run build",
-    "postinstall": "cross-env scripts/post-install.js"
+    "postinstall": "npm run build && cross-env scripts/post-install.js"
   },
   "browser": {
     "ws": false,
