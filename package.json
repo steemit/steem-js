@@ -10,8 +10,7 @@
     "build-browser": "rm -rf dist && NODE_ENV=production webpack && gzip -k -f ./dist/*.js && du -h ./dist/*",
     "build-node": "mkdir -p ./lib && cp -r ./src/* ./lib/ && babel ./src --out-dir ./lib",
     "prepublish": "npm run build",
-    "prepare": "npm run build",
-    "postinstall": "npm run build && cross-env scripts/post-install.js"
+    "postinstall": "postinstall-build lib && cross-env scripts/post-install.js"
   },
   "browser": {
     "ws": false,
@@ -48,6 +47,7 @@
     "ecurve": "^1.0.5",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.16.4",
+    "postinstall-build": "^5.0.1",
     "secure-random": "^1.1.1",
     "ws": "^3.0.0"
   },
