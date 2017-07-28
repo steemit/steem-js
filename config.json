@@ -2,6 +2,7 @@
   "transport": "ws",
   "websocket": "wss://steemd.steemit.com",
   "uri": "https://steemd.steemit.com",
+  "url": "wss://steemd.steemit.com",
   "dev_uri": "https://steemd.steemitdev.com",
   "stage_uri": "https://steemd.steemitstage.com",
   "address_prefix": "STM",

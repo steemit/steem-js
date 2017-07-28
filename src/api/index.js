@@ -18,11 +18,17 @@ class Steem extends EventEmitter {
     if(options.url.match('^((http|https)?:\/\/)'))
     {
       options.uri = options.url;
+      options.transport = 'http';
+      this._transportType = options.transport;
+      this.options = options;
       this.transport = new transports.http(options);
     }
     else if(options.url.match('^((ws|wss)?:\/\/)'))
     {
       options.websocket = options.url;
+      options.transport = 'ws';
+      this._transportType = options.transport;
+      this.options = options;
       this.transport = new transports.ws(options);
     }
     else if (options.transport) 
