@@ -15,33 +15,43 @@ class Steem extends EventEmitter {
   }
 
   _setTransport(options) {
-    if (options.transport) {
-      if (this.transport && this._transportType !== options.transport) {
+    if(options.url.match('^((http|https)?:\/\/)'))
+    {
+      options.uri = options.url;
+      this.transport = new transports.http(options);
+    }
+    else if(options.url.match('^((ws|wss)?:\/\/)'))
+    {
+      options.websocket = options.url;
+      this.transport = new transports.ws(options);
+    }
+    else if (options.transport) 
+    {
+      if (this.transport && this._transportType !== options.transport)
+      {
         this.transport.stop();
       }
 
       this._transportType = options.transport;
 
-      if (typeof options.transport === 'string') {
-        if (!transports[options.transport]) {
+      if (typeof options.transport === 'string')
+      {
+        if (!transports[options.transport])
+        {
           throw new TypeError(
             'Invalid `transport`, valid values are `http`, `ws` or a class',
           );
         }
         this.transport = new transports[options.transport](options);
-      } else {
+      } 
+      else 
+      {
         this.transport = new options.transport(options);
       }
-    } else {
-        if(options.uri.match('^((http|https)?:\/\/)'))
-        {
-          this.transport = new transports.http(options);
-        }
-        else {
-          if(options.uri)
-            options.websocket = options.uri;
-          this.transport = new transports.ws(options);
-        }
+    } 
+    else
+    {
+        this.transport = new transports.ws(options);
     }
   }
 
