@@ -33,13 +33,13 @@ class Steem extends EventEmitter {
         this.transport = new options.transport(options);
       }
     } else {
-        if(options.uri.match('^(http|https)://'))
+        if(options.uri.match('^((http|https)?:\/\/)'))
         {
           this.transport = new transports.http(options);
         }
         else {
-          if(this.uri)
-            this.websocket = this.uri;
+          if(options.uri)
+            options.websocket = options.uri;
           this.transport = new transports.ws(options);
         }
     }
