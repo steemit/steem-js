@@ -12,8 +12,8 @@ export default class HttpTransport extends Transport {
     const payload = {
       id,
       jsonrpc: '2.0',
-      method: data.method,
-      params: data.params,
+      method: 'call',
+      params: [api, data.method, data.params],
     };
     fetch(this.options.uri, {
       method: 'POST',
