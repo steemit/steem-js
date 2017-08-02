@@ -42,7 +42,7 @@ steem.api.getAccounts(['ned', 'dan'], function(err, response){
 Default config should work with steem. however you can change it to work with golos
 as 
 ```js
-steem.config.set('websocket','wss://ws.golos.io'); // assuming websocket is work at ws.golos.io
+steem.api.setOptions({ url: 'wss://ws.golos.io' }); // assuming websocket is work at ws.golos.io
 steem.config.set('address_prefix','GLS');
 steem.config.set('chain_id','782a3039b478c839e4cb0c941ff4eaeb7df40bdd68bd441afd444b9da763de12');
 ```
@@ -58,11 +58,7 @@ steem.config.get('chain_id');
 ## JSON-RPC
 Here is how to activate JSON-RPC transport:
 ```js
-steem.api.setOptions({
-  transport: 'http',
-  uri: 'https://steemd.steemitdev.com' // Optional, by default https://steemd.steemit.com is used.
-});
-
+steem.api.setOptions({ url: 'https://steemd.steemit.com' });
 ```
 
 # API
