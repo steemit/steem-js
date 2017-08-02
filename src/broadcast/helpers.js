@@ -1,14 +1,7 @@
 import api from '../api';
 
 exports = module.exports = steemBroadcast => {
-  steemBroadcast.addAccountAuth = (
-    activeWif,
-    username,
-    authorizedUsername,
-    role = 'posting',
-    weight = 1,
-    cb
-  ) => {
+  steemBroadcast.addAccountAuth = ({ activeWif, username, authorizedUsername, role = 'posting', weight }, cb) => {
     api.getAccounts([username], (err, [userAccount]) => {
       if (err) { return cb(new Error(err), null); }
       if (!userAccount) { return cb(new Error('Invalid account name'), null); }
@@ -41,13 +34,7 @@ exports = module.exports = steemBroadcast => {
     });
   };
 
-  steemBroadcast.removeAccountAuth = (
-    activeWif,
-    username,
-    authorizedUsername,
-    role = 'posting',
-    cb
-  ) => {
+  steemBroadcast.removeAccountAuth = ({ activeWif, username, authorizedUsername, role = 'posting' }, cb) => {
     api.getAccounts([username], (err, [userAccount]) => {
       if (err) { return cb(new Error(err), null); }
       if (!userAccount) { return cb(new Error('Invalid account name'), null); }
@@ -84,14 +71,7 @@ exports = module.exports = steemBroadcast => {
     });
   };
 
-  steemBroadcast.addKeyAuth = (
-    activeWif,
-    username,
-    authorizedKey,
-    role = 'posting',
-    weight = 1,
-    cb
-  ) => {
+  steemBroadcast.addKeyAuth = ({ activeWif, username, authorizedKey, role = 'posting', weight }, cb) => {
     api.getAccounts([username], (err, [userAccount]) => {
       if (err) { return cb(new Error(err), null); }
       if (!userAccount) { return cb(new Error('Invalid account name'), null); }
@@ -124,13 +104,7 @@ exports = module.exports = steemBroadcast => {
     });
   };
 
-  steemBroadcast.removeKeyAuth = (
-    activeWif,
-    username,
-    authorizedKey,
-    role = 'posting',
-    cb
-  ) => {
+  steemBroadcast.removeKeyAuth = ({ activeWif, username, authorizedKey, role = 'posting' }, cb) => {
     api.getAccounts([username], (err, [userAccount]) => {
       if (err) { return cb(new Error(err), null); }
       if (!userAccount) { return cb(new Error('Invalid account name'), null); }
