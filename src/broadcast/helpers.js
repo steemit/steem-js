@@ -15,6 +15,8 @@ exports = module.exports = steemBroadcast => {
         return cb(null, null);
       }
 
+      /** Use weight_thresold as default weight */
+      weight = weight || userAccount[role].weight_threshold;
       updatedAuthority.account_auths.push([authorizedUsername, weight]);
       const owner = role === 'owner' ? updatedAuthority : undefined;
       const active = role === 'active' ? updatedAuthority : undefined;
@@ -85,6 +87,8 @@ exports = module.exports = steemBroadcast => {
         return cb(null, null);
       }
 
+      /** Use weight_thresold as default weight */
+      weight = weight || userAccount[role].weight_threshold;
       updatedAuthority.key_auths.push([authorizedKey, weight]);
       const owner = role === 'owner' ? updatedAuthority : undefined;
       const active = role === 'active' ? updatedAuthority : undefined;
