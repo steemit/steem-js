@@ -894,8 +894,8 @@ Types.public_key = {
         return object.toString()
     },
     compare(a, b) {
-        // sort decending
-        return -1 * strCmp(a.toString(), b.toString())
+        // sort ascending
+        return 1 * strCmp(a.toString(), b.toString())
     }
 };
 
