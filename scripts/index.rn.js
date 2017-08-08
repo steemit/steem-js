@@ -1,5 +1,12 @@
 /* Patched for react native */
 
+// Fix issue "Can't find variable: self"
+// https://github.com/matthew-andrews/isomorphic-fetch/issues/125
+require('whatwg-fetch');
+// module.exports = self.fetch.bind(self);
+const globalObject = typeof self === 'undefined' ? global : self;
+module.exports = globalObject.fetch.bind(globalObject);
+
 global.Buffer = require('buffer').Buffer;
 global.process = require('process');
 global.process.env.NODE_ENV = __DEV__ ? 'development' : 'production'; // eslint-disable-line
