@@ -1,8 +1,9 @@
-import fetch from 'isomorphic-fetch';
+import fetchPonyfill from 'fetch-ponyfill';
+import Promise from 'bluebird';
 import newDebug from 'debug';
-
 import Transport from './base';
 
+const { fetch } = fetchPonyfill(Promise);
 const debug = newDebug('steem:http');
 
 export default class HttpTransport extends Transport {
