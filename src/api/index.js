@@ -11,6 +11,7 @@ class Steem extends EventEmitter {
   constructor(options = {}) {
     super(options);
     this._setTransport(options);
+    this._setLogger(options)
     this.options = options;
   }
 
@@ -31,7 +32,7 @@ class Steem extends EventEmitter {
       this.options = options;
       this.transport = new transports.ws(options);
     }
-    else if (options.transport) 
+    else if (options.transport)
     {
       if (this.transport && this._transportType !== options.transport)
       {
@@ -49,15 +50,48 @@ class Steem extends EventEmitter {
           );
         }
         this.transport = new transports[options.transport](options);
-      } 
-      else 
+      }
+      else
       {
         this.transport = new options.transport(options);
       }
-    } 
+    }
     else
     {
         this.transport = new transports.ws(options);
+    }
+  }
+
+  _setLogger(options) {
+    if(options.hasOwnProperty('logger')) {
+      switch(typeof options.logger) {
+        case 'function' :
+          this.__logger = {
+            log:options.logger
+          };
+          break;
+        case 'object' :
+          if(typeof options.logger.log !== 'function') {
+            throw new Error('setOptions({logger:{}}) must have a property .log of type function')
+          }
+          this.__logger = options.logger;
+          break;
+        case 'undefined' :
+          if(this.__logger) break;
+        default :
+          this.__logger = false;
+      }
+    }
+  }
+
+  log(logLevel) {
+    if(this.__logger) {
+      if((arguments.length > 1) && typeof this.__logger[logLevel] === 'function') {
+        let args = Array.prototype.slice.call(arguments, 1);
+        this.__logger[logLevel].apply(this.__logger, args);
+      } else {
+        this.__logger.log.apply(this.__logger, arguments);
+      }
     }
   }
 
@@ -70,11 +104,28 @@ class Steem extends EventEmitter {
   }
 
   send(api, data, callback) {
-    return this.transport.send(api, data, callback);
+    var cb = callback;
+    if(this.__logger) {
+      let id = Math.random();
+      let self = this;
+      this.log('xmit:' + id + ':', data)
+      cb = function(e, d) {
+        if(e) {
+          self.log('error', 'rsp:' + id + ':\n\n', e, d)
+        } else {
+          self.log('rsp:' + id + ':', d)
+        }
+        if(callback) {
+          callback.apply(self, arguments)
+        }
+      }
+    }
+    return this.transport.send(api, data, cb);
   }
 
   setOptions(options) {
     Object.assign(this.options, options);
+    this._setLogger(options)
     this._setTransport(this.options);
     this.transport.setOptions(this.options);
   }
