@@ -1,6 +1,6 @@
 module.exports = [
   {
-    "roles": ["posting"],
+    "roles": ["posting", "active", "owner"],
     "operation": "vote",
     "params": [
       "voter",
@@ -10,7 +10,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting"],
+    "roles": ["posting", "active", "owner"],
     "operation": "comment",
     "params": [
       "parent_author",
@@ -33,7 +33,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "transfer_to_vesting",
     "params": [
       "from",
@@ -42,7 +42,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "withdraw_vesting",
     "params": [
       "account",
@@ -50,7 +50,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "limit_order_create",
     "params": [
       "owner",
@@ -62,7 +62,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "limit_order_cancel",
     "params": [
       "owner",
@@ -70,7 +70,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "price",
     "params": [
       "base",
@@ -78,7 +78,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "feed_publish",
     "params": [
       "publisher",
@@ -86,7 +86,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "convert",
     "params": [
       "owner",
@@ -95,7 +95,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "account_create",
     "params": [
       "fee",
@@ -109,7 +109,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["owner", "active"],
+    "roles": ["active", "owner"],
     "operation": "account_update",
     "params": [
       "account",
@@ -121,7 +121,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "witness_update",
     "params": [
       "owner",
@@ -132,7 +132,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "account_witness_vote",
     "params": [
       "account",
@@ -141,7 +141,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "account_witness_proxy",
     "params": [
       "account",
@@ -149,7 +149,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "pow",
     "params": [
       "worker",
@@ -159,7 +159,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "custom",
     "params": [
       "required_auths",
@@ -168,7 +168,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting"],
+    "roles": ["posting", "active", "owner"],
     "operation": "delete_comment",
     "params": [
       "author",
@@ -176,7 +176,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting", "active"],
+    "roles": ["posting", "active", "owner"],
     "operation": "custom_json",
     "params": [
       "required_auths",
@@ -186,7 +186,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting"],
+    "roles": ["posting", "active", "owner"],
     "operation": "comment_options",
     "params": [
       "author",
@@ -199,7 +199,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "set_withdraw_vesting_route",
     "params": [
       "from_account",
@@ -209,7 +209,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "limit_order_create2",
     "params": [
       "owner",
@@ -221,7 +221,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting"],
+    "roles": ["posting", "active", "owner"],
     "operation": "challenge_authority",
     "params": [
       "challenger",
@@ -238,7 +238,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "request_account_recovery",
     "params": [
       "recovery_account",
@@ -267,7 +267,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "escrow_transfer",
     "params": [
       "from",
@@ -283,7 +283,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "escrow_dispute",
     "params": [
       "from",
@@ -294,7 +294,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "escrow_release",
     "params": [
       "from",
@@ -308,7 +308,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "pow2",
     "params": [
       "input",
@@ -316,7 +316,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "escrow_approve",
     "params": [
       "from",
@@ -328,7 +328,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "transfer_to_savings",
     "params": [
       "from",
@@ -338,7 +338,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "transfer_from_savings",
     "params": [
       "from",
@@ -349,7 +349,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "cancel_transfer_from_savings",
     "params": [
       "from",
@@ -373,7 +373,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "reset_account",
     "params": [
       "reset_account",
@@ -391,7 +391,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting"],
+    "roles": ["posting", "active", "owner"],
     "operation": "claim_reward_balance",
     "params": [
       "account",
@@ -401,7 +401,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "delegate_vesting_shares",
     "params": [
       "delegator",
@@ -410,7 +410,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "account_create_with_delegation",
     "params": [
       "fee",
@@ -426,7 +426,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "fill_convert_request",
     "params": [
       "owner",
@@ -436,7 +436,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting"],
+    "roles": ["posting", "active", "owner"],
     "operation": "comment_reward",
     "params": [
       "author",
@@ -445,7 +445,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "liquidity_reward",
     "params": [
       "owner",
@@ -453,7 +453,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "interest",
     "params": [
       "owner",
@@ -461,7 +461,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["active"],
+    "roles": ["active", "owner"],
     "operation": "fill_vesting_withdraw",
     "params": [
       "from_account",
@@ -471,7 +471,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting"],
+    "roles": ["posting", "active", "owner"],
     "operation": "fill_order",
     "params": [
       "current_owner",
@@ -483,7 +483,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting"],
+    "roles": ["posting", "active", "owner"],
     "operation": "fill_transfer_from_savings",
     "params": [
       "from",
