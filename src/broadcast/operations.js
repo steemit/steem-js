@@ -132,7 +132,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting"],
+    "roles": ["active"],
     "operation": "account_witness_vote",
     "params": [
       "account",
@@ -141,7 +141,7 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting"],
+    "roles": ["active"],
     "operation": "account_witness_proxy",
     "params": [
       "account",
