@@ -312,7 +312,7 @@ module.exports = [
   {
     "api": "database_api",
     "method": "get_content_replies",
-    "params": ["parent", "parentPermlink"]
+    "params": ["author", "permlink"]
   },
   {
     "api": "database_api",
