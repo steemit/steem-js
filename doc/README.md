@@ -419,7 +419,7 @@ steem.api.getContent(author, permlink, function(err, result) {
 ```
 ### Get Content Replies
 ```
-steem.api.getContentReplies(parent, parentPermlink, function(err, result) {
+steem.api.getContentReplies(author, permlink, function(err, result) {
   console.log(err, result);
 });
 ```
