@@ -84,7 +84,6 @@ function makeConfig(options) {
       loaders: [
         {
           test: /\.js?$/,
-          exclude: /node_modules/,
           loader: 'babel',
         },
         {
