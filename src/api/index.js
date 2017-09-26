@@ -12,6 +12,9 @@ import {
 import {
     ops
 } from '../auth/serializer';
+import {
+    jsonRpcCall
+} from './transports/http';
 
 class Steem extends EventEmitter {
     constructor(options = {}) {
@@ -19,6 +22,7 @@ class Steem extends EventEmitter {
         this._setTransport(options);
         this._setLogger(options)
         this.options = options;
+        this.seqNo = 0; // used for rpc calls
     }
 
     _setTransport(options) {
@@ -115,6 +119,15 @@ class Steem extends EventEmitter {
             }
         }
         return this.transport.send(api, data, cb);
+    }
+
+    call(method, params, callback) {
+        if (this._transportType !== 'http') {
+            callback(new Error('RPC methods can only be called when using http transport'));
+        }
+        const id = ++this.seqNo;
+        jsonRpcCall(this.options.uri, {method, params, id})
+            .then(res => { callback(null, res) }, err => { callback(err) });
     }
 
     setOptions(options) {
