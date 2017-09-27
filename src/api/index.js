@@ -124,6 +124,7 @@ class Steem extends EventEmitter {
     call(method, params, callback) {
         if (this._transportType !== 'http') {
             callback(new Error('RPC methods can only be called when using http transport'));
+            return
         }
         const id = ++this.seqNo;
         jsonRpcCall(this.options.uri, {method, params, id})

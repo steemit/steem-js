@@ -17,7 +17,7 @@ class RPCError extends Error {
 
 export function jsonRpcCall(uri, {method, id, params}) {
   const payload = {id, jsonrpc: '2.0', method, params};
-  fetch(uri, {
+  return fetch(uri, {
     body: JSON.stringify(payload),
     headers: {'User-Agent': 'steem-js/1'},
     method: 'post',
