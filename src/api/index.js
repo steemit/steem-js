@@ -13,7 +13,7 @@ import {
     ops
 } from '../auth/serializer';
 import {
-    jsonRpcCall
+    jsonRpc
 } from './transports/http';
 
 class Steem extends EventEmitter {
@@ -127,7 +127,7 @@ class Steem extends EventEmitter {
             return
         }
         const id = ++this.seqNo;
-        jsonRpcCall(this.options.uri, {method, params, id})
+        jsonRpc(this.options.uri, {method, params, id})
             .then(res => { callback(null, res) }, err => { callback(err) });
     }
 
