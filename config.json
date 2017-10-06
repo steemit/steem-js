@@ -1,6 +1,7 @@
 {
   "transport": "ws",
   "websocket": "wss://steemd.steemit.com",
+  "websocketdev": "wss://steemd.steemitdev.com",
   "uri": "https://steemd.steemit.com",
   "url": "",
   "dev_uri": "https://steemd.steemitdev.com",

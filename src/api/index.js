@@ -20,19 +20,43 @@ class Steem extends EventEmitter {
     constructor(options = {}) {
         super(options);
         this._setTransport(options);
-        this._setLogger(options)
+        this._setLogger(options);
         this.options = options;
         this.seqNo = 0; // used for rpc calls
+        methods.forEach(method => {
+            const methodName = method.method_name || camelCase(method.method);
+            const methodParams = method.params || [];
+
+            this[`${methodName}With`] = (options, callback) => {
+                return this.send(method.api, {
+                    method: method.method,
+                    params: methodParams.map(param => options[param])
+                }, callback);
+            };
+
+            this[methodName] = (...args) => {
+                const options = methodParams.reduce((memo, param, i) => {
+                    memo[param] = args[i]; // eslint-disable-line no-param-reassign
+                    return memo;
+                }, {});
+                const callback = args[methodParams.length];
+                return this[`${methodName}With`](options, callback);
+            };
+
+	    this[`${methodName}WithAsync`] = Promise.promisify(this[`${methodName}With`]);
+            this[`${methodName}Async`] = Promise.promisify(this[methodName]);
+        });
+
     }
 
     _setTransport(options) {
-        if (options.url.match('^((http|https)?:\/\/)')) {
+        if (options.url && options.url.match('^((http|https)?:\/\/)')) {
             options.uri = options.url;
             options.transport = 'http';
             this._transportType = options.transport;
             this.options = options;
             this.transport = new transports.http(options);
-        } else if (options.url.match('^((ws|wss)?:\/\/)')) {
+        } else if (options.url && options.url.match('^((ws|wss)?:\/\/)')) {
             options.websocket = options.url;
             options.transport = 'ws';
             this._transportType = options.transport;
@@ -133,9 +157,9 @@ class Steem extends EventEmitter {
 
     setOptions(options) {
         Object.assign(this.options, options);
-        this._setLogger(options)
-        this._setTransport(this.options);
-        this.transport.setOptions(this.options);
+        this._setLogger(options);
+        this._setTransport(options);
+        this.transport.setOptions(options);
     }
 
     setWebSocket(url) {
@@ -267,45 +291,8 @@ class Steem extends EventEmitter {
 
         return release;
     }
-}
 
-// Generate Methods from methods.json
-methods.forEach(method => {
-    const methodName = method.method_name || camelCase(method.method);
-    const methodParams = method.params || [];
-
-    Steem.prototype[`${methodName}With`] = function Steem$$specializedSendWith(
-        options,
-        callback,
-    ) {
-        const params = methodParams.map(param => options[param]);
-        return this.send(
-            method.api, {
-                method: method.method,
-                params,
-            },
-            callback,
-        );
-    };
-
-    Steem.prototype[methodName] = function Steem$specializedSend(...args) {
-        const options = methodParams.reduce((memo, param, i) => {
-            memo[param] = args[i]; // eslint-disable-line no-param-reassign
-            return memo;
-        }, {});
-        const callback = args[methodParams.length];
-        return this[`${methodName}With`](options, callback);
-    };
-});
-
-/**
- * Wrap transaction broadcast: serializes the object and adds error reporting
- */
-
-Steem.prototype.broadcastTransactionSynchronousWith = function Steem$$specializedSendWith(
-    options,
-    callback,
-) {
+    broadcastTransactionSynchronousWith(options, callback) {
     const trx = options.trx;
     return this.send(
         'network_broadcast_api', {
@@ -330,9 +317,9 @@ Steem.prototype.broadcastTransactionSynchronousWith = function Steem$$specialize
             }
         },
     );
-};
 
-Promise.promisifyAll(Steem.prototype);
+    }
+}
 
 // Export singleton instance
 const steem = new Steem(config);
