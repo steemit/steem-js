@@ -61,7 +61,7 @@ export default class WsTransport extends Transport {
     }
   }
 
-  async send(api, data, callback) {
+  send(api, data, callback) {
     debug('Steem::send', api, data);
     return this.start().then(() => {
       const deferral = {};
@@ -126,7 +126,7 @@ export default class WsTransport extends Transport {
       const err = new Error(
         // eslint-disable-next-line prefer-template
         (errorCause.message || 'Failed to complete operation') +
-          ' (see err.payload for the full error payload)',
+          ' (see err.payload for the full error payload)'
       );
       err.payload = message;
       _request.deferral.reject(err);
