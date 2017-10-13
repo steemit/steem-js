@@ -43,10 +43,9 @@ class Steem extends EventEmitter {
                 return this[`${methodName}With`](options, callback);
             };
 
-	    this[`${methodName}WithAsync`] = Promise.promisify(this[`${methodName}With`]);
+	          this[`${methodName}WithAsync`] = Promise.promisify(this[`${methodName}With`]);
             this[`${methodName}Async`] = Promise.promisify(this[methodName]);
         });
-
     }
 
     _setTransport(options) {
