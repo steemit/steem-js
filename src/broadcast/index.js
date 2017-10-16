@@ -61,7 +61,7 @@ steemBroadcast._prepareTransaction = function steemBroadcast$_prepareTransaction
           ref_block_prefix: new Buffer(headBlockId, 'hex').readUInt32LE(4),
           expiration: new Date(
             chainDate.getTime() +
-            60 * 1000
+            600 * 1000
           ),
         }, tx);
       });
