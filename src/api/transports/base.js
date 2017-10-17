@@ -1,6 +1,5 @@
 import Promise from 'bluebird';
 import EventEmitter from 'events';
-import each from 'lodash/each';
 
 export default class Transport extends EventEmitter {
   constructor(options = {}) {
@@ -10,9 +9,7 @@ export default class Transport extends EventEmitter {
   }
 
   setOptions(options) {
-    each(options, (value, key) => {
-      this.options[key] = value;
-    });
+    Object.assign(this.options, options);
     this.stop();
   }
 
@@ -30,6 +27,7 @@ export default class Transport extends EventEmitter {
   send() {}
   start() {}
   stop() {}
+
 }
 
 Promise.promisifyAll(Transport.prototype);
