@@ -136,4 +136,16 @@ describe('steem.api:', function () {
       });
     });
   });
+
+  describe('useApiOptions', () => {
+    it('works ok with the dev instances', async() => {
+      steem.api.setOptions({ useAppbaseApi: true, url: steem.config.get('websocketdev') });
+
+      const result = await steem.api.getContentAsync('yamadapc', 'test-1-2-3-4-5-6-7-9');
+      steem.api.setOptions({ useAppbaseApi: false, url: steem.config.get('websocket') });
+
+      result.should.have.properties(testPost);
+    });
+  });
+
 });

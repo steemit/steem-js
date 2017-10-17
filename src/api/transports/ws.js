@@ -1,5 +1,4 @@
 import Promise from 'bluebird';
-import defaults from 'lodash/defaults';
 import isNode from 'detect-node';
 import newDebug from 'debug';
 
@@ -16,214 +15,125 @@ if (isNode) {
 
 const debug = newDebug('steem:ws');
 
-const DEFAULTS = {
-  apiIds: {
-    database_api: 0,
-    login_api: 1,
-    follow_api: 2,
-    network_broadcast_api: 4,
-  },
-  id: 0,
-};
-
 export default class WsTransport extends Transport {
   constructor(options = {}) {
-    defaults(options, DEFAULTS);
-    super(options);
+    super(Object.assign({id: 0}, options));
 
-    this.apiIds = options.apiIds;
-
+    this._requests = new Map();
     this.inFlight = 0;
-    this.currentP = Promise.fulfilled();
     this.isOpen = false;
-    this.releases = [];
-    this.requests = {};
-    this.requestsTime = {};
-
-    // A Map of api name to a promise to it's API ID refresh call
-    this.apiIdsP = {};
   }
 
   start() {
-    if (this.startP) {
-      return this.startP;
+
+    if (this.startPromise) {
+      return this.startPromise;
     }
-
-    const startP = new Promise((resolve, reject) => {
-      if (startP !== this.startP) return;
-      const url = this.options.websocket;
-      this.ws = new WebSocket(url);
-
-      const releaseOpen = this.listenTo(this.ws, 'open', () => {
-        debug('Opened WS connection with', url);
+ 
+    this.startPromise = new Promise((resolve, reject) => {
+      this.ws = new WebSocket(this.options.websocket);
+      this.ws.onerror = (err) => {
+        this.startPromise = null;
+        reject(err);        
+      };
+      this.ws.onopen = () => {
         this.isOpen = true;
-        releaseOpen();
+        this.ws.onerror = this.onError.bind(this);
+        this.ws.onmessage = this.onMessage.bind(this);
+        this.ws.onclose = this.onClose.bind(this);
         resolve();
-      });
-
-      const releaseClose = this.listenTo(this.ws, 'close', () => {
-        debug('Closed WS connection with', url);
-        this.isOpen = false;
-        delete this.ws;
-        this.stop();
-
-        if (startP.isPending()) {
-          reject(
-            new Error(
-              'The WS connection was closed before this operation was made',
-            ),
-          );
-        }
-      });
-
-      const releaseMessage = this.listenTo(this.ws, 'message', message => {
-        debug('Received message', message.data);
-        const data = JSON.parse(message.data);
-        const id = data.id;
-        const request = this.requests[id];
-        if (!request) {
-          debug('Steem.onMessage: unknown request ', id);
-        }
-        delete this.requests[id];
-        this.onMessage(data, request);
-      });
-
-      this.releases = this.releases.concat([
-        releaseOpen,
-        releaseClose,
-        releaseMessage,
-      ]);
-    });
-
-    this.startP = startP;
-    this.getApiIds();
-
-    return startP;
+      };
+    }); 
+    return this.startPromise;
   }
 
   stop() {
     debug('Stopping...');
-    if (this.ws) this.ws.close();
-    this.apiIdsP = {};
-    delete this.startP;
-    delete this.ws;
-    this.releases.forEach(release => release());
-    this.releases = [];
-  }
 
-  /**
-   * Refreshes API IDs, populating the `Steem::apiIdsP` map.
-   *
-   * @param {String} [requestName] If provided, only this API will be refreshed
-   * @param {Boolean} [force] If true the API will be forced to refresh, ignoring existing results
-   */
+    this.startPromise = null;
+    this.isOpen = false;
+    this._requests.clear();
 
-  getApiIds(requestName, force) {
-    if (!force && requestName && this.apiIdsP[requestName]) {
-      return this.apiIdsP[requestName];
+    if (this.ws) {
+      this.ws.onerror = this.ws.onmessage = this.ws.onclose = null;
+      this.ws.close();
+      this.ws = null;
     }
-
-    const apiNamesToRefresh = requestName
-      ? [requestName]
-      : Object.keys(this.apiIds);
-    apiNamesToRefresh.forEach(name => {
-      this.apiIdsP[name] = this.sendAsync('login_api', {
-        method: 'get_api_by_name',
-        params: [name],
-      }).then(result => {
-        if (result != null) {
-          this.apiIds[name] = result;
-        }
-      });
-    });
-
-    // If `requestName` was provided, only wait for this API ID
-    if (requestName) {
-      return this.apiIdsP[requestName];
-    }
-
-    // Otherwise wait for all of them
-    return Promise.props(this.apiIdsP);
   }
 
   send(api, data, callback) {
     debug('Steem::send', api, data);
-    const id = data.id || this.id++;
-    const startP = this.start();
+    return this.start().then(() => {
+      const deferral = {};
+      new Promise((resolve, reject) => {
+        deferral.resolve = (val) => {
+          resolve(val);
+          callback(null, val);
+        };
+        deferral.reject = (val) => {
+          reject(val);
+          callback(val);
+        }
+      });
 
-    const apiIdsP = api === 'login_api' && data.method === 'get_api_by_name'
-      ? Promise.fulfilled()
-      : this.getApiIds(api);
+      if (this.options.useAppbaseApi) {
+        api = 'condenser_api';
+      }
 
-    if (api === 'login_api' && data.method === 'get_api_by_name') {
-      debug('Sending setup message');
-    } else {
-      debug('Going to wait for setup messages to resolve');
-    }
-
-    this.currentP = Promise.join(startP, apiIdsP)
-      .then(
-        () =>
-          new Promise((resolve, reject) => {
-            if (!this.ws) {
-              reject(
-                new Error(
-                  'The WS connection was closed while this request was pending',
-                ),
-              );
-              return;
-            }
-
-            const payload = JSON.stringify({
-              id,
-              method: 'call',
-              params: [this.apiIds[api], data.method, data.params],
-            });
-
-            debug('Sending message', payload);
-            this.requests[id] = {
-              api,
-              data,
-              resolve,
-              reject,
-              start_time: Date.now(),
-            };
-
-            // this.inFlight += 1;
-            this.ws.send(payload);
-          }),
-      )
-      .nodeify(callback);
-
-    return this.currentP;
+      const _request = {
+        deferral,
+        startedAt: Date.now(),
+        message: {
+          id: data.id || this.id++,
+          method: 'call',
+          jsonrpc: '2.0',
+          params: [api, data.method, data.params]        
+        }
+      };
+      this.inFlight++;
+      this._requests.set(_request.message.id, _request);
+      this.ws.send(JSON.stringify(_request.message));
+      return deferral;
+    });
   }
 
-  onMessage(message, request) {
-    const {api, data, resolve, reject, start_time} = request;
+  onError(error) {
+    for (let _request of this._requests) {
+      _request.deferral.reject(error);
+    }
+    this.stop();
+  }
+
+  onClose() {
+    const error = new Error('Connection was closed');
+    for (let _request of this._requests) {
+      _request.deferral.reject(error);
+    }
+    this._requests.clear();
+  }
+
+  onMessage(websocketMessage) {
+    const message = JSON.parse(websocketMessage.data);
     debug('-- Steem.onMessage -->', message.id);
+    if (!this._requests.has(message.id)) {
+      throw new Error(`Panic: no request in queue for message id ${message.id}`);
+    }
+    const _request = this._requests.get(message.id);
+    this._requests.delete(message.id);
+
     const errorCause = message.error;
     if (errorCause) {
       const err = new Error(
         // eslint-disable-next-line prefer-template
         (errorCause.message || 'Failed to complete operation') +
-          ' (see err.payload for the full error payload)',
+          ' (see err.payload for the full error payload)'
       );
       err.payload = message;
-      reject(err);
-      return;
+      _request.deferral.reject(err);
+    } else {
+      this.emit('track-performance', _request.message.method, Date.now() - _request.startedAt);
+      _request.deferral.resolve(message.result);
     }
 
-    if (api === 'login_api' && data.method === 'login') {
-      debug(
-        "network_broadcast_api API ID depends on the WS' session. " +
-          'Triggering a refresh...',
-      );
-      this.getApiIds('network_broadcast_api', true);
-    }
-
-    debug('Resolved', api, data, '->', message);
-    this.emit('track-performance', data.method, Date.now() - start_time);
-    delete this.requests[message.id];
-    resolve(message.result);
   }
 }
