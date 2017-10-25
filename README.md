@@ -1,3 +1,6 @@
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/steemit/steem-js/blob/master/LICENSE)
+[![Steem.js channel on steemit.chat](https://img.shields.io/badge/chat-steemit.chat-1c56a4.svg)](https://steemit.chat/channel/steemjs)
+
 # Steem.js
 Steem.js the JavaScript API for Steem blockchain
 
@@ -28,8 +31,8 @@ Steem.js the JavaScript API for Steem blockchain
 Here is full documentation:
 https://github.com/steemit/steem-js/tree/master/doc
 
-## Browser 
-```html 
+## Browser
+```html
 <script src="./steem.min.js"></script>
 <script>
 steem.api.getAccounts(['ned', 'dan'], function(err, response){
@@ -38,9 +41,9 @@ steem.api.getAccounts(['ned', 'dan'], function(err, response){
 </script>
 ```
 
-## CDN 
+## CDN
 https://cdn.steemjs.com/lib/latest/steem.min.js<br/>
-```html 
+```html
 <script src="//cdn.steemjs.com/lib/latest/steem.min.js"></script>
 ```
 
@@ -77,20 +80,20 @@ steem.api.getAccounts(['ned', 'dan'], function(err, result) {
 ```
 
 ### Get State
-```js 
+```js
 steem.api.getState('/trends/funny', function(err, result) {
 	console.log(err, result);
 });
 ```
 
 ### Reputation Formatter
-```js 
+```js
 var reputation = steem.formatter.reputation(user.reputation);
 console.log(reputation);
 ```
 
 ## Contributions
-Patches are welcome! Contributors are listed in the package.json file. Please run the tests before opening a pull request and make sure that you are passing all of them. If you would like to contribute, but don't know what to work on, check the issues list or on Steemit Chat https://steemit.chat/ channel #steemjs.
+Patches are welcome! Contributors are listed in the package.json file. Please run the tests before opening a pull request and make sure that you are passing all of them. If you would like to contribute, but don't know what to work on, check the issues list or on Steemit Chat channel #steemjs https://steemit.chat/channel/steemjs.
 
 ## Issues
 When you find issues, please report them!
