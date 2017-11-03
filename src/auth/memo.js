@@ -20,7 +20,7 @@ export function decode(private_key, memo) {
     memo = memo.substring(1)
 
     assert(private_key, 'private_key is required')
-    checkEncryption()
+    //checkEncryption()			//[PRC] this has an endless loop...
 
     private_key = toPrivateObj(private_key)
 
@@ -61,7 +61,7 @@ export function encode(private_key, public_key, memo, testNonce) {
 
     assert(private_key, 'private_key is required')
     assert(public_key, 'public_key is required')
-    checkEncryption()
+    //checkEncryption()			//[PRC] this has an endless loop...
 
     private_key = toPrivateObj(private_key)
     public_key = toPublicObj(public_key)
