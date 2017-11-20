@@ -210,6 +210,91 @@ steem.api.getRecentCategories(after, limit, function(err, result) {
 });
 ```
 
+### Stream Block Number
+Streams block numbers by calling the callback function each time a new block is created.
+```
+var release = steem.api.streamBlockNumber(mode, function(err, result) {
+	console.log(err, result);
+});
+
+// Call the returned 'release' function to stop streaming
+release();
+```
+Parameters:
+- **mode**: 'head' (default) or 'irreversible'
+- **callback**: function to be called with the number of each new block that is created
+
+### Stream Block
+Streams blocks by calling the callback function each time a new block is created.
+```
+steem.api.streamBlock(mode, function(err, result) {
+	console.log(err, result);
+});
+
+// Call the returned 'release' function to stop streaming
+release();
+```
+Parameters:
+- **mode**: 'head' (default) or 'irreversible'
+- **callback**: function to be called with the number of each new block that is created
+
+Example block data passed as the "result" property to the callback function:
+```
+block_id: "01091c2ccea73ce2013017239cb8e9c6adac7a2a"
+extensions: []
+previous: "01091c2b769f7554a5932b29b81c3460fc6f335b"
+signing_key: "STM6GcZkfF2rNWwNUmhDCmfLZTpdfMgQDAcAvvGL4MZ7iNVapAVkT"
+timestamp: "2017-11-20T01:27:36"
+transaction_ids: ["11d0ba9308dd3c25124753eb72ff95c984faf299", ...]
+transaction_merkle_root: "4adfa63d8532427add4c081272af09443b8bc70d"
+transactions: [{...}, ...]
+witness: "pfunk"
+witness_signature: "2018f9d65bf44ec3f79d5763ff4bda633146f4f3f4b8998939f648514da00c809a32f25f633b91a5610b49fd735df78cfb841576ce95133d2ee1c7a4e208dc376d"
+```
+
+### Stream Transactions
+Streams transactions by calling the callback function each time a new block is created with each transaction in the block.
+```
+steem.api.streamTransactions(mode, function(err, result) {
+	console.log(err, result);
+});
+
+// Call the returned 'release' function to stop streaming
+release();
+```
+Parameters:
+- **mode**: 'head' (default) or 'irreversible'
+- **callback**: function to be called with the number of each new block that is created
+
+Example transaction data passed as the "result" property to the callback function:
+```
+expiration: "2017-11-20T01:33:06"
+extensions: []
+operations: [...]
+ref_block_num: 7299
+ref_block_prefix: 1091086591
+signatures: ["205a04e6d6184bc18188938d86565505510cefac33b0838064578bf3395752edaa91c2f3e4485c8e3dd734c797c1ca2ee97"]
+```
+
+### Stream Operations
+Streams operations by calling the callback function each time a new block is created with each operation in each transaction in the block.
+```
+steem.api.streamOperations(mode, function(err, result) {
+	console.log(err, result);
+});
+
+// Call the returned 'release' function to stop streaming
+release();
+```
+Parameters:
+- **mode**: 'head' (default) or 'irreversible'
+- **callback**: function to be called with the number of each new block that is created
+
+Example operation data passed as the "result" property to the callback function:
+```
+["vote", {...}]
+```
+
 ## Globals
 
 ### Get Config
