@@ -1,9 +1,7 @@
-import fetchPonyfill from 'fetch-ponyfill';
-import Promise from 'bluebird';
+import fetch from 'cross-fetch';
 import newDebug from 'debug';
 import Transport from './base';
 
-const { fetch } = fetchPonyfill(Promise);
 const debug = newDebug('steem:http');
 
 class RPCError extends Error {
