@@ -68,7 +68,8 @@ class Serializer {
         
         } catch (error) {
             try {
-                EC.throw(this.operation_name+'.'+field+" = "+ JSON.stringify(object[field]), error);
+                //Fix #267 by ignoring this error
+                //EC.throw(this.operation_name+'.'+field+" = "+ JSON.stringify(object[field]), error);
             } catch (e) { // circular ref
                 EC.throw(this.operation_name+'.'+field+" = "+ object[field], error);
             }
