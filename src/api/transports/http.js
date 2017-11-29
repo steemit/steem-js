@@ -37,6 +37,9 @@ export function jsonRpc(uri, {method, id, params}) {
 
 export default class HttpTransport extends Transport {
   send(api, data, callback) {
+    if (this.options.useAppbaseApi) {
+        api = 'condenser_api';
+    }
     debug('Steem::send', api, data);
     const id = data.id || this.id++;
     const params = [api, data.method, data.params];
