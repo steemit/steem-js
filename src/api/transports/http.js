@@ -1,9 +1,7 @@
-import fetchPonyfill from 'fetch-ponyfill';
-import Promise from 'bluebird';
+import fetch from 'cross-fetch';
 import newDebug from 'debug';
 import Transport from './base';
 
-const { fetch } = fetchPonyfill(Promise);
 const debug = newDebug('steem:http');
 
 class RPCError extends Error {
@@ -39,6 +37,9 @@ export function jsonRpc(uri, {method, id, params}) {
 
 export default class HttpTransport extends Transport {
   send(api, data, callback) {
+    if (this.options.useAppbaseApi) {
+        api = 'condenser_api';
+    }
     debug('Steem::send', api, data);
     const id = data.id || this.id++;
     const params = [api, data.method, data.params];
