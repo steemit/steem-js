@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/steemit/steem-js#readme",
   "dependencies": {
+    "@steemit/rpc-auth": "^1.1.0",
     "bigi": "^1.4.2",
     "bluebird": "^3.4.6",
     "browserify-aes": "^1.0.6",
