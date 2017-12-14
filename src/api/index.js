@@ -147,31 +147,26 @@ class Steem extends EventEmitter {
         return this.transport.send(api, data, cb);
     }
 
-    call(method, params, callback) {
-        if (this._transportType !== 'http') {
-            callback(new Error('RPC methods can only be called when using http transport'));
-            return
-        }
-        const id = ++this.seqNo;
-        jsonRpc(this.options.uri, {method, params, id})
-            .then(res => { callback(null, res) }, err => { callback(err) });
+    _nextId() {
+        this.seqNo = this.seqNo + 1;
+        return this.seqNo;
     }
 
-    signedCall(method, params, account, key, callback) {
+    async _call(request) {
         if (this._transportType !== 'http') {
-            callback(new Error('RPC methods can only be called when using http transport'));
-            return;
+            throw new Error('RPC methods can only be called when using http transport')
         }
-        const id = ++this.seqNo;
-        let request;
-        try {
-            request = signRequest({method, params, id}, account, [key]);
-        } catch (error) {
-            callback(error);
-            return;
-        }
-        jsonRpc(this.options.uri, request)
-            .then(res => { callback(null, res) }, err => { callback(err) });
+        return await jsonRpc(this.options.uri, request);
+    }
+
+    async call(method, params) {
+        return await this._call({method, params, id: this._nextId()});
+    }
+
+    async signedCall(method, params, account, key) {
+        const id = this._nextId();
+        const request = signRequest({method, params, id}, account, [key]);
+        return await this._call(request);
     }
 
     setOptions(options) {
