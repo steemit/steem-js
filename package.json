@@ -9,8 +9,7 @@
     "build": "npm run build-browser && npm run build-node",
     "build-browser": "rm -rf dist && NODE_ENV=production node ./node_modules/webpack/bin/webpack.js && gzip -k -f ./dist/*.js && du -h ./dist/*",
     "build-node": "mkdir -p ./lib && cp -r ./src/* ./lib/ && babel ./src --out-dir ./lib",
-    "prepublish": "npm run build",
-    "postinstall": "postinstall-build lib && cross-env scripts/post-install.js"
+    "prepublish": "npm run build"
   },
   "browser": {
     "ws": false,
@@ -48,7 +47,6 @@
     "detect-node": "^2.0.3",
     "ecurve": "^1.0.5",
     "lodash": "^4.16.4",
-    "postinstall-build": "^5.0.1",
     "secure-random": "^1.1.1",
     "ws": "^3.3.2"
   },
