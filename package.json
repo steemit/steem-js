@@ -1,10 +1,10 @@
 {
   "name": "@steemit/steem-js",
-  "version": "0.6.10",
+  "version": "0.7.0",
   "description": "Steem.js the JavaScript API for Steem blockchain",
   "main": "lib/index.js",
   "scripts": {
-    "test": "eslint --quiet src test; mocha -t 20000 --require babel-polyfill --require babel-register",
+    "test": "eslint --quiet src test; mocha -t 40000 --require babel-polyfill --require babel-register",
     "test-auth": "npm test -- --grep 'steem.auth'",
     "build": "npm run build-browser && npm run build-node",
     "build-browser": "rm -rf dist && NODE_ENV=production node ./node_modules/webpack/bin/webpack.js && gzip -k -f ./dist/*.js && du -h ./dist/*",
