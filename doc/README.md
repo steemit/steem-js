@@ -58,7 +58,7 @@ steem.config.get('chain_id');
 ## JSON-RPC
 Here is how to activate JSON-RPC transport:
 ```js
-steem.api.setOptions({ url: 'https://steemd.steemit.com' });
+steem.api.setOptions({ url: 'https://api.steemit.com' });
 ```
 
 # API
