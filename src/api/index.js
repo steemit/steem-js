@@ -22,8 +22,10 @@ import {
 class Steem extends EventEmitter {
     constructor(options = {}) {
         super(options);
-        this._setTransport(options);
+        this.customApiMethods = {};
         this._setLogger(options);
+        this._setTransport(options);
+        this._setCustomApis(options);
         this.options = options;
         this.seqNo = 0; // used for rpc calls
         methods.forEach(method => {
@@ -31,10 +33,31 @@ class Steem extends EventEmitter {
             const methodParams = method.params || [];
 
             this[`${methodName}With`] = (options, callback) => {
-                return this.send(method.api, {
+                const customMethod = (this.customApiMethods.hasOwnProperty(method.method))? this.customApiMethods[method.method] : false;
+                if(!customMethod) {
+                  return this.send(method.api, {
                     method: method.method,
                     params: methodParams.map(param => options[param])
-                }, callback);
+                  }, callback);
+                }
+
+                const uri = customMethod.uri? customMethod.uri : this.options.uri;
+                if(customMethod.useSteemdCallStructure) {
+                  const callPrefix = customMethod.prefix? customMethod.prefix : '';
+                  return this.sendUri(
+                    uri,
+                    callPrefix,
+                    method.api, {
+                    method: method.method,
+                    params: methodParams.map(param => options[param])
+                  }, callback);
+                }
+                if(method.method === 'get_follow_count') {
+                  return this.callUri(uri, ((customMethod.prefix? customMethod.prefix + '.': '') + method.method), methodParams.map(param => options[param]), callback);
+                } else {
+                  return this.callUri(uri, ((customMethod.prefix? customMethod.prefix + '.': '') + method.method), methodParams.map(param => options[param]), callback);
+                }
+
             };
 
             this[methodName] = (...args) => {
@@ -49,6 +72,26 @@ class Steem extends EventEmitter {
 	          this[`${methodName}WithAsync`] = Promise.promisify(this[`${methodName}With`]);
             this[`${methodName}Async`] = Promise.promisify(this[methodName]);
         });
+    }
+
+  /**
+   *
+   * @param options
+   * @private
+   */
+    _setCustomApis(options) {
+      if (options.hasOwnProperty('customApis')) {
+        this.customApiMethods = {};
+        options.customApis.forEach(customApi => {
+          customApi.methods.forEach(methodName => {
+            this.customApiMethods[methodName] = {
+              prefix: (customApi.prefix) ? customApi.prefix : false,
+              useSteemdCallStructure: !!customApi.useSteemdCallStructure,
+              uri: (customApi.uri) ? customApi.uri : false
+            };
+          });
+         })
+      }
     }
 
     _setTransport(options) {
@@ -126,13 +169,16 @@ class Steem extends EventEmitter {
     stop() {
         return this.transport.stop();
     }
-
     send(api, data, callback) {
+      return this.sendUri(false, false, api, data, callback);
+    }
+
+    sendUri(uri, callPrefix, api, data, callback) {
         var cb = callback;
         if (this.__logger) {
             let id = Math.random();
             let self = this;
-            this.log('xmit:' + id + ':', data)
+            this.log('xmit:' + id + ':', data);
             cb = function(e, d) {
                 if (e) {
                     self.log('error', 'rsp:' + id + ':\n\n', e, d)
@@ -144,17 +190,22 @@ class Steem extends EventEmitter {
                 }
             }
         }
-        return this.transport.send(api, data, cb);
+
+        return this.transport.sendUri(uri, callPrefix, api, data, cb);
     }
 
     call(method, params, callback) {
-        if (this._transportType !== 'http') {
-            callback(new Error('RPC methods can only be called when using http transport'));
-            return
-        }
-        const id = ++this.seqNo;
-        jsonRpc(this.options.uri, {method, params, id})
-            .then(res => { callback(null, res) }, err => { callback(err) });
+      return this.callUri(this.options.uri, method, params, callback);
+    }
+
+    callUri(uri, method, params, callback) {
+      if (this._transportType !== 'http') {
+        callback(new Error('RPC methods can only be called when using http transport'));
+        return
+      }
+      const id = ++this.seqNo;
+      return jsonRpc(uri, {method, params, id})
+        .then(res => { callback(null, res) }, err => { callback(err) });
     }
 
     signedCall(method, params, account, key, callback) {
@@ -178,6 +229,7 @@ class Steem extends EventEmitter {
         Object.assign(this.options, options);
         this._setLogger(options);
         this._setTransport(options);
+        this._setCustomApis(options);
         this.transport.setOptions(options);
     }
 
