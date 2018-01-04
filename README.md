@@ -56,10 +56,10 @@ https://cdn.steemjs.com/lib/latest/steem.min.js<br/>
 $ npm install steem --save
 ```
 
-## WebSockets
-wss://steemd.steemit.com By Default<br/>
-wss://node.steem.ws<br/>
-wss://this.piston.rocks<br/>
+## RPC Servers
+https://api.steemit.com By Default<br/>
+https://node.steem.ws<br/>
+https://this.piston.rocks<br/>
 
 ## Examples
 ### Broadcast Vote
