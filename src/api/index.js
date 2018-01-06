@@ -52,12 +52,7 @@ class Steem extends EventEmitter {
                     params: methodParams.map(param => options[param])
                   }, callback);
                 }
-                if(method.method === 'get_follow_count') {
-                  return this.callUri(uri, ((customMethod.prefix? customMethod.prefix + '.': '') + method.method), methodParams.map(param => options[param]), callback);
-                } else {
-                  return this.callUri(uri, ((customMethod.prefix? customMethod.prefix + '.': '') + method.method), methodParams.map(param => options[param]), callback);
-                }
-
+                return this.callUri(uri, ((customMethod.prefix? customMethod.prefix + '.': '') + method.method), methodParams.map(param => options[param]), callback);
             };
 
             this[methodName] = (...args) => {
