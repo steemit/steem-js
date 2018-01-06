@@ -42,7 +42,7 @@ class Steem extends EventEmitter {
                 }
 
                 const uri = customMethod.uri? customMethod.uri : this.options.uri;
-                if(customMethod.useSteemdCallStructure) {
+                if(customMethod.useNonAppbCallStructure) {
                   const callPrefix = customMethod.prefix? customMethod.prefix : '';
                   return this.sendUri(
                     uri,
@@ -86,7 +86,7 @@ class Steem extends EventEmitter {
           customApi.methods.forEach(methodName => {
             this.customApiMethods[methodName] = {
               prefix: (customApi.prefix) ? customApi.prefix : false,
-              useSteemdCallStructure: !!customApi.useSteemdCallStructure,
+              useNonAppbCallStructure: !!customApi.useNonAppbCallStructure,
               uri: (customApi.uri) ? customApi.uri : false
             };
           });
