@@ -15,15 +15,14 @@ class RPCError extends Error {
 
 export function jsonRpc(uri, {method, id, params}) {
   const payload = {id, jsonrpc: '2.0', method, params};
-  console.log('headers disabled to keep OPTIONS calls being triggered. Uncomment before merging!');
   return fetch(uri, {
     body: JSON.stringify(payload),
     method: 'post',
     mode: 'cors',
-    // headers: {
-    //   Accept: 'application/json, text/plain, */*',
-    //   'Content-Type': 'application/json',
-    // },
+    headers: {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json',
+    },
   }).then(res => {
     if (!res.ok) {
       throw new Error(`HTTP ${ res.status }: ${ res.statusText }`);
