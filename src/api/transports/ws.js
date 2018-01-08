@@ -29,12 +29,12 @@ export default class WsTransport extends Transport {
     if (this.startPromise) {
       return this.startPromise;
     }
- 
+
     this.startPromise = new Promise((resolve, reject) => {
       this.ws = new WebSocket(this.options.websocket);
       this.ws.onerror = (err) => {
         this.startPromise = null;
-        reject(err);        
+        reject(err);
       };
       this.ws.onopen = () => {
         this.isOpen = true;
@@ -43,7 +43,7 @@ export default class WsTransport extends Transport {
         this.ws.onclose = this.onClose.bind(this);
         resolve();
       };
-    }); 
+    });
     return this.startPromise;
   }
 
@@ -62,6 +62,10 @@ export default class WsTransport extends Transport {
   }
 
   send(api, data, callback) {
+    return this.sendUri(false, false, api, data, callback);
+  }
+
+  sendUri(uri, methodPrefix, api, data, callback) {
     debug('Steem::send', api, data);
     return this.start().then(() => {
       const deferral = {};
@@ -85,9 +89,9 @@ export default class WsTransport extends Transport {
         startedAt: Date.now(),
         message: {
           id: data.id || this.id++,
-          method: 'call',
+          method: (methodPrefix? methodPrefix + '.' : '') + 'call',
           jsonrpc: '2.0',
-          params: [api, data.method, data.params]        
+          params: [api, data.method, data.params]
         }
       };
       this.inFlight++;
