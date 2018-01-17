@@ -275,6 +275,19 @@ steem.api.getKeyReferences(key, function(err, result) {
   console.log(err, result);
 });
 ```
+#### Example:
+```js
+var publicKeys = ['STM6...', 'STM5...'];
+steem.api.getKeyReferences(publicKeys, function(err, result) {
+  //console.log(err, result);
+  if (!err) {
+    result.forEach(function(item) {
+      console.log('getKeyReferences', 'username: [', item[0], ']');
+    });
+  }
+  else console.error(err);
+});
+```
 
 ## Accounts
 
@@ -282,6 +295,19 @@ steem.api.getKeyReferences(key, function(err, result) {
 ```
 steem.api.getAccounts(names, function(err, result) {
   console.log(err, result);
+});
+```
+#### Example:
+```js
+var accounts = [ 'epexa', 'epexa2' ];
+steem.api.getAccounts(accounts, function(err, result) {
+  //console.log(err, result);
+  if (!err) {
+    result.forEach(function(item) {
+      console.log('getAccounts', 'username: [', item.name, '] id: [', item.id, ']');
+    });
+  }
+  else console.error(err);
 });
 ```
 ### Get Account References
@@ -296,10 +322,37 @@ steem.api.lookupAccountNames(accountNames, function(err, result) {
   console.log(err, result);
 });
 ```
+#### Example:
+```js
+var usernames = ['epexa', 'epexa2'];
+steem.api.lookupAccountNames(usernames, function(err, result) {
+  //console.log(err, result);
+  if (!err) {
+    result.forEach(function(item) {
+      if (item) console.log('lookupAccountNames', 'username: [', item.name, '] id: [', item.id, ']');
+      else console.log('lookupAccountNames', 'account not found!');
+    });
+  }
+  else console.error(err);
+});
 ### Lookup Accounts
 ```
 steem.api.lookupAccounts(lowerBoundName, limit, function(err, result) {
   console.log(err, result);
+});
+```
+#### Example:
+```js
+var searchAccountsQuery = 'epe';
+var limitResults = 10;
+steem.api.lookupAccounts(searchAccountsQuery, limitResults, function(err, result) {
+  //console.log(err, result);
+  if (!err) {
+    result.forEach(function(item) {
+      console.log('lookupAccounts', 'username: [', item, ']');
+    });
+  }
+  else console.error(err);
 });
 ```
 ### Get Account Count
@@ -863,6 +916,17 @@ steem.broadcast.send({
 ```
 steem.auth.verify(name, password, auths);
 ```
+#### Example:
+```js
+var username = 'epexa';
+var password = 'P5...'; // master password
+// object in which the key type public key (active, memo, owner, posting), and the value of the array in the array itself is the public key
+var auths = {
+  posting: [['STM6...']]
+};
+var verifyResult = steem.auth.verify(username, password, auths);
+console.log('verify', verifyResult);
+```
 
 ### Generate Keys
 ```
@@ -873,25 +937,60 @@ steem.auth.generateKeys(name, password, roles);
 ```
 steem.auth.getPrivateKeys(name, password, roles);
 ```
+#### Example:
+```js
+var username = 'epexa';
+var password = 'P5J...'; // master password
+var roles = ['owner', 'active', 'posting', 'memo']; // optional parameter, if not specify, then all keys will return
+var keys = steem.auth.getPrivateKeys(username, password, roles);
+console.log('getPrivateKeys', keys);
+```
 
 ### Is Wif
 ```
 steem.auth.isWif(privWif);
+```
+#### Example:
+```js
+var privWif = '5K...';
+var resultIsWif = steem.auth.isWif(privWif);
+console.log('isWif', resultIsWif);
 ```
 
 ### To Wif
 ```
 steem.auth.toWif(name, password, role);
 ```
+#### Example:
+```js
+var username = 'epexa';
+var password = 'P5J...'; // master password
+var role = 'posting'; // private key type, one of owner, active, posting, memo
+var privateKey = steem.auth.toWif(username, password, role);
+console.log('toWif', privateKey);
+```
 
 ### Wif Is Valid
 ```
 steem.auth.wifIsValid(privWif, pubWif);
 ```
+#### Example:
+```js
+var privWif = '5K...'; // private key
+var pubWif = 'STM6...'; // public key
+var resultWifIsValid = steem.auth.wifIsValid(privWif, pubWif);
+console.log('wifIsValid', resultWifIsValid);
+```
 
 ### Wif To Public
 ```
 steem.auth.wifToPublic(privWif);
+```
+#### Example:
+```js
+var privWif = '5K...'; // private key
+var resultWifToPublic = steem.auth.wifToPublic(privWif, pubWif);
+console.log('wifToPublic', resultWifToPublic);
 ```
 
 ### Sign Transaction
