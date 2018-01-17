@@ -335,6 +335,7 @@ steem.api.lookupAccountNames(usernames, function(err, result) {
   }
   else console.error(err);
 });
+```
 ### Lookup Accounts
 ```
 steem.api.lookupAccounts(lowerBoundName, limit, function(err, result) {
