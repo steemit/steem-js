@@ -15,17 +15,21 @@ var transaction = operations.transaction;
 var signed_transaction = operations.signed_transaction;
 
 Auth.verify = function (name, password, auths) {
-	var hasKey = false;
+	var verifyKeys = {};
 	var roles = [];
 	for (var role in auths) {
 		roles.push(role);
 	}
 	var pubKeys = this.generateKeys(name, password, roles);
 	roles.forEach(function (role) {
-		if (auths[role][0][0] === pubKeys[role]) {
-			hasKey = true;
-		}
+		var value = auths[role];
+		if (typeof value == 'object') value = value[0];
+		if (typeof value == 'object') value = value[0];
+		if (value === pubKeys[role]) verifyKeys[role] = true;
+		else verifyKeys[role] = false;
 	});
+	var verifyKeysKeys = Object.keys(verifyKeys);
+	if (verifyKeysKeys.length == 1) verifyKeys = verifyKeys[verifyKeysKeys[0]];
 	return hasKey;
 };
 
