@@ -713,12 +713,33 @@ steem.broadcast.limitOrderCreate(wif, owner, orderid, amountToSell, minToReceive
   console.log(err, result);
 });
 ```
+wif: active private key (String)
+owner: account name (String). No leading @ symbol.
+orderid: user defined ordernumber (int). Used to cancel orders.
+amountToSell: Amount to sell (String). "X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"
+minToReceive: Amount desired (String). "X.XXX ASSET" must have 3 decimal places. e.g. "20.120 STEEM"
+fillOrKill: Fill order from current order book or kill the order (Boolean). False leaves the order in the Order Book until either filled or the epiration time.
+expiration: Time when order expires (int). Unit milliseconds. Zero is UNIX epoch.
+function: Your callback (function).
+
+Possibly risky tip: If you want to place an at market order, then use the minToReceive as 0.001 and fillOrKill as true (use at own risk)
+
 ### Limit Order Create2
 ```
 steem.broadcast.limitOrderCreate2(wif, owner, orderid, amountToSell, exchangeRate, fillOrKill, expiration, function(err, result) {
   console.log(err, result);
 });
+
 ```
+wif: active private key (String)
+owner: account name (String). No leading @ symbol.
+orderid: user defined ordernumber (int). Used to cancel orders.
+amountToSell: Amount to sell (String). "X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"
+exchangeRate: The exchange rate (int).
+fillOrKill: Fill order from current order book or kill the order (Boolean). False leaves the order in the Order Book until either filled or the epiration time.
+expiration: Time when order expires (int). Unit milliseconds. Zero is UNIX epoch.
+function: Your callback (function).
+
 ### Liquidity Reward
 ```
 steem.broadcast.liquidityReward(wif, owner, payout, function(err, result) {
