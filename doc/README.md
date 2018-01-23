@@ -718,11 +718,11 @@ steem.broadcast.limitOrderCreate(wif, owner, orderid, amountToSell, minToReceive
 |---|---|---|---|
 |wif|Active private key|String||
 owner|Account name.|String|No leading @ symbol.|
-orderid|User defined ordernumber.|int|Used to cancel orders.|
+orderid|User defined ordernumber.|Integer|Used to cancel orders.|
 amountToSell|Amount to sell.|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
-minToReceive|Amount desired.|String)|"X.XXX ASSET" must have 3 decimal places. e.g. "20.120 STEEM"|
+minToReceive|Amount desired.|String|"X.XXX ASSET" must have 3 decimal places. e.g. "20.120 STEEM"|
 fillOrKill|Fill order from current order book or kill the order.|Boolean|False leaves the order in the Order Book until either filled or the epiration time.|
-expiration|Time when order expires.|int|Unit milliseconds. Zero is UNIX epoch.|
+expiration|Time when order expires.|Integer|Unit milliseconds. Zero is UNIX epoch.|
 function()|Your callback.|function||
 
 Possibly risky tip: If you want to place an at market order, then use the minToReceive as 0.001 and fillOrKill as true (use at own risk)
@@ -734,14 +734,17 @@ steem.broadcast.limitOrderCreate2(wif, owner, orderid, amountToSell, exchangeRat
 });
 
 ```
-wif: active private key (String)
-owner: account name (String). No leading @ symbol.
-orderid: user defined ordernumber (int). Used to cancel orders.
-amountToSell: Amount to sell (String). "X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"
-exchangeRate: The exchange rate (int).
-fillOrKill: Fill order from current order book or kill the order (Boolean). False leaves the order in the Order Book until either filled or the epiration time.
-expiration: Time when order expires (int). Unit milliseconds. Zero is UNIX epoch.
-function: Your callback (function).
+
+|Parameter|Description|Datatype|Notes|
+|---|---|---|---|
+|wif|Active private key|String||
+owner|Account name.|String|No leading @ symbol.|
+orderid|User defined ordernumber.|Integer|Used to cancel orders.|
+amountToSell|Amount to sell.|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
+exchangeRate|The exchange rate.|Integer|amountToSell is is multiplied by the exchangeRate to get a minToReceive.|
+fillOrKill|Fill order from current order book or kill the order.|Boolean|False leaves the order in the Order Book until either filled or the epiration time.|
+expiration|Time when order expires.|Integer|Unit milliseconds. Zero is UNIX epoch.|
+function()|Your callback.|function||
 
 ### Liquidity Reward
 ```
