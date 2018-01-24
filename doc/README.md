@@ -42,7 +42,7 @@ steem.api.getAccounts(['ned', 'dan'], function(err, response){
 Default config should work with steem. however you can change it to work with golos
 as 
 ```js
-steem.api.setOptions({ url: 'wss://ws.golos.io' }); // assuming websocket is work at ws.golos.io
+steem.api.setOptions({ url: 'wss://ws.golos.io' }); // assuming websocket is working at ws.golos.io
 steem.config.set('address_prefix','GLS');
 steem.config.set('chain_id','782a3039b478c839e4cb0c941ff4eaeb7df40bdd68bd441afd444b9da763de12');
 ```
@@ -488,7 +488,7 @@ steem.api.getMinerQueue(function(err, result) {
 
 ### Login
 
-/!\ It's **not safe** to use this method with your username and password. This method always return `true` and is only used in intern with empty values to enable broadcast.
+/!\ It's **not safe** to use this method with your username and password. This method always return `true` and is only used internally with empty values to enable broadcast.
 
 ```js
 steem.api.login('', '', function(err, result) {
@@ -710,6 +710,8 @@ steem.broadcast.limitOrderCancel(wif, owner, orderid, function(err, result) {
 });
 ```
 ### Limit Order Create
+Creates a limit order on the [internal market](http://steemit.com/market) to trade one asset for another using a specified minimum. Orders can be set attempt to fill immediately and or to go to the orderbook. Orders in the order book remain until filled or the expiration time is reached.
+
 ```js
 steem.broadcast.limitOrderCreate(wif, owner, orderid, amountToSell, minToReceive, fillOrKill, expiration, function(err, result) {
   console.log(err, result);
@@ -723,13 +725,19 @@ owner|Account name.|String|No leading @ symbol.|
 orderid|User defined ordernumber.|Integer|Used to cancel orders.|
 amountToSell|Amount to sell.|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
 minToReceive|Amount desired.|String|"X.XXX ASSET" must have 3 decimal places. e.g. "20.120 STEEM"|
-fillOrKill|Fill order from current order book or kill the order.|Boolean|False leaves the order in the Order Book until either filled or the epiration time.|
+fillOrKill|Fill order from current order book or kill the order.|Boolean|`False` places the order into the Order Book until either cancelled, filled, or the expiration time is reached.|
 expiration|Time when order expires.|Integer|Unit milliseconds. Zero is UNIX epoch.|
 function()|Your callback.|function||
 
-Possibly risky tip: If you want to place an at market order, then use the minToReceive as 0.001 and fillOrKill as true (use at own risk)
+Tip: `expiration` time must always be in the future even if `fillOrKill` is set to `true`.
+
+Risky tip: The Internal Market seems to always try and get the best price from the current orderbook so, to place an at market order, then use the `minToReceive` as `0.001` and `fillOrKill` as `true` (use at own risk).
+
+See also: [getOrderBook](#get-order-book), [getOpenOrders](#get-open-orders), [limitOrderCancel](#limit-order-cancel), [limitOrderCreate2](#limit-order-create2)
 
 ### Limit Order Create2
+Creates a limit order on the [internal market](http://steemit.com/market) to trade one asset for another using an exchange rate.  Orders can be set attempt to fill immediately and or to go to the orderbook. Orders in the order book remain until filled or the expiration time is reached.
+
 ```js
 steem.broadcast.limitOrderCreate2(wif, owner, orderid, amountToSell, exchangeRate, fillOrKill, expiration, function(err, result) {
   console.log(err, result);
@@ -744,9 +752,11 @@ owner|Account name.|String|No leading @ symbol.|
 orderid|User defined ordernumber.|Integer|Used to cancel orders.|
 amountToSell|Amount to sell.|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
 exchangeRate|The exchange rate.|Integer|amountToSell is is multiplied by the exchangeRate to get a minToReceive.|
-fillOrKill|Fill order from current order book or kill the order.|Boolean|False leaves the order in the Order Book until either filled or the epiration time.|
+fillOrKill|Fill order from current order book or kill the order.|Boolean|`False` places the order into the Order Book until either canceled, filled, or the expiration time is reached.|
 expiration|Time when order expires.|Integer|Unit milliseconds. Zero is UNIX epoch.|
 function()|Your callback.|function||
+
+See also: [getOrderBook](#get-order-book), [getOpenOrders](#get-open-orders), [limitOrderCancel](#limit-order-cancel), [limitOrderCreate](#limit-order-create2)
 
 ### Liquidity Reward
 ```js
