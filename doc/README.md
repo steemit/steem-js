@@ -721,13 +721,13 @@ steem.broadcast.limitOrderCreate(wif, owner, orderid, amountToSell, minToReceive
 |Parameter|Description|Datatype|Notes|
 |---|---|---|---|
 |wif|Active private key|String||
-owner|Account name.|String|No leading @ symbol.|
-orderid|User defined ordernumber.|Integer|Used to cancel orders.|
-amountToSell|Amount to sell.|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
-minToReceive|Amount desired.|String|"X.XXX ASSET" must have 3 decimal places. e.g. "20.120 STEEM"|
-fillOrKill|Fill order from current order book or kill the order.|Boolean|`False` places the order into the Order Book until either cancelled, filled, or the expiration time is reached.|
-expiration|Time when order expires.|Integer|Unit milliseconds. Zero is UNIX epoch.|
-function()|Your callback.|function||
+owner|Account name|String|No leading @ symbol|
+orderid|User defined ordernumber|Integer|Used to cancel orders|
+amountToSell|Amount to sell|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
+minToReceive|Amount desired|String|"X.XXX ASSET" must have 3 decimal places. e.g. "20.120 STEEM"|
+fillOrKill|Fill order from current order book or kill the order|Boolean|`false` places the order into the Order Book until either cancelled, filled, or the expiration time is reached|
+expiration|Time when order expires|Integer|Unit milliseconds. Zero is UNIX epoch|
+function()|Your callback|function||
 
 Tip: `expiration` time must always be in the future even if `fillOrKill` is set to `true`.
 
@@ -748,13 +748,13 @@ steem.broadcast.limitOrderCreate2(wif, owner, orderid, amountToSell, exchangeRat
 |Parameter|Description|Datatype|Notes|
 |---|---|---|---|
 |wif|Active private key|String||
-owner|Account name.|String|No leading @ symbol.|
-orderid|User defined ordernumber.|Integer|Used to cancel orders.|
-amountToSell|Amount to sell.|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
-exchangeRate|The exchange rate.|Integer|amountToSell is is multiplied by the exchangeRate to get a minToReceive.|
-fillOrKill|Fill order from current order book or kill the order.|Boolean|`False` places the order into the Order Book until either canceled, filled, or the expiration time is reached.|
-expiration|Time when order expires.|Integer|Unit milliseconds. Zero is UNIX epoch.|
-function()|Your callback.|function||
+owner|Account name|String|No leading @ symbol|
+orderid|User defined order identifier|Integer|Used to cancel orders|
+amountToSell|Amount to sell|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
+exchangeRate|The exchange rate|Integer|`amountToSell` is multiplied by the `exchangeRate` to have the same effect as `minToReceive`|
+fillOrKill|Fill order from current order book or kill the order|Boolean|`false` places the order into the Order Book until either canceled, filled, or the expiration time is reached|
+expiration|Time when order expires|Integer|Unit milliseconds. Zero is UNIX epoch|
+function()|Your callback|function||
 
 See also: [getOrderBook](#get-order-book), [getOpenOrders](#get-open-orders), [limitOrderCancel](#limit-order-cancel), [limitOrderCreate](#limit-order-create2)
 
@@ -807,17 +807,40 @@ steem.broadcast.setWithdrawVestingRoute(wif, fromAccount, toAccount, percent, au
 });
 ```
 ### Transfer
+Transfers assets, such as STEEM or SBD, from one account to another.
 ```js
 steem.broadcast.transfer(wif, from, to, amount, memo, function(err, result) {
   console.log(err, result);
 });
 ```
+|Parameter|Description|Datatype|Notes|
+|---|---|---|---|
+|wif|Active private key for the `from` account|String||
+from|Account name to take asset from|String|No leading @ symbol|
+to|Account name to place asset into|String|No leading @ symbol|
+amount|Amount of of asset to transfer|String|"X.XXX ASSET" must have 3 decimal places. e.g. "5.150 SBD"|
+function()|Your callback|function||
+
+See also: [transferToVesting](#transfer-to-vesting)
+
 ### Transfer To Vesting
+Vests STEEM into STEEM POWER. This method supports powering up one account from another.
 ```js
 steem.broadcast.transferToVesting(wif, from, to, amount, function(err, result) {
   console.log(err, result);
 });
 ```
+
+|Parameter|Description|Datatype|Notes|
+|---|---|---|---|
+|wif|Active private key for the `from` account|String||
+from|Account name to take STEEM from|String|No leading @ symbol|
+to|Account name to vest STEEM POWER into|String|No leading @ symbol. Can be the same account as `to`|
+amount|Amount of STEEM to vest/power up|String|"X.XXX STEEM" must have 3 decimal places. e.g. "25.100 STEEM". Must be denominated in STEEM|
+function()|Your callback|function||
+
+See also: [transfer](#transfer)
+
 ### Vote
 ```js
 steem.broadcast.vote(wif, voter, author, permlink, weight, function(err, result) {
