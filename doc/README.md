@@ -504,25 +504,135 @@ steem.api.getApiByName(apiName, function(err, result) {
 ```
 
 ## Follow API
+The follower API queries information about follow relationships between accounts. The API is read-only and does not create changes on the blockchain.
+
 
 ### Get Followers
+Returns an alphabetical ordered array of the accounts that are following a particular account.
+
 ```js
 steem.api.getFollowers(following, startFollower, followType, limit, function(err, result) {
   console.log(err, result);
 });
 ```
+
+|Parameter|Description|Datatype|Notes|
+|---|---|---|---|
+|following|The followers of which account|String|No leading @ symbol|
+|startFollower|Start the list from which follower?|String|No leading @symbol. Use the empty string `''` to start the list. Subsequent calls can use the name of the last follower|
+|followType|??|??|Set to 0 or 'blog' - either works|
+|limit|The maximum number of followers to return|Integer||
+|function()|Your callback|function|Tip: use `console.log(err, result)` to see the result|
+
+
+Call Example:
+```js
+steem.api.getFollowers('ned', '', 'blog', 2, function(err, result) {
+  console.log(err, result);
+});
+```
+
+Return Example:
+```js
+[ 
+  { follower: 'a-0-0', following: 'ned', what: [ 'blog' ] },
+  { follower: 'a-0-0-0-1abokina', following: 'ned', what: [ 'blog' ] }
+]
+```
+
+Using the Result:
+```js
+// Extract followers from the result into an array of account name strings
+var f = result.map(function(item) { return item.follower; });
+console.log(f);
+
+// Get the last follower for subsequent calls to getFollowers
+//   or use: f[f.length - 1]   if you used the extraction code above.
+var lastKnownFollower = result[result.length - 1].follower;
+
+// Use the last known follower to get the next group of followers
+steem.api.getFollowers('ned', lastKnownFollower, 'blog', 2, function(err, result) {
+  console.log(err, result);
+});
+```
+
+See also: [getFollowing](#get-following), [getFollowCount](#get-follow-count)
+
+
+
 ### Get Following
+Returns an alphabetical ordered Array of the accounts that are followed by a particular account.
 ```js
 steem.api.getFollowing(follower, startFollowing, followType, limit, function(err, result) {
   console.log(err, result);
 });
 ```
+
+|Parameter|Description|Datatype|Notes|
+|---|---|---|---|
+|follower|The account to get the following for|String|No leading @ symbol|
+|startFollowing|Start the list at which followed account?|String|No leading @symbol. Use the empty string `''` to start the list|
+|followType|??|??|Set to 0 or 'blog' - either works|
+|limit|The maximum number of items to return|Integer||
+|function()|Your callback|function|Tip: use `console.log(err, result)` to see the result|
+
+
+Call Example:
+```js
+steem.api.getFollowing('dan', '', 'blog', 2, function(err, result) {
+  console.log(err, result);
+});
+```
+
+Return Example:
+```js
+[
+  { follower: 'dan', following: 'dantheman', what: [ 'blog' ] },
+  { follower: 'dan', following: 'krnel', what: [ 'blog' ] } 
+]
+```
+
+Using the Result:
+```js
+// Extract followed accounts from the result into an array of account name strings
+var f = result.map(function(item) { return item.following; });
+```
+See the usage examples for [getFollowers](#get-followers) because the behaviour is very similar.
+
+
+See also: [getFollowers](#get-followers), [getFollowCount](#get-follow-count)
+
+
+
 ### Get Follow Count
 ```js
 steem.api.getFollowCount(account, function(err, result) {
   console.log(err, result);
 });
 ```
+
+|Parameter|Description|Datatype|Notes|
+|---|---|---|---|
+|account|The name for get the follow ccount for|String|No leading @ symbol|
+|function()|Your callback|function|Tip: use `console.log(err, result)` to see the result|
+
+
+Call Example:
+```js
+steem.api.getFollowCount('ned', function(err, result) {
+  console.log(err, result);
+});
+```
+
+Return Example:
+```js
+{ account: 'ned', follower_count: 16790, following_count: 913 }
+```
+
+
+See also: [getFollowers](#get-followers), [getFollowing](#get-following)
+
+
 
 ## Broadcast API
 
@@ -540,6 +650,7 @@ steem.api.broadcastBlock(b, function(err, result) {
 ```
 
 # Broadcast
+The `steem.broadcast` methods cause permanent changes on the blockchain.
 
 ### Account Create
 ```js
@@ -704,11 +815,26 @@ steem.broadcast.interest(wif, owner, interest, function(err, result) {
 });
 ```
 ### Limit Order Cancel
+Cancels an open limit order on the [internal market](http://steemit.com/market). Be aware that the order might be filled, or partially filled, before this call completes.
+
 ```js
 steem.broadcast.limitOrderCancel(wif, owner, orderid, function(err, result) {
   console.log(err, result);
 });
 ```
+
+|Parameter|Description|Datatype|Notes|
+|---|---|---|---|
+|wif|Active private key|String||
+|owner|Account name|String|No leading @ symbol|
+|orderid|User defined ordernumber|Integer|The `orderid` used when the order was created|
+|function()|Your callback|function||
+
+
+See also: [getOpenOrders](#get-open-orders), [limitOrderCancel](#limit-order-cancel), [limitOrderCreate2](#limit-order-create2)
+
+
+
 ### Limit Order Create
 Creates a limit order on the [internal market](http://steemit.com/market) to trade one asset for another using a specified minimum. Orders can be set attempt to fill immediately and or to go to the orderbook. Orders in the order book remain until filled or the expiration time is reached.
 
@@ -721,19 +847,22 @@ steem.broadcast.limitOrderCreate(wif, owner, orderid, amountToSell, minToReceive
 |Parameter|Description|Datatype|Notes|
 |---|---|---|---|
 |wif|Active private key|String||
-owner|Account name|String|No leading @ symbol|
-orderid|User defined ordernumber|Integer|Used to cancel orders|
-amountToSell|Amount to sell|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
-minToReceive|Amount desired|String|"X.XXX ASSET" must have 3 decimal places. e.g. "20.120 STEEM"|
-fillOrKill|Fill order from current order book or kill the order|Boolean|`false` places the order into the Order Book until either cancelled, filled, or the expiration time is reached|
-expiration|Time when order expires|Integer|Unit milliseconds. Zero is UNIX epoch|
-function()|Your callback|function||
+|owner|Account name|String|No leading @ symbol|
+|orderid|User defined ordernumber|Integer|Used to cancel orders|
+|amountToSell|Amount to sell|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
+|minToReceive|Amount desired|String|"X.XXX ASSET" must have 3 decimal places. e.g. "20.120 STEEM"|
+|fillOrKill|Fill order from current order book or kill the order|Boolean|`false` places the order into the Order Book until either cancelled, filled, or the expiration time is reached|
+|expiration|Time when order expires|Integer|Unit milliseconds. Zero is UNIX epoch|
+|function()|Your callback|function||
 
 Tip: `expiration` time must always be in the future even if `fillOrKill` is set to `true`.
 
 Risky tip: The Internal Market seems to always try and get the best price from the current orderbook so, to place an at market order, then use the `minToReceive` as `0.001` and `fillOrKill` as `true` (use at own risk).
 
+
 See also: [getOrderBook](#get-order-book), [getOpenOrders](#get-open-orders), [limitOrderCancel](#limit-order-cancel), [limitOrderCreate2](#limit-order-create2)
+
+
 
 ### Limit Order Create2
 Creates a limit order on the [internal market](http://steemit.com/market) to trade one asset for another using an exchange rate.  Orders can be set attempt to fill immediately and or to go to the orderbook. Orders in the order book remain until filled or the expiration time is reached.
@@ -742,21 +871,23 @@ Creates a limit order on the [internal market](http://steemit.com/market) to tra
 steem.broadcast.limitOrderCreate2(wif, owner, orderid, amountToSell, exchangeRate, fillOrKill, expiration, function(err, result) {
   console.log(err, result);
 });
-
 ```
 
 |Parameter|Description|Datatype|Notes|
 |---|---|---|---|
 |wif|Active private key|String||
-owner|Account name|String|No leading @ symbol|
-orderid|User defined order identifier|Integer|Used to cancel orders|
-amountToSell|Amount to sell|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
-exchangeRate|The exchange rate|Integer|`amountToSell` is multiplied by the `exchangeRate` to have the same effect as `minToReceive`|
-fillOrKill|Fill order from current order book or kill the order|Boolean|`false` places the order into the Order Book until either canceled, filled, or the expiration time is reached|
-expiration|Time when order expires|Integer|Unit milliseconds. Zero is UNIX epoch|
-function()|Your callback|function||
+|owner|Account name|String|No leading @ symbol|
+|orderid|User defined order identifier|Integer|Used to cancel orders|
+|amountToSell|Amount to sell|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
+|exchangeRate|The exchange rate|Integer|`amountToSell` is multiplied by the `exchangeRate` to have the same effect as `minToReceive`|
+|fillOrKill|Fill order from current order book or kill the order|Boolean|`false` places the order into the Order Book until either canceled, filled, or the expiration time is reached|
+|expiration|Time when order expires|Integer|Unit milliseconds. Zero is UNIX epoch|
+|function()|Your callback|function||
+
 
 See also: [getOrderBook](#get-order-book), [getOpenOrders](#get-open-orders), [limitOrderCancel](#limit-order-cancel), [limitOrderCreate](#limit-order-create2)
+
+
 
 ### Liquidity Reward
 ```js
@@ -816,10 +947,10 @@ steem.broadcast.transfer(wif, from, to, amount, memo, function(err, result) {
 |Parameter|Description|Datatype|Notes|
 |---|---|---|---|
 |wif|Active private key for the `from` account|String||
-from|Account name to take asset from|String|No leading @ symbol|
-to|Account name to place asset into|String|No leading @ symbol|
-amount|Amount of of asset to transfer|String|"X.XXX ASSET" must have 3 decimal places. e.g. "5.150 SBD"|
-function()|Your callback|function||
+|from|Account name to take asset from|String|No leading @ symbol|
+|to|Account name to place asset into|String|No leading @ symbol|
+|amount|Amount of of asset to transfer|String|"X.XXX ASSET" must have 3 decimal places. e.g. "5.150 SBD"|
+|function()|Your callback|function||
 
 See also: [transferToVesting](#transfer-to-vesting)
 
@@ -834,10 +965,10 @@ steem.broadcast.transferToVesting(wif, from, to, amount, function(err, result) {
 |Parameter|Description|Datatype|Notes|
 |---|---|---|---|
 |wif|Active private key for the `from` account|String||
-from|Account name to take STEEM from|String|No leading @ symbol|
-to|Account name to vest STEEM POWER into|String|No leading @ symbol. Can be the same account as `to`|
-amount|Amount of STEEM to vest/power up|String|"X.XXX STEEM" must have 3 decimal places. e.g. "25.100 STEEM". Must be denominated in STEEM|
-function()|Your callback|function||
+|from|Account name to take STEEM from|String|No leading @ symbol|
+|to|Account name to vest STEEM POWER into|String|No leading @ symbol. Can be the same account as `to`|
+|amount|Amount of STEEM to vest/power up|String|"X.XXX STEEM" must have 3 decimal places. e.g. "25.100 STEEM". Must be denominated in STEEM|
+|function()|Your callback|function||
 
 See also: [transfer](#transfer)
 
