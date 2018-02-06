@@ -148,7 +148,7 @@ module.exports = steemAPI => {
   }
 
   return {
-    reputation: function(reputation) {
+    reputation: function(reputation, decimal_places = 0) {
       if (reputation == null) return reputation;
       reputation = parseInt(reputation);
       let rep = String(reputation);
@@ -163,7 +163,7 @@ module.exports = steemAPI => {
       out = Math.max(out - 9, 0);
       out = (neg ? -1 : 1) * out;
       out = out * 9 + 25;
-      out = parseInt(out);
+      out = +(Math.round(out + "e+" + decimal_places)  + "e-" + decimal_places);
       return out;
     },
 
