@@ -919,7 +919,7 @@ console.log(commentPermlink);
 
 ### Estimate Account Value
 ```
-var steemPower = steem.formatter.estimateAccountValue(account);
+var accountValue = steem.formatter.estimateAccountValue(account);
 ```
 
 ### Reputation
