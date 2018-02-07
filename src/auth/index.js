@@ -76,6 +76,13 @@ Auth.isWif = function (privWif) {
 	return isWif;
 };
 
+Auth.toHex = function (wif) {
+	if (this.isPubkey(wif, 'STM'))
+		return PublicKey.fromString(wif).toHex();
+	else
+		return KeyPrivate.fromWif(wif).toHex();
+};
+
 Auth.toWif = function (name, password, role) {
 	var seed = name + role + password;
 	var brainKey = seed.trim().split(/[\t\n\v\f\r ]+/).join(' ');
