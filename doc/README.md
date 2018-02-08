@@ -95,11 +95,54 @@ steem.api.cancelAllSubscriptions(function(err, result) {
 ## Tags
 
 ### Get Trending Tags
+Returns a list of the currently trending tags in descending order by value.
+
 ```js
 steem.api.getTrendingTags(afterTag, limit, function(err, result) {
   console.log(err, result);
 });
 ```
+
+|Parameter|Description|Datatype|Notes|
+|---|---|---|---|
+|afterTag|The name of the last tag to begin from|String|Use the empty string `''` to start the list. Subsequent calls can use the last tag name|
+|limit|The maximum number of tags to return|Integer||
+|function()|Your callback|function|Tip: use `console.log(err, result)` to see the result|
+
+
+Call Example:
+```js
+steem.api.getTrendingTags('', 2, function(err, result) {
+  console.log(err, result);
+});
+```
+
+Return Example:
+```js
+[ { name: '', total_payouts: '37610793.383 SBD', net_votes: 4211122, top_posts: 411832, comments: 1344461, trending: '5549490701' },
+  { name: 'life', total_payouts: '8722947.658 SBD', net_votes: 1498401, top_posts: 127103, comments: 54049, trending: '570954588' }
+]
+```
+
+Using the Result:
+```js
+// Extract tags from the result into an array of tag name strings
+var f = result.map(function(item) { return item.name; });
+console.log(f);
+
+// Get the last tag for subsequent calls to `getTrendingTags`
+//   or use: f[f.length - 1]   if you used the extraction code above.
+var lastKnownTag = result[result.length - 1].name;
+
+// Use the last known tag to get the next group of tags
+steem.api.TrendingTags(lastKnownTag, 2, function(err, result) {
+  console.log(err, result);
+});
+```
+
+See also: [getTrendingCategories](#get-trending-categories)
+
+
 ### Get Discussions By Trending
 ```js
 steem.api.getDiscussionsByTrending(query, function(err, result) {
@@ -245,11 +288,22 @@ steem.api.getCurrentMedianHistoryPrice(function(err, result) {
 });
 ```
 ### Get Hardfork Version
+Gets the current hardfork version of the STEEM blockchain.
 ```js
 steem.api.getHardforkVersion(function(err, result) {
   console.log(err, result);
 });
 ```
+
+Return Example:
+```js
+'0.19.0'
+```
+This returns a string and not JSON.
+
+See also: [getNextScheduledHardfork](#get-next-scheduled-hardfork), [getConfig](#get-config)
+
+
 ### Get Next Scheduled Hardfork
 ```js
 steem.api.getNextScheduledHardfork(function(err, result) {
@@ -263,11 +317,54 @@ steem.api.getRewardFund(name, function(err, result) {
 });
 ```
 ### Get Vesting Delegations
+Returns a list of delegations made from one `account`. Denominated in VESTS.
 ```js
 steem.api.getVestingDelegations(account, from, limit, function(err, result) {
   console.log(err, result);
 });
 ```
+
+|Parameter|Description|Datatype|Notes|
+|---|---|---|---|
+|account|Account who is making the delegations|String||
+|from|The name of the last account to begin from|String|Use the empty string `''` to start the list. Subsequent calls can use the last delegatee's account name|
+|limit|The maximum number of delegation records to return|Integer||
+|function()|Your callback|function|Tip: use `console.log(err, result)` to see the result|
+
+
+Call Example:
+```js
+steem.api.getVestingDelegations('ned', '', 2, function(err, result) {
+  console.log(err, result);
+});
+```
+
+Return Example:
+```js
+[ 
+  { id: 498422, delegator: 'ned', delegatee: 'spaminator', vesting_shares: '409517519.233783 VESTS', min_delegation_time: '2018-01-16T19:30:36' },
+  { id: 181809, delegator: 'ned', delegatee: 'surpassinggoogle', vesting_shares: '1029059275.000000 VESTS', min_delegation_time: '2017-08-08T15:25:15' } 
+]
+```
+
+Using the Result:
+```js
+// Extract delegatee names from the result into an array of account name strings
+var f = result.map(function(item) { return item.delegatee; });
+console.log(f);
+
+// Get the last tag for subsequent calls to `getVestingDelegations`
+//   or use: f[f.length - 1]   if you used the extraction code above.
+var lastKnownDelegatee = result[result.length - 1].delegatee;
+
+// Use the last known delegatee to get the next group of delegatees
+steem.api.TrendingTags('ned', lastKnownDelegatee, 2, function(err, result) {
+  console.log(err, result);
+});
+```
+
+See also: [accountCreateWithDelegation](#account-create-with-delegation), [delegateVestingShares](#delegate-vesting-shares)
+
 
 ## Keys
 
@@ -412,7 +509,6 @@ steem.api.getAccountVotes(voter, function(err, result) {
 
 ## Content
 
-
 ### Get Content
 ```js
 steem.api.getContent(author, permlink, function(err, result) {
@@ -440,19 +536,34 @@ steem.api.getRepliesByLastUpdate(startAuthor, startPermlink, limit, function(err
 
 ## Witnesses
 
-
 ### Get Witnesses
 ```js
 steem.api.getWitnesses(witnessIds, function(err, result) {
   console.log(err, result);
 });
 ```
+
 ### Get Witness By Account
+Returns information about a witness with the given `accountName`.
 ```js
 steem.api.getWitnessByAccount(accountName, function(err, result) {
   console.log(err, result);
 });
 ```
+|Parameter|Description|Datatype|Notes|
+|---|---|---|---|
+|accountName|The account name of the witness to query|String||
+|function()|Your callback|function|Tip: use `console.log(err, result)` to see the result|
+
+Call Example:
+```js
+steem.api.getVestingDelegations('sircork', '', 2, function(err, result) {
+  console.log(err, result);
+});
+```
+
+See also: 
+
 ### Get Witnesses By Vote
 ```js
 steem.api.getWitnessesByVote(from, limit, function(err, result) {
@@ -665,6 +776,7 @@ steem.broadcast.accountCreateWithDelegation(wif, fee, delegation, creator, newAc
 });
 ```
 ### Delegate Vesting Shares
+Delegates STEEM POWER, denominated in VESTS, from a `delegator` to the `delegatee`. Requires the `delegator`'s private WIF key. Set the delegation to 0 to undelegate.
 ```js
 steem.broadcast.delegateVestingShares(wif, delegator, delegatee, vesting_shares, function(err, result) {
   console.log(err, result);
