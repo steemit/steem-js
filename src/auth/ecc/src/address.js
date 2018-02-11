@@ -1,7 +1,10 @@
 const assert = require('assert');
-const config = require('../../../config');
+import {Config} from "../../../config";
 const hash = require('./hash');
 const base58 = require('bs58');
+const defaultConfig = require('../../../../config.json');
+
+const config = new Config(defaultConfig);
 
 /** Addresses are shortened non-reversable hashes of a public key.  The full PublicKey is preferred.
     @deprecated

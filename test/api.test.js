@@ -9,6 +9,11 @@ describe('steem.api:', function () {
 
   describe('setOptions', () => {
     it('works', () => {
+      console.log("\n");
+      console.log("\n");
+      console.log(steem.api.setOptions);
+      console.log("\n");
+      console.log("\n");
       steem.api.setOptions({ url: steem.config.get('websocket') });
     });
   });
@@ -23,9 +28,9 @@ describe('steem.api:', function () {
 
       it('the startFollower parameter has an impact on the result', async () => {
         // Get the first 5
-        const result1 = await steem.api.getFollowersAsync('ned', 0, 'blog', 5)
+        const result1 = await steem.api.getFollowersAsync('ned', 0, 'blog', 5);
           result1.should.have.lengthOf(5);
-        const result2 = await steem.api.getFollowersAsync('ned', result1[result1.length - 1].follower, 'blog', 5)
+        const result2 = await steem.api.getFollowersAsync('ned', result1[result1.length - 1].follower, 'blog', 5);
           result2.should.have.lengthOf(5);
         result1.should.not.be.eql(result2);
       });
@@ -139,13 +144,11 @@ describe('steem.api:', function () {
 
   describe('useApiOptions', () => {
     it('works ok with the prod instances', async() => {
-      steem.api.setOptions({ useAppbaseApi: true, url: steem.config.get('uri') });
+      steem.api.setOptions({ useAppbaseApi: true, url: steem.config.get('url') });
 
       const result = await steem.api.getContentAsync('yamadapc', 'test-1-2-3-4-5-6-7-9');
       steem.api.setOptions({ useAppbaseApi: false, url: steem.config.get('uri') });
-
       result.should.have.properties(testPost);
     });
   });
-
 });

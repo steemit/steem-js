@@ -4,11 +4,11 @@
   "description": "Steem.js the JavaScript API for Steem blockchain",
   "main": "lib/index.js",
   "scripts": {
-    "test": "eslint --quiet src test; mocha -t 40000 --require babel-polyfill --require babel-register",
+    "test": "eslint --quiet src test && mocha -t 40000 --require babel-polyfill --require babel-register",
     "test-auth": "npm test -- --grep 'steem.auth'",
     "build": "npm run build-browser && npm run build-node",
-    "build-browser": "rm -rf dist && NODE_ENV=production node ./node_modules/webpack/bin/webpack.js && gzip -k -f ./dist/*.js && du -h ./dist/*",
-    "build-node": "mkdir -p ./lib && cp -r ./src/* ./lib/ && babel ./src --out-dir ./lib",
+    "build-browser": "cross-env rm -rf dist && cross-env NODE_ENV=production webpack",
+    "build-node": "cross-env mkdir -p ./lib && cross-env babel ./src --out-dir ./lib",
     "prepublish": "npm run build"
   },
   "browser": {

@@ -1,15 +1,21 @@
 import Promise from 'bluebird';
 import newDebug from 'debug';
-
 import broadcastHelpers from './helpers';
 import formatterFactory from '../formatter';
 import operations from './operations';
-import steemApi from '../api';
-import steemAuth from '../auth';
-import { camelCase } from '../utils';
+import {Steem} from '../api';
+import {Config} from "../config";
+import {Auth} from '../auth';
+import {camelCase} from '../utils';
 
+const defaultConfig = require('../../config.json');
+
+const config = new Config(defaultConfig);
+const steemAuth = new Auth();
+const steemApi = new Steem(config);
 const debug = newDebug('steem:broadcast');
-const noop = function() {}
+const noop = function() {
+}
 const formatter = formatterFactory(steemApi);
 
 const steemBroadcast = {};
@@ -62,7 +68,7 @@ steemBroadcast._prepareTransaction = function steemBroadcast$_prepareTransaction
           expiration: new Date(
             chainDate.getTime() +
             600 * 1000
-          ),
+          )
         }, tx);
       });
     });
@@ -81,7 +87,7 @@ operations.forEach((operation) => {
 
   steemBroadcast[`${operationName}With`] =
     function steemBroadcast$specializedSendWith(wif, options, callback) {
-      debug(`Sending operation "${operationName}" with`, {options, callback});
+      debug(`Sending operation "${operationName}" with`, { options, callback });
       const keys = {};
       if (operation.roles && operation.roles.length) {
         keys[operation.roles[0]] = wif; // TODO - Automatically pick a role? Send all?
@@ -92,18 +98,18 @@ operations.forEach((operation) => {
           {},
           options,
           options.json_metadata != null ? {
-            json_metadata: toString(options.json_metadata),
+            json_metadata: toString(options.json_metadata)
           } : {},
           useCommentPermlink && options.permlink == null ? {
-            permlink: formatter.commentPermlink(options.parent_author, options.parent_permlink),
+            permlink: formatter.commentPermlink(options.parent_author, options.parent_permlink)
           } : {}
-        )]],
+        )]]
       }, keys, callback);
     };
 
   steemBroadcast[operationName] =
     function steemBroadcast$specializedSend(wif, ...args) {
-      debug(`Parsing operation "${operationName}" with`, {args});
+      debug(`Parsing operation "${operationName}" with`, { args });
       const options = operationParams.reduce((memo, param, i) => {
         memo[param] = args[i]; // eslint-disable-line no-param-reassign
         return memo;
@@ -118,4 +124,4 @@ broadcastHelpers(steemBroadcast);
 
 Promise.promisifyAll(steemBroadcast);
 
-exports = module.exports = steemBroadcast;
+export default steemBroadcast;

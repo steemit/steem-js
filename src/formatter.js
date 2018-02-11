@@ -1,7 +1,7 @@
 import get from "lodash/get";
 import { key_utils } from "./auth/ecc";
 
-module.exports = steemAPI => {
+const formatter = steemAPI => {
   function numberWithCommas(x) {
     return x.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
@@ -196,3 +196,5 @@ module.exports = steemAPI => {
     createSuggestedPassword
   };
 };
+
+export default formatter;
