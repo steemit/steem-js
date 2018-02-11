@@ -1,25 +1,14 @@
 import EventEmitter from 'events';
 import Promise from 'bluebird';
-import config from '../config';
 import methods from './methods';
 import transports from './transports';
-import {
-    camelCase
-} from '../utils';
-import {
-    hash
-} from '../auth/ecc';
-import {
-    ops
-} from '../auth/serializer';
-import {
-    jsonRpc
-} from './transports/http';
-import {
-    sign as signRequest
-} from '@steemit/rpc-auth';
+import {camelCase} from '../utils';
+import {hash} from '../auth/ecc';
+import {ops} from '../auth/serializer';
+import {jsonRpc} from './transports/http';
+import {sign as signRequest} from '@steemit/rpc-auth';
 
-class Steem extends EventEmitter {
+export class Steem extends EventEmitter {
     constructor(options = {}) {
         super(options);
         this._setTransport(options);
@@ -180,7 +169,7 @@ class Steem extends EventEmitter {
         Object.assign(this.options, options);
         this._setLogger(options);
         this._setTransport(options);
-        this.transport.setOptions(options);
+      this.transport.setOptions(options);
     }
 
     setWebSocket(url) {
@@ -341,8 +330,3 @@ class Steem extends EventEmitter {
 
     }
 }
-
-// Export singleton instance
-const steem = new Steem(config);
-exports = module.exports = steem;
-exports.Steem = Steem;

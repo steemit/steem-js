@@ -1,3 +1,9 @@
+import {Config} from "../../config";
+const defaultConfig = require('../../../config.json');
+
+const config = new Config(defaultConfig);
+
+
 
 module.exports = {
     Address: require("./src/address"),
@@ -8,5 +14,5 @@ module.exports = {
     brainKey: require("./src/brain_key"),
     key_utils: require("./src/key_utils"),
     hash: require("./src/hash"),
-    ecc_config: require("../../config")
+    ecc_config: config
 }
