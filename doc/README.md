@@ -152,7 +152,7 @@ steem.api.TrendingTags(lastKnownTag, 2, function(err, result) {
 See also: [getTrendingCategories](#get-trending-categories)
 - - - - - - - - - - - - - - - - - -
 ### Get Blog
-Gets the last [limit] number of posts of [account] before the post with index [entryId]
+Gets the last `limit` number of posts of `account` before the post with index `entryId`
 
 ```js
 steem.api.getBlog(account, entryId, limit, callback);
@@ -205,7 +205,6 @@ Return Example:
 ### Get Blog Authors
 Gets a list of all people who wrote in someones blog, along with how many times they wrote in that blog.
 
-
 ```js
 steem.api.getBlogAuthors(blogAccount, callback);
 ```
@@ -233,7 +232,7 @@ Return Example:
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Blog Entries
-Gets the last [limit] number of posts of [account] before the post with index [entryId]
+Gets the last `limit` number of posts of `account` before the post with index `entryId`
 Very similar to steem.api.getBlog but with much simpler result objects
 
 ```js
@@ -279,7 +278,7 @@ Return Example:
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Discussions By Trending
-Gets the steem posts as they would be shown in the trending tab of [steemit.com]
+Gets the steem posts as they would be shown in the trending tab of steemit.com.
 
 ```js
 steem.api.getDiscussionsByTrending30(query, callback);
@@ -535,7 +534,7 @@ Return Example:
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get State
-Gets a lot of information about the state of [path]
+Gets a lot of information about the state of `path`
 
 ```js
 steem.api.getStateWith(path,  callback);
@@ -742,7 +741,7 @@ Return Example:
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Trade History
-Gets the trade history for a given period between a [start] date and an [end] date
+Gets the trade history for a given period between a `start` date and an `end` date
 
 ```js
 steem.api.getTradeHistory(start, end, limit, callback);
@@ -973,10 +972,8 @@ steem.api.getVestingDelegations('ned', '', 2, function(err, result) {
 
 Return Example:
 ```js
-[ 
-  { id: 498422, delegator: 'ned', delegatee: 'spaminator', vesting_shares: '409517519.233783 VESTS', min_delegation_time: '2018-01-16T19:30:36' },
-  { id: 181809, delegator: 'ned', delegatee: 'surpassinggoogle', vesting_shares: '1029059275.000000 VESTS', min_delegation_time: '2017-08-08T15:25:15' } 
-]
+[ { id: 498422, delegator: 'ned', delegatee: 'spaminator', vesting_shares: '409517519.233783 VESTS', min_delegation_time: '2018-01-16T19:30:36' },
+  { id: 181809, delegator: 'ned', delegatee: 'surpassinggoogle', vesting_shares: '1029059275.000000 VESTS', min_delegation_time: '2017-08-08T15:25:15' } ]
 ```
 
 Using the Result:
@@ -1073,7 +1070,7 @@ steem.api.getRecoveryRequest(account, function(err, result) {
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Account Bandwidth
-Get the bandwidth of the [account].
+Get the bandwidth of the `account`.
 The bandwidth is the limit of data that can be uploaded to the blockchain.
 To have bigger bandwidth - power up your steem.
 
@@ -1127,7 +1124,7 @@ var options = {
 	account: "username",
 	bandwidthType: 2
 }
-steem.api.getAccountBandwidthWith(options , function(err, data){
+steem.api.getAccountBandwidthWith(options, function(err, data){
 	console.log(err, data);
 });
 ```
@@ -1143,7 +1140,7 @@ Return Example:
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Account Reputations
-Gets the reputation points of [limit] accounts with names most similar to [lowerBoundName].
+Gets the reputation points of `limit` accounts with names most similar to `lowerBoundName`.
 
 ```js
 steem.api.getAccountReputations(lowerBoundName, limit, callback);
@@ -1158,7 +1155,7 @@ steem.api.getAccountReputations(lowerBoundName, limit, callback);
 
 Call Example:
 ```js
-steem.api.getAccountReputations("username", 5, function(err, data){
+steem.api.getAccountReputations("username", 2, function(err, data){
 	console.log(err, data);
 });
 ```
@@ -1166,10 +1163,7 @@ steem.api.getAccountReputations("username", 5, function(err, data){
 Return Example:
 ```js
  [ { account: 'username', reputation: '26727073581' },
-  { account: 'username-taken', reputation: 0 },
-  { account: 'username01', reputation: 0 },
-  { account: 'username1998', reputation: 0 },
-  { account: 'username404', reputation: 0 } ]
+   { account: 'username-taken', reputation: 0 } ]
 ```
 - - - - - - - - - - - - - - - - - -
 ## Market
@@ -1182,7 +1176,7 @@ steem.api.getOrderBook(limit, function(err, result) {
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Market Order Book
-Takes the top-most [limit] entries in the market order book for both buy and sell orders.
+Takes the top-most `limit` entries in the market order book for both buy and sell orders.
 
 ```js
 steem.api.getMarketOrderBook(limit, callback);
@@ -1196,7 +1190,7 @@ steem.api.getMarketOrderBook(limit, callback);
 
 Call Example:
 ```js
-steem.api.getMarketOrderBook(3, function(err, data){
+steem.api.getMarketOrderBook(2, function(err, data){
 	console.log(err, data);
 });
 ```
@@ -1205,16 +1199,14 @@ Return Example:
 ```js
  { bids: 
    [ { price: '0.91116173120728938', steem: 2195, sbd: 2000 },
-     { price: '0.91089965397923878', steem: 1156, sbd: 1053 },
-     { price: '0.91083253129468766', steem: 2032, sbd: 1851 } ],
+     { price: '0.91089965397923878', steem: 1156, sbd: 1053 } ],
   asks: 
    [ { price: '0.91145625249700357', steem: 9053, sbd: 8251 },
-     { price: '0.91159226975214813', steem: 16184, sbd: 14753 },
-     { price: '0.91190953857377344', steem: 18676, sbd: 17030 } ] }
+     { price: '0.91159226975214813', steem: 16184, sbd: 14753 } ] }
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Market Order Book With Options
-Takes the top-most [limit] entries in the market order book for both buy and sell orders.
+Takes the top-most `limit` entries in the market order book for both buy and sell orders.
 
 ```js
 steem.api.getMarketOrderBookWith(options,  callback);
@@ -1414,7 +1406,7 @@ steem.api.getRebloggedBy("author", "example-permlink", function(err, data){
 Return Example:
 ```js
  [ 'author',
-  'user1' ,
+  'user1',
   'user2',
   'user3',
   'user4' ]
@@ -1584,10 +1576,8 @@ steem.api.getFollowers('ned', '', 'blog', 2, function(err, result) {
 
 Return Example:
 ```js
-[ 
-  { follower: 'a-0-0', following: 'ned', what: [ 'blog' ] },
-  { follower: 'a-0-0-0-1abokina', following: 'ned', what: [ 'blog' ] }
-]
+[ { follower: 'a-0-0', following: 'ned', what: [ 'blog' ] },
+  { follower: 'a-0-0-0-1abokina', following: 'ned', what: [ 'blog' ] } ]
 ```
 
 Using the Result:
@@ -1636,10 +1626,8 @@ steem.api.getFollowing('dan', '', 'blog', 2, function(err, result) {
 
 Return Example:
 ```js
-[
-  { follower: 'dan', following: 'dantheman', what: [ 'blog' ] },
-  { follower: 'dan', following: 'krnel', what: [ 'blog' ] } 
-]
+[ { follower: 'dan', following: 'dantheman', what: [ 'blog' ] },
+  { follower: 'dan', following: 'krnel', what: [ 'blog' ] } ]
 ```
 
 Using the Result:
@@ -1888,8 +1876,6 @@ steem.broadcast.escrowTransfer(wif, from, to, agent, escrowId, sbdAmount, steemA
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Escrow
-[ Description of that method ]
-
 ```js
 steem.api.getEscrow(from, escrowId, callback);
 ```
@@ -2083,7 +2069,7 @@ steem.broadcast.recoverAccount(wif, accountToRecover, newOwnerAuthority, recentO
 ```
 - - - - - - - - - - - - - - - - - -
 ### Set Reset Account
-Changes the [current_reset_account] of the [account] to a new [reset_account]
+Changes the `current_reset_account` of the `account` to a new `reset_account`
 
 ```js
 steem.broadcast.setResetAccount(wif, account, current_reset_account, reset_account, callback);
@@ -2210,7 +2196,7 @@ steem.broadcast.fillOrder(wif, currentOwner, currentOrderid, currentPays, openOw
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Recent Trades
-Gets a list of the last [limit] trades from the market.
+Gets a list of the last `limit` trades from the market.
 
 ```js
 steem.api.getRecentTrades(limit, callback);
@@ -2224,7 +2210,7 @@ steem.api.getRecentTrades(limit, callback);
 
 Call Example:
 ```js
-steem.api.getRecentTrades(5, function(err, data){
+steem.api.getRecentTrades(2, function(err, data){
 	console.log(err, data);
 });
 ```
@@ -2236,16 +2222,7 @@ Return Example:
     open_pays: '0.340 STEEM' },
   { date: '2018-02-10T20:36:48',
     current_pays: '8.982 SBD',
-    open_pays: '9.995 STEEM' },
-  { date: '2018-02-10T20:36:33',
-    current_pays: '10.486 SBD',
-    open_pays: '11.668 STEEM' },
-  { date: '2018-02-10T20:34:42',
-    current_pays: '11.017 SBD',
-    open_pays: '12.276 STEEM' },
-  { date: '2018-02-10T20:34:39',
-    current_pays: '0.833 SBD',
-    open_pays: '0.928 STEEM' } ]
+    open_pays: '9.995 STEEM' } ]
 ```
 - - - - - - - - - - - - - - - - - -
 ### Fill Transfer From Savings
@@ -2256,7 +2233,7 @@ steem.broadcast.fillTransferFromSavings(wif, from, to, amount, requestId, memo, 
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Savings Withdraw From
-Gets a list of savings withdraws from [account].
+Gets a list of savings withdraws from `account`.
 
 ```js
 steem.api.getSavingsWithdrawFrom(account, callback);
@@ -2281,7 +2258,7 @@ Return Example:
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Savings Withdraw To
-Gets a list of savings withdraws from [account].
+Gets a list of savings withdraws from `account`.
 
 ```js
 steem.api.getSavingsWithdrawTo(account, callback);
@@ -2422,7 +2399,7 @@ Return Example:
 ```
 - - - - - - - - - - - - - - - - - -
 ### Vesting Steem
-Converts the vests of [account] into the number of Steem they represent.
+Converts the vests of `account` into the number of Steem they represent.
 
 ```js
 steem.formatter.vestingSteem(account,  gprops, callback);
@@ -2437,10 +2414,8 @@ steem.formatter.vestingSteem(account,  gprops, callback);
 Call Example:
 ```js
 steem.api.getAccounts(["username"], function(e1, accounts){
-    steem.api.getState("/@username", function (e2, state) {
-            
-		  var vestingSteem = steem.formatter.vestingSteem(accounts[0], state.props);
-		
+    steem.api.getState("/@username", function (e2, state) {        
+		  var vestingSteem = steem.formatter.vestingSteem(accounts[0], state.props);	
     });
 });
 ```
@@ -2476,7 +2451,7 @@ Return Example:
 ```
 - - - - - - - - - - - - - - - - - -
 ### Estimate Account Value
-Gets the estimated dollar value of the assets of [account]
+Gets the estimated dollar value of the assets of `account`
 
 ```js
 steem.formatter.estimateAccountValue(account);
@@ -2490,11 +2465,9 @@ steem.formatter.estimateAccountValue(account);
 Call Example:
 ```js
 steem.api.getAccounts(["username"], function(e1, accounts){
-    
     var accountValueInUSD = steem.formatter.estimateAccountValue(accounts[0])
         .catch(function (err) { console.log(err); })
         .then(function (data) { console.log(data); });
-
 });
 ```
 
