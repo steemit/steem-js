@@ -139,10 +139,10 @@ describe('steem.api:', function () {
 
   describe('useApiOptions', () => {
     it('works ok with the prod instances', async() => {
-      steem.api.setOptions({ useAppbaseApi: true, url: steem.config.get('uri') });
+      steem.api.setOptions({ useAppbaseApi: true, url: steem.config.get('url') });
 
       const result = await steem.api.getContentAsync('yamadapc', 'test-1-2-3-4-5-6-7-9');
-      steem.api.setOptions({ useAppbaseApi: false, url: steem.config.get('uri') });
+      steem.api.setOptions({ useAppbaseApi: false, url: steem.config.get('url') });
 
       result.should.have.properties(testPost);
     });
