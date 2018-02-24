@@ -43,8 +43,7 @@ steem.api.getAccounts(['ned', 'dan'], function(err, response) {
 ```
 - - - - - - - - - - - - - - - - - -
 ## Config
-Default config should work with steem. however you can change it to work with golos
-as 
+Default config should work with steem. however you can change it to work with golos by 
 ```js
 steem.api.setOptions({ url: 'wss://ws.golos.io' }); // assuming websocket is working at ws.golos.io
 steem.config.set('address_prefix','GLS');
