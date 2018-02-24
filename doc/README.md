@@ -105,7 +105,6 @@ steem.api.cancelAllSubscriptions(function(err, result) {
 - - - - - - - - - - - - - - - - - -
 ### Get Trending Tags
 Returns a list of the currently trending tags in descending order by value.
-
 ```js
 steem.api.getTrendingTags(afterTag, limit, function(err, result) {
   console.log(err, result);
