@@ -36,7 +36,7 @@ $ npm install steem --save
 ```html 
 <script src="./steem.min.js"></script>
 <script>
-steem.api.getAccounts(['ned', 'dan'], function(err, response){
+steem.api.getAccounts(['ned', 'dan'], function(err, response) {
     console.log(err, response);
 });
 </script>
@@ -129,8 +129,7 @@ steem.api.getTrendingTags('', 2, function(err, result) {
 Return Example:
 ```js
 [ { name: '', total_payouts: '37610793.383 SBD', net_votes: 4211122, top_posts: 411832, comments: 1344461, trending: '5549490701' },
-  { name: 'life', total_payouts: '8722947.658 SBD', net_votes: 1498401, top_posts: 127103, comments: 54049, trending: '570954588' }
-]
+  { name: 'life', total_payouts: '8722947.658 SBD', net_votes: 1498401, top_posts: 127103, comments: 54049, trending: '570954588' } ]
 ```
 
 Using the Result:
@@ -168,7 +167,7 @@ steem.api.getBlog(account, entryId, limit, callback);
 
 Call Example:
 ```js
-steem.api.getBlog("username", 10, 3, function(err, data){
+steem.api.getBlog("username", 10, 3, function(err, data) {
 	console.log(err, data);
 });
 
@@ -179,8 +178,7 @@ steem.api.getBlog("username", 10, 3, function(err, data){
 
 Return Example:
 ```js
-[
-	{
+[ {
 		blog:"username"
 		comment: { /* Omited for simplicity */ }
 		entry_id: 10
@@ -197,9 +195,7 @@ Return Example:
 		comment: { /* Omited for simplicity */ }
 		entry_id: 8
 		reblog_on:"1970-01-01T00:00:00"
-
-	}
-]
+	} ]
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Blog Authors
@@ -217,7 +213,7 @@ steem.api.getBlogAuthors(blogAccount, callback);
 
 Call Example:
 ```js
-steem.api.getBlogAuthors("username", function(err, data){
+steem.api.getBlogAuthors("username", function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -249,7 +245,7 @@ steem.api.getBlogEntries(account, entryId, limit, callback);
 
 Call Example:
 ```js
-steem.api.getBlogEntries("username", 10, 3, function(err, data){
+steem.api.getBlogEntries("username", 10, 3, function(err, data) {
 	console.log(err, data);
 });
 
@@ -293,7 +289,7 @@ steem.api.getDiscussionsByTrending30(query, callback);
 Call Example:
 ```js
 var query = { limit : 3, tag : "steem" };
-steem.api.getDiscussionsByTrending30(query, function(err, data){
+steem.api.getDiscussionsByTrending30(query, function(err, data) {
 	console.log(err, data);
 });
 
@@ -395,7 +391,7 @@ steem.api.getDiscussionsByPromoted(query, callback);
 Call Example:
 ```js
 var query = { limit : 3, tag : "steem" };
-steem.api.getDiscussionsByPromoted(query, function(err, data){
+steem.api.getDiscussionsByPromoted(query, function(err, data) {
 	console.log(err, data);
 });
 
@@ -427,8 +423,7 @@ steem.api.getCommentDiscussionsByPayout(query, callback);
 Call Example:
 ```js
 var query = { limit : 3, tag : "steem" };
-steem.api.getCommentDiscussionsByPayout(query, function(err, data)
-{
+steem.api.getCommentDiscussionsByPayout(query, function(err, data) {
 	console.log(err, data);
 });
 
@@ -460,8 +455,7 @@ steem.api.getPostDiscussionsByPayout(query, callback);
 Call Example:
 ```js
 var query = { limit : 3, tag : "collorchallenge" };
-steem.api.getPostDiscussionsByPayout(query, function(err, data)
-{
+steem.api.getPostDiscussionsByPayout(query, function(err, data) {
 	console.log(err, data);
 });
 
@@ -509,7 +503,7 @@ steem.api.getOpsInBlock(blockNum, onlyVirtual, callback);
 
 Call Example:
 ```js
-steem.api.getOpsInBlock(10000001, false, function(err, data){
+steem.api.getOpsInBlock(10000001, false, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -537,7 +531,7 @@ Return Example:
 Gets a lot of information about the state of `path`
 
 ```js
-steem.api.getStateWith(path,  callback);
+steem.api.getStateWith(path, callback);
 ```
 
 |Parameter|Datatype|Description|
@@ -548,30 +542,30 @@ steem.api.getStateWith(path,  callback);
 
 Call Example:
 ```js
-steem.api.getState("/@username", function(err, data){
+steem.api.getState("/@username", function(err, data) {
 	console.log(err, data);
 });
 
 // Here are some valid calls:
 
-steem.api.getState("/@username", function(err, data){ console.log(data); });
+steem.api.getState("/@username", function(err, data) { console.log(data); });
 
-steem.api.getState("/@username/permlink-of-post", function(err, data){ console.log(data); });
+steem.api.getState("/@username/permlink-of-post", function(err, data) { console.log(data); });
 
-steem.api.getState("/@username/comments", function(err, data){ console.log(data); });
+steem.api.getState("/@username/comments", function(err, data) { console.log(data); });
 
-steem.api.getState("/@username/recent-replies", function(err, data){ console.log(data); });
+steem.api.getState("/@username/recent-replies", function(err, data) { console.log(data); });
 
-steem.api.getState("/trending", function(err, data){ console.log(data); });
+steem.api.getState("/trending", function(err, data) { console.log(data); });
 
-steem.api.getState("/trending/collorchallenge", function(err, data){ console.log(data); });
+steem.api.getState("/trending/collorchallenge", function(err, data) { console.log(data); });
 
 // and others....
 ```
 
 Return Example:
 ```js
-	// The result is huge, and can have many variations, depending on what you are getting the state of. It simply can't be documented properly. Here are some pointers though:
+// The result is huge, and can have many variations depending on what you are getting the state of. It can't be documented briefly. Here is some basic information:
 {	accounts: {username: {...}}
 	content: {
 		username/permlink1: {...},
@@ -603,7 +597,7 @@ steem.api.getStateWith(options, callback);
 
 Call Example:
 ```js
-steem.api.getStateWith({ path : "/@username" }, function(err, data){
+steem.api.getStateWith({ path : "/@username" }, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -678,7 +672,7 @@ steem.api.getFeedEntries(account, entryId, limit, callback);
 
 Call Example:
 ```js
-steem.api.getFeedEntries("username", 0, 2, function(err, data){
+steem.api.getFeedEntries("username", 0, 2, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -725,7 +719,7 @@ steem.api.getTicker(callback);
 
 Call Example:
 ```js
-steem.api.getTicker(function(err, data){
+steem.api.getTicker(function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -760,7 +754,7 @@ Call Example:
 var start = "2018-01-01T00:00:00";
 var end = "2018-01-02T00:00:00";
 
-steem.api.getTradeHistory(start, end, 5, function(err, data){
+steem.api.getTradeHistory(start, end, 5, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -798,7 +792,7 @@ steem.api.getVersion(callback);
 
 Call Example:
 ```js
-steem.api.getVersion(function(err, data){
+steem.api.getVersion(function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -824,17 +818,15 @@ steem.api.getVolume(callback);
 
 Call Example:
 ```js
-steem.api.getVolume(function(err, data){
+steem.api.getVolume(function(err, data) {
 	console.log(err, data);
 });
 ```
 
 Return Example:
 ```js
-{ 
-	steem_volume: '8101.888 STEEM',
-	sbd_volume: '7287.268 SBD' 
-}
+{ steem_volume: '8101.888 STEEM',
+	sbd_volume: '7287.268 SBD' }
 ```
 - - - - - - - - - - - - - - - - - -
 ### Get Hardfork Version
@@ -887,7 +879,7 @@ steem.broadcast.claimRewardBalance(wif, account, reward_steem, reward_sbd, rewar
 
 Call Example:
 ```js
-steem.broadcast.claimRewardBalance("5Hupd....pp7vGY", "username", "0.000 STEEM", "0.000 SBD", "0.000006 VESTS", function(err, data){
+steem.broadcast.claimRewardBalance("5Hupd....pp7vGY", "username", "0.000 STEEM", "0.000 SBD", "0.000006 VESTS", function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -910,7 +902,7 @@ Return Example:
 Claims pending rewards, be they Steem, SBD or Vests.
 
 ```js
-steem.broadcast.claimRewardBalanceWith(wif,  options, callback);
+steem.broadcast.claimRewardBalanceWith(wif, options, callback);
 ```
 
 |Parameter|Datatype|Description|
@@ -928,7 +920,7 @@ var options = {
     reward_steem:"0.000 STEEM",
     reward_vests:"0.000006 VESTS"
 }
-steem.broadcast.claimRewardBalanceWith("5Hupd....pp7vGY", options, function(err, data){
+steem.broadcast.claimRewardBalanceWith("5Hupd....pp7vGY", options, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -1090,7 +1082,7 @@ Call Example:
 const forumBandwidthType = 1;
 const marketBandwidthType = 2;
 
-steem.api.getAccountBandwidth("username", 1, function(err, data){
+steem.api.getAccountBandwidth("username", forumBandwidthType, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -1109,7 +1101,7 @@ Return Example:
 Get the bandwidth of the user specified in the options.
 
 ```js
-steem.api.getAccountBandwidthWith(options,  callback);
+steem.api.getAccountBandwidthWith(options, callback);
 ```
 
 |Parameter|Datatype|Description|
@@ -1124,7 +1116,7 @@ var options = {
 	account: "username",
 	bandwidthType: 2
 }
-steem.api.getAccountBandwidthWith(options, function(err, data){
+steem.api.getAccountBandwidthWith(options, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -1155,7 +1147,7 @@ steem.api.getAccountReputations(lowerBoundName, limit, callback);
 
 Call Example:
 ```js
-steem.api.getAccountReputations("username", 2, function(err, data){
+steem.api.getAccountReputations("username", 2, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -1190,7 +1182,7 @@ steem.api.getMarketOrderBook(limit, callback);
 
 Call Example:
 ```js
-steem.api.getMarketOrderBook(2, function(err, data){
+steem.api.getMarketOrderBook(2, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -1209,7 +1201,7 @@ Return Example:
 Takes the top-most `limit` entries in the market order book for both buy and sell orders.
 
 ```js
-steem.api.getMarketOrderBookWith(options,  callback);
+steem.api.getMarketOrderBookWith(options, callback);
 ```
 
 |Parameter|Datatype|Description|
@@ -1220,7 +1212,7 @@ steem.api.getMarketOrderBookWith(options,  callback);
 
 Call Example:
 ```js
-steem.api.getMarketOrderBookWith({ limit: 3 }, function(err, data){
+steem.api.getMarketOrderBookWith({ limit: 3 }, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -1264,7 +1256,7 @@ steem.api.getMarketHistoryBuckets(callback);
 
 Call Example:
 ```js
-steem.api.getMarketHistoryBuckets(function(err, data){
+steem.api.getMarketHistoryBuckets(function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -1333,7 +1325,7 @@ steem.api.getTagsUsedByAuthor(author, callback);
 
 Call Example:
 ```js
-steem.api.getTagsUsedByAuthor("good-karma", function(err, data){
+steem.api.getTagsUsedByAuthor("good-karma", function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -1398,7 +1390,7 @@ steem.api.getRebloggedBy(author, permlink, callback);
 
 Call Example:
 ```js
-steem.api.getRebloggedBy("author", "example-permlink", function(err, data){
+steem.api.getRebloggedBy("author", "example-permlink", function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -1492,8 +1484,8 @@ steem.api.getWitnessSchedule(callback);
 
 Call Example:
 ```js
-steem.api.getWitnessSchedule(function(err, data){
-    console.log(err,data);
+steem.api.getWitnessSchedule(function(err, data) {
+  console.log(err,data);
 }
 ```
 
@@ -1678,7 +1670,7 @@ See also: [getFollowers](#get-followers), [getFollowing](#get-following)
 Broadcast a new block on the steem blockchain.
 
 ```js
-steem.api.broadcastBlockWith(options,  callback);
+steem.api.broadcastBlockWith(options, callback);
 ```
 
 |Parameter|Datatype|Description|
@@ -1703,7 +1695,7 @@ var options = {
     }
 };
 
-steem.api.broadcastBlockWith(options, function(err, data){
+steem.api.broadcastBlockWith(options, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -1889,7 +1881,7 @@ steem.api.getEscrow(from, escrowId, callback);
 
 Call Example:
 ```js
-steem.api.getEscrow("username", 23456789, function(err, data){
+steem.api.getEscrow("username", 23456789, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -1945,7 +1937,7 @@ steem.api.getWithdrawRoutes(account, withdrawRouteType, callback);
 
 Call Example:
 ```js
-steem.api.getWithdrawRoutes("username", 1, function(err, data){
+steem.api.getWithdrawRoutes("username", 1, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -2086,7 +2078,7 @@ steem.broadcast.setResetAccount(wif, account, current_reset_account, reset_accou
 
 Call Example:
 ```js
-steem.broadcast.setResetAccount(wif, "username", "oldresetaccount", "newresetaccount", function(err, data){
+steem.broadcast.setResetAccount(wif, "username", "oldresetaccount", "newresetaccount", function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -2210,7 +2202,7 @@ steem.api.getRecentTrades(limit, callback);
 
 Call Example:
 ```js
-steem.api.getRecentTrades(2, function(err, data){
+steem.api.getRecentTrades(2, function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -2247,7 +2239,7 @@ steem.api.getSavingsWithdrawFrom(account, callback);
 
 Call Example:
 ```js
-steem.api.getSavingsWithdrawFrom("username", function(err, data){
+steem.api.getSavingsWithdrawFrom("username", function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -2272,7 +2264,7 @@ steem.api.getSavingsWithdrawTo(account, callback);
 
 Call Example:
 ```js
-steem.api.getSavingsWithdrawTo("username", function(err, data){
+steem.api.getSavingsWithdrawTo("username", function(err, data) {
 	console.log(err, data);
 });
 ```
@@ -2379,7 +2371,7 @@ steem.auth.signTransaction(trx, keys);
 Formats number and currency to the valid way for sending (for example - it trims the number's floating point remainer to 3 digits only).
 
 ```js
-steem.formatter.amount(_amount,  asset);
+steem.formatter.amount(_amount, asset);
 ```
 
 |Parameter|Datatype|Description|
@@ -2402,7 +2394,7 @@ Return Example:
 Converts the vests of `account` into the number of Steem they represent.
 
 ```js
-steem.formatter.vestingSteem(account,  gprops, callback);
+steem.formatter.vestingSteem(account, gprops, callback);
 ```
 
 |Parameter|Datatype|Description|
@@ -2413,10 +2405,10 @@ steem.formatter.vestingSteem(account,  gprops, callback);
 
 Call Example:
 ```js
-steem.api.getAccounts(["username"], function(e1, accounts){
-    steem.api.getState("/@username", function (e2, state) {        
-		  var vestingSteem = steem.formatter.vestingSteem(accounts[0], state.props);	
-    });
+steem.api.getAccounts(["username"], function(e1, accounts) {
+  steem.api.getState("/@username", function (e2, state) {        
+	  var vestingSteem = steem.formatter.vestingSteem(accounts[0], state.props);	
+  });
 });
 ```
 
@@ -2441,7 +2433,7 @@ steem.formatter.numberWithCommas(x);
 Call Example:
 ```js
 steem.formatter.numberWithCommas(53304432342.432.toString());
-    //or
+// or
 steem.formatter.numberWithCommas("53304432342.432");
 ```
 
@@ -2464,10 +2456,10 @@ steem.formatter.estimateAccountValue(account);
 
 Call Example:
 ```js
-steem.api.getAccounts(["username"], function(e1, accounts){
-    var accountValueInUSD = steem.formatter.estimateAccountValue(accounts[0])
-        .catch(function (err) { console.log(err); })
-        .then(function (data) { console.log(data); });
+steem.api.getAccounts(["username"], function(e1, accounts) {
+  var accountValueInUSD = steem.formatter.estimateAccountValue(accounts[0])
+    .catch(function (err) { console.log(err); })
+    .then(function (data) { console.log(data); });
 });
 ```
 
@@ -2545,5 +2537,5 @@ steem.utils.camelCase("example_string");
 
 Return Example:
 ```js
- "exampleString"
+"exampleString"
 ```
