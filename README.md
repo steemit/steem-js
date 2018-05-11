@@ -58,8 +58,12 @@ $ npm install steem --save
 
 ## RPC Servers
 https://api.steemit.com By Default<br/>
-https://node.steem.ws<br/>
-https://this.piston.rocks<br/>
+https://steemd.pevo.science<br>
+https://steemd.minnowsupportproject.org<br>
+https://rpc.buildteam.io<br>
+https://steemd.privex.io<br>
+https://wallet.steem.ws<br>
+https://gtg.steem.house:8090
 
 ## Examples
 ### Broadcast Vote
