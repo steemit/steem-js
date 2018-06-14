@@ -575,12 +575,6 @@ steem.broadcast.accountWitnessVote(wif, account, witness, approve, function(err,
   console.log(err, result);
 });
 ```
-### Challenge Authority
-```
-steem.broadcast.challengeAuthority(wif, challenger, challenged, requireOwner, function(err, result) {
-  console.log(err, result);
-});
-```
 ### Change Recovery Account
 ```
 steem.broadcast.changeRecoveryAccount(wif, accountToRecover, newRecoveryAccount, extensions, function(err, result) {
@@ -605,21 +599,9 @@ steem.broadcast.commentPayout(wif, author, permlink, payout, function(err, resul
   console.log(err, result);
 });
 ```
-### Comment Reward
-```
-steem.broadcast.commentReward(wif, author, permlink, sbdPayout, vestingPayout, function(err, result) {
-  console.log(err, result);
-});
-```
 ### Convert
 ```
 steem.broadcast.convert(wif, owner, requestid, amount, function(err, result) {
-  console.log(err, result);
-});
-```
-### Curate Reward
-```
-steem.broadcast.curateReward(wif, curator, reward, commentAuthor, commentPermlink, function(err, result) {
   console.log(err, result);
 });
 ```
@@ -671,12 +653,6 @@ steem.broadcast.feedPublish(wif, publisher, exchangeRate, function(err, result) 
   console.log(err, result);
 });
 ```
-### Pow2
-```
-steem.broadcast.pow2(wif, work, newOwnerKey, props, function(err, result) {
-  console.log(err, result);
-});
-```
 ### Fill Convert Request
 ```
 steem.broadcast.fillConvertRequest(wif, owner, requestid, amountIn, amountOut, function(err, result) {
@@ -716,24 +692,6 @@ steem.broadcast.limitOrderCreate(wif, owner, orderid, amountToSell, minToReceive
 ### Limit Order Create2
 ```
 steem.broadcast.limitOrderCreate2(wif, owner, orderid, amountToSell, exchangeRate, fillOrKill, expiration, function(err, result) {
-  console.log(err, result);
-});
-```
-### Liquidity Reward
-```
-steem.broadcast.liquidityReward(wif, owner, payout, function(err, result) {
-  console.log(err, result);
-});
-```
-### Pow
-```
-steem.broadcast.pow(wif, worker, input, signature, work, function(err, result) {
-  console.log(err, result);
-});
-```
-### Prove Authority
-```
-steem.broadcast.proveAuthority(wif, challenged, requireOwner, function(err, result) {
   console.log(err, result);
 });
 ```
