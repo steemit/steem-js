@@ -25,7 +25,7 @@ class PublicKey {
             "000000000000000000000000000000000000000000000000000000000000000000"
         )
             return new PublicKey(null);
-        return new PublicKey(Point.decodeFrom(secp256k1, buffer));
+        return new PublicKey(ecurve.Point.decodeFrom(secp256k1, buffer));
     }
 
     toBuffer(compressed = this.Q ? this.Q.compressed : null) {
