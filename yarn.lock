@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@sekhmetdev/secure-random@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@sekhmetdev/secure-random/-/secure-random-1.1.1.tgz#a7285fadfc2d61f6a309696dc74ae90f3912e35f"
+
 "@steemit/libcrypto@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@steemit/libcrypto/-/libcrypto-1.0.1.tgz#c31ab3e5deb667628169b3d54d746b015de31a79"
@@ -2816,10 +2820,6 @@ safe-buffer@^5.0.1, safe-buffer@^5.1.1, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
 samsam@1.1.2, samsam@~1.1:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/samsam/-/samsam-1.1.2.tgz#bec11fdc83a9fda063401210e40176c3024d1567"
-
-secure-random@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/secure-random/-/secure-random-1.1.1.tgz#0880f2d8c5185f4bcb4684058c836b4ddb07145a"
 
 semver@^5.3.0:
   version "5.4.1"

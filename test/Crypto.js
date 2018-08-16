@@ -1,7 +1,7 @@
 import { Aes, PrivateKey, PublicKey, Signature } from "../src/auth/ecc"
 import assert from "assert"
 
-var secureRandom = require('secure-random');
+var secureRandom = require('@sekhmetdev/secure-random');
 var hash = require('../src/auth/ecc/src/hash');
 var key = require('../src/auth/ecc/src/key_utils');
 

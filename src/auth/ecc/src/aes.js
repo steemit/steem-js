@@ -1,4 +1,4 @@
-import secureRandom from 'secure-random';
+import secureRandom from '@sekhmetdev/secure-random';
 import ByteBuffer from 'bytebuffer';
 import crypto from 'browserify-aes';
 import assert from 'assert';

@@ -1,7 +1,7 @@
 
 const PrivateKey = require('./key_private');
 const hash = require('./hash');
-const secureRandom = require('secure-random');
+const secureRandom = require('@sekhmetdev/secure-random');
 
 // hash for .25 second
 const HASH_POWER_MILLS = 250;

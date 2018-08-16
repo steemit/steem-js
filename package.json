@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/steemit/steem-js#readme",
   "dependencies": {
+    "@sekhmetdev/secure-random": "^1.1.1",
     "@steemit/rpc-auth": "^1.1.0",
     "bigi": "^1.4.2",
     "bluebird": "^3.4.6",
@@ -47,7 +48,6 @@
     "detect-node": "^2.0.3",
     "ecurve": "^1.0.5",
     "lodash": "^4.16.4",
-    "secure-random": "^1.1.1",
     "ws": "^3.3.2"
   },
   "devDependencies": {
