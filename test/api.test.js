@@ -9,7 +9,9 @@ describe('steem.api:', function () {
 
   describe('setOptions', () => {
     it('works', () => {
-      steem.api.setOptions({ url: steem.config.get('websocket') });
+      let url = steem.config.get('websocket');
+      if(! url) url = steem.config.get('uri');
+      steem.api.setOptions({ url: url, useAppbaseApi: true });
     });
   });
 
