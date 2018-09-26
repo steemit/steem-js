@@ -77,7 +77,7 @@ operations.forEach((operation) => {
 
   const useCommentPermlink =
     operationParams.indexOf('parent_permlink') !== -1 &&
-    operationParams.indexOf('parent_permlink') !== -1;
+    operationParams.indexOf('parent_permlink') !== -1; //todo: figure out why and kill it if possible
 
   steemBroadcast[`${operationName}With`] =
     function steemBroadcast$specializedSendWith(wif, options, callback) {

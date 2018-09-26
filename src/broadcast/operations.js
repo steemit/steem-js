@@ -498,5 +498,14 @@ module.exports = [
       "request_id",
       "memo"
     ]
+  },
+  {
+    "roles": ["owner"],
+    "operation": "witness_set_properties",
+    "params": [
+      "owner",
+      "props",
+      "extensions",
+    ]
   }
 ];
