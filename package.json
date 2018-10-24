@@ -9,7 +9,8 @@
     "build": "npm run build-browser && npm run build-node",
     "build-browser": "rm -rf dist && NODE_ENV=production node ./node_modules/webpack/bin/webpack.js && gzip -k -f ./dist/*.js && du -h ./dist/*",
     "build-node": "mkdir -p ./lib && cp -r ./src/* ./lib/ && babel ./src --out-dir ./lib",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "prepare": "npm run build-node"
   },
   "browser": {
     "ws": false,
