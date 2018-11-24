@@ -51,6 +51,15 @@ module.exports = steemAPI => {
     return { savings_pending, savings_sbd_pending };
   }
 
+  function pricePerSteem(feed_price) {
+    let price_per_steem = undefined;
+    const { base, quote } = feed_price;
+    if (/ SBD$/.test(base) && / STEEM$/.test(quote)) {
+      price_per_steem = parseFloat(base.split(" ")[0]) / parseFloat(quote.split(" ")[0]);
+    }
+    return price_per_steem;
+  }
+
   function estimateAccountValue(
     account,
     { gprops, feed_price, open_orders, savings_withdraws, vesting_steem } = {}
@@ -97,10 +106,8 @@ module.exports = steemAPI => {
     }
 
     return Promise.all(promises).then(() => {
-      let price_per_steem = undefined;
-      const { base, quote } = feed_price;
-      if (/ SBD$/.test(base) && / STEEM$/.test(quote))
-        price_per_steem = parseFloat(base.split(" ")[0]);
+      let price_per_steem = pricePerSteem(feed_price);
+
       const savings_balance = account.savings_balance;
       const savings_sbd_balance = account.savings_sbd_balance;
       const balance_steem = parseFloat(account.balance.split(" ")[0]);
@@ -193,6 +200,7 @@ module.exports = steemAPI => {
     numberWithCommas,
     vestingSteem,
     estimateAccountValue,
-    createSuggestedPassword
+    createSuggestedPassword,
+    pricePerSteem
   };
 };
