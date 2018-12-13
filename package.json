@@ -1,7 +1,7 @@
 {
-  "name": "@steemit/steem-js",
+  "name": "@knowledgr/knowledgr-js",
   "version": "0.7.3",
-  "description": "Steem.js the JavaScript API for Steem blockchain",
+  "description": "Knowledgr.js the JavaScript API for Knowledgr blockchain",
   "main": "lib/index.js",
   "scripts": {
     "test": "eslint --quiet src test; mocha -t 40000 --require babel-polyfill --require babel-register",
@@ -17,22 +17,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/steemit/steem-js.git"
+    "url": "git+https://github.com/norestlabs/knowledgr-js"
   },
   "keywords": [
-    "steem",
-    "steemit",
+    "knowledgr",
     "blockchain",
-    "steemjs"
+    "knowledgrjs"
   ],
-  "author": "Fabien (https://github.com/bonustrack)",
+  "author": "MouseBelt",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/steemit/steem-js/issues"
+    "url": "https://github.com/norestlabs/knowledgr-js/issues"
   },
-  "homepage": "https://github.com/steemit/steem-js#readme",
+  "homepage": "https://github.com/norestlabs/knowledgr-js#readme",
   "dependencies": {
-    "@steemit/rpc-auth": "^1.1.0",
+    "@steemit/rpc-auth": "^1.1.1",
     "bigi": "^1.4.2",
     "bluebird": "^3.4.6",
     "browserify-aes": "^1.0.6",
