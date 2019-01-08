@@ -1,6 +1,7 @@
 require('babel-polyfill');
 import assert from 'assert';
 import should from 'should';
+import lodash from 'lodash';
 import testPost from './test-post.json';
 import steem from '../src';
 
@@ -151,10 +152,15 @@ describe('steem.api:', function () {
   });
 
   describe('with retry', () => {
-    afterEach(() => {
+    let oldUrl;
+    before(() => {
+      oldUrl = steem.api.options.url;
+    });
+
+    after(() => {
       // NOTE: We should reset `steem.api.options` after *every* test.
       steem.api.setOptions({
-        url: 'https://api.steemit.com',
+        url: oldUrl,
         retry: null,
         fetchMethod: null,
       });
