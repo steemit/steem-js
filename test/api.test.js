@@ -1,9 +1,9 @@
 require('babel-polyfill');
 import assert from 'assert';
 import should from 'should';
-import lodash from 'lodash';
 import testPost from './test-post.json';
 import steem from '../src';
+import api from '../src/api';
 
 describe('steem.api:', function () {
   this.timeout(30 * 1000);
@@ -152,23 +152,14 @@ describe('steem.api:', function () {
   });
 
   describe('with retry', () => {
-    let oldUrl;
-    before(() => {
-      oldUrl = steem.api.options.url;
-    });
-
-    after(() => {
-      // NOTE: We should reset `steem.api.options` after *every* test.
-      steem.api.setOptions({
-        url: oldUrl,
-        retry: null,
-        fetchMethod: null,
-      });
+    let steemApi;
+    beforeEach(() => {
+      steemApi = new api.Steem({});
     });
 
     it('works by default', async function() {
       let attempts = 0;
-      steem.api.setOptions({
+      steemApi.setOptions({
         url: 'https://api.steemit.com',
         fetchMethod: (uri, req) => new Promise((res, rej) => {
           const data = JSON.parse(req.body);
@@ -183,14 +174,14 @@ describe('steem.api:', function () {
           attempts++;
         }),
       });
-      const result = await steem.api.getFollowersAsync('ned', 0, 'blog', 5)
+      const result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5)
       assert.equal(attempts, 1);
       assert.deepEqual(result, ['ned']);
     });
 
     it('does not retry by default', async() => {
       let attempts = 0;
-      steem.api.setOptions({
+      steemApi.setOptions({
         url: 'https://api.steemit.com',
         fetchMethod: (uri, req) => new Promise((res, rej) => {
           rej(new Error('Bad request'));
@@ -201,7 +192,7 @@ describe('steem.api:', function () {
       let result;
       let errored = false;
       try {
-        result = await steem.api.getFollowersAsync('ned', 0, 'blog', 5)
+        result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5)
       } catch (e) {
         errored = true;
       }
@@ -211,7 +202,7 @@ describe('steem.api:', function () {
 
     it('works with retry passed as a boolean', async() => {
       let attempts = 0;
-      steem.api.setOptions({
+      steemApi.setOptions({
         url: 'https://api.steemit.com',
         fetchMethod: (uri, req) => new Promise((res, rej) => {
           const data = JSON.parse(req.body);
@@ -227,14 +218,14 @@ describe('steem.api:', function () {
         }),
       });
 
-      const result = await steem.api.getFollowersAsync('ned', 0, 'blog', 5)
+      const result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5)
       assert.equal(attempts, 1);
       assert.deepEqual(result, ['ned']);
     });
 
     it('retries with retry passed as a boolean', async() => {
       let attempts = 0;
-      steem.api.setOptions({
+      steemApi.setOptions({
         url: 'https://api.steemit.com',
         retry: true,
         fetchMethod: (uri, req) => new Promise((res, rej) => {
@@ -258,7 +249,7 @@ describe('steem.api:', function () {
       let result;
       let errored = false;
       try {
-        result = await steem.api.getFollowersAsync('ned', 0, 'blog', 5);
+        result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5);
       } catch (e) {
         errored = true;
       }
@@ -268,7 +259,7 @@ describe('steem.api:', function () {
     });
 
     it('works with retry passed as an object', async() => {
-      steem.api.setOptions({
+      steemApi.setOptions({
         url: 'https://api.steemit.com',
         retry: {
           retries: 3,
@@ -287,13 +278,13 @@ describe('steem.api:', function () {
         }),
       });
 
-      const result = await steem.api.getFollowersAsync('ned', 0, 'blog', 5);
+      const result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5);
       assert.deepEqual(result, ['ned']);
     });
 
     it('retries with retry passed as an object', async() => {
       let attempts = 0;
-      steem.api.setOptions({
+      steemApi.setOptions({
         url: 'https://api.steemit.com',
         retry: {
           retries: 3,
@@ -320,7 +311,7 @@ describe('steem.api:', function () {
       let result;
       let errored = false;
       try {
-        result = await steem.api.getFollowersAsync('ned', 0, 'blog', 5);
+        result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5);
       } catch (e) {
         errored = true;
       }

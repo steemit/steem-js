@@ -50,19 +50,26 @@ export default class HttpTransport extends Transport {
     const params = [api, data.method, data.params];
     const retriable = this.retriable(api, data);
     const fetchMethod = this.options.fetchMethod;
-    retriable.attempt((currentAttempt) => {
+    if (retriable) {
+      retriable.attempt((currentAttempt) => {
+        jsonRpc(this.options.uri, { method: 'call', id, params, fetchMethod }).then(
+          res => { callback(null, res); },
+          err => {
+            console.error('An error occurred hitting the Steem API:', err);
+            if (retriable.retry(err)) {
+              console.errror('Retrying...');
+              return;
+            }
+            callback(retriable.mainError());
+          }
+        );
+      });
+    } else {
       jsonRpc(this.options.uri, { method: 'call', id, params, fetchMethod }).then(
         res => { callback(null, res); },
-        err => {
-          console.error('An error occurred hitting the Steem API:', err);
-          if (retriable.retry(err)) {
-            console.errror('Retrying...');
-            return;
-          }
-          callback(retriable.mainError());
-        }
+        err => { callback(err); }
       );
-    });
+    }
   }
 
   get nonRetriableOperations() {
@@ -78,7 +85,7 @@ export default class HttpTransport extends Transport {
   retriable(api, data) {
     if (this.nonRetriableOperations.some((o) => o === data.method)) {
       // Do not retry if the operation is non-retriable.
-      return retry.operation({ retries: 0 });
+      return null;
     } else if (this.options.retry) {
       // If `this.options.retry` is a map of options, use it. If
       // `this.options.retry` is `true`, use default options.
@@ -87,7 +94,7 @@ export default class HttpTransport extends Transport {
         retry.operation();
     } else {
       // Otherwise, don't retry.
-      return retry.operation({ retries: 0 });
+      return null;
     }
   }
 }
