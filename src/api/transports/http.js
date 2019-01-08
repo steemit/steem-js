@@ -54,7 +54,11 @@ export default class HttpTransport extends Transport {
       jsonRpc(this.options.uri, { method: 'call', id, params, fetchMethod }).then(
         res => { callback(null, res); },
         err => {
-          if (retriable.retry(err)) return;
+          console.error('An error occurred hitting the Steem API:', err);
+          if (retriable.retry(err)) {
+            console.errror('Retrying...');
+            return;
+          }
           callback(retriable.mainError());
         }
       );
