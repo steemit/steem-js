@@ -3,6 +3,7 @@ import assert from 'assert';
 import should from 'should';
 import testPost from './test-post.json';
 import steem from '../src';
+import api from '../src/api';
 
 describe('steem.api:', function () {
   this.timeout(30 * 1000);
@@ -148,6 +149,178 @@ describe('steem.api:', function () {
 
       result.should.have.properties(testPost);
     });
+  });
+
+  describe('with retry', () => {
+    let steemApi;
+    beforeEach(() => {
+      steemApi = new api.Steem({});
+    });
+
+    it('works by default', async function() {
+      let attempts = 0;
+      steemApi.setOptions({
+        url: 'https://api.steemit.com',
+        fetchMethod: (uri, req) => new Promise((res, rej) => {
+          const data = JSON.parse(req.body);
+          res({
+            ok: true,
+            json: () => Promise.resolve({
+              jsonrpc: '2.0',
+              id: data.id,
+              result: ['ned'],
+            }),
+          });
+          attempts++;
+        }),
+      });
+      const result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5)
+      assert.equal(attempts, 1);
+      assert.deepEqual(result, ['ned']);
+    });
+
+    it('does not retry by default', async() => {
+      let attempts = 0;
+      steemApi.setOptions({
+        url: 'https://api.steemit.com',
+        fetchMethod: (uri, req) => new Promise((res, rej) => {
+          rej(new Error('Bad request'));
+          attempts++;
+        }),
+      });
+
+      let result;
+      let errored = false;
+      try {
+        result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5)
+      } catch (e) {
+        errored = true;
+      }
+      assert.equal(attempts, 1);
+      assert.equal(errored, true);
+    });
+
+    it('works with retry passed as a boolean', async() => {
+      let attempts = 0;
+      steemApi.setOptions({
+        url: 'https://api.steemit.com',
+        fetchMethod: (uri, req) => new Promise((res, rej) => {
+          const data = JSON.parse(req.body);
+          res({
+            ok: true,
+            json: () => Promise.resolve({
+              jsonrpc: '2.0',
+              id: data.id,
+              result: ['ned'],
+            }),
+          });
+          attempts++;
+        }),
+      });
+
+      const result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5)
+      assert.equal(attempts, 1);
+      assert.deepEqual(result, ['ned']);
+    });
+
+    it('retries with retry passed as a boolean', async() => {
+      let attempts = 0;
+      steemApi.setOptions({
+        url: 'https://api.steemit.com',
+        retry: true,
+        fetchMethod: (uri, req) => new Promise((res, rej) => {
+          if (attempts < 1) {
+            rej(new Error('Bad request'));
+          } else {
+            const data = JSON.parse(req.body);
+            res({
+              ok: true,
+              json: () => Promise.resolve({
+                jsonrpc: '2.0',
+                id: data.id,
+                result: ['ned'],
+              }),
+            });
+          }
+          attempts++;
+        }),
+      });
+
+      let result;
+      let errored = false;
+      try {
+        result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5);
+      } catch (e) {
+        errored = true;
+      }
+      assert.equal(attempts, 2);
+      assert.equal(errored, false);
+      assert.deepEqual(result, ['ned']);
+    });
+
+    it('works with retry passed as an object', async() => {
+      steemApi.setOptions({
+        url: 'https://api.steemit.com',
+        retry: {
+          retries: 3,
+          minTimeout: 1, // 1ms
+        },
+        fetchMethod: (uri, req) => new Promise((res, rej) => {
+          const data = JSON.parse(req.body);
+          res({
+            ok: 'true',
+            json: () => Promise.resolve({
+              jsonrpc: '2.0',
+              id: data.id,
+              result: ['ned'],
+            }),
+          });
+        }),
+      });
+
+      const result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5);
+      assert.deepEqual(result, ['ned']);
+    });
+
+    it('retries with retry passed as an object', async() => {
+      let attempts = 0;
+      steemApi.setOptions({
+        url: 'https://api.steemit.com',
+        retry: {
+          retries: 3,
+          minTimeout: 1,
+        },
+        fetchMethod: (uri, req) => new Promise((res, rej) => {
+          if (attempts < 1) {
+            rej(new Error('Bad request'));
+          } else {
+            const data = JSON.parse(req.body);
+            res({
+              ok: true,
+              json: () => Promise.resolve({
+                jsonrpc: '2.0',
+                id: data.id,
+                result: ['ned'],
+              }),
+            });
+          }
+          attempts++;
+        }),
+      });
+
+      let result;
+      let errored = false;
+      try {
+        result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5);
+      } catch (e) {
+        errored = true;
+      }
+      assert.equal(attempts, 2);
+      assert.equal(errored, false);
+      assert.deepEqual(result, ['ned']);
+    });
+
+    it('does not retry non-retriable operations');
   });
 
 });
