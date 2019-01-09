@@ -14,9 +14,20 @@ class RPCError extends Error {
   }
 }
 
-export function jsonRpc(uri, {method, id, params, fetchMethod}) {
+/**
+ * Makes a JSON-RPC request using `fetch` or a user-provided `fetchMethod`.
+ *
+ * @param {string} uri - The URI to the JSON-RPC endpoint.
+ * @param {string} options.method - The remote JSON-RPC method to call.
+ * @param {string} options.id - ID for the request, for matching to a response.
+ * @param {*} options.params  - The params for the remote method.
+ * @param {function} [options.fetchMethod=fetch] - A function with the same
+ * signature as `fetch`, which can be used to make the network request, or for
+ * stubbing in tests.
+ */
+export function jsonRpc(uri, {method, id, params, fetchMethod=fetch}) {
   const payload = {id, jsonrpc: '2.0', method, params};
-  return (fetchMethod || fetch)(uri, {
+  return fetchMethod(uri, {
     body: JSON.stringify(payload),
     method: 'post',
     mode: 'cors',
@@ -55,9 +66,7 @@ export default class HttpTransport extends Transport {
         jsonRpc(this.options.uri, { method: 'call', id, params, fetchMethod }).then(
           res => { callback(null, res); },
           err => {
-            console.error('An error occurred hitting the Steem API:', err);
             if (retriable.retry(err)) {
-              console.errror('Retrying...');
               return;
             }
             callback(retriable.mainError());
@@ -86,12 +95,12 @@ export default class HttpTransport extends Transport {
     if (this.nonRetriableOperations.some((o) => o === data.method)) {
       // Do not retry if the operation is non-retriable.
       return null;
+    } else if (Object(this.options.retry) === this.options.retry) {
+      // If `this.options.retry` is a map of options, pass those to operation.
+      return retry.operation(this.options.retry);
     } else if (this.options.retry) {
-      // If `this.options.retry` is a map of options, use it. If
-      // `this.options.retry` is `true`, use default options.
-      return (Object(this.options.retry) === this.options.retry) ?
-        retry.operation(this.options.retry) :
-        retry.operation();
+      // If `this.options.retry` is `true`, use default options.
+      return retry.operation();
     } else {
       // Otherwise, don't retry.
       return null;
