@@ -72,7 +72,7 @@ module.exports = steemAPI => {
     if (!vesting_steem || !feed_price) {
       if (!gprops || !feed_price) {
         promises.push(
-          steemAPI.getStateAsync(`/@{username}`).then(data => {
+          steemAPI.getStateAsync(`/@${username}`).then(data => {
             gprops = data.props;
             feed_price = data.feed_price;
             vesting_steem = vestingSteem(account, gprops);
