@@ -491,5 +491,22 @@ export default [
       "api": "market_history_api",
       "method": "get_market_history_buckets",
       "params": []
+    },
+    // condenser_api is wrapper among others below three methods (sps_api,
+    // where "params" is object instead of array)
+    {
+      "api": "condenser_api",
+      "method": "find_proposals",
+      "params": ["id_set"]
+    },
+    {
+      "api": "condenser_api",
+      "method": "list_proposals",
+      "params": ["start" , "order_by", "order_direction", "limit", "status", "last_id"]
+    },
+    {
+      "api": "condenser_api",
+      "method": "list_voter_proposals",
+      "params": ["voter" , "order_by", "order_direction", "limit", "status", "last_id"]
     }
 ];
