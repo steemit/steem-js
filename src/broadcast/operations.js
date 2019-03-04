@@ -433,6 +433,36 @@ module.exports = [
   },
   {
     "roles": ["active", "owner"],
+    "operation": "create_proposal",
+    "params": [
+      "creator",
+      "receiver",
+      "start_date",
+      "end_date",
+      "daily_pay",
+      "subject",
+      "url"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "update_proposal_votes",
+    "params": [
+      "voter",
+      "proposal_ids",
+      "approve"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "remove_proposal",
+    "params": [
+      "proposal_owner",
+      "proposal_ids"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
     "operation": "fill_convert_request",
     "params": [
       "owner",

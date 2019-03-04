@@ -491,5 +491,20 @@ export default [
       "api": "market_history_api",
       "method": "get_market_history_buckets",
       "params": []
+    },
+    {
+      "api": "sps_api",
+      "method": "find_proposals",
+      "params": ["id_set"]
+    },
+    {
+      "api": "sps_api",
+      "method": "list_proposals",
+      "params": ["start" , "order_by", "order_direction", "limit", "active"]
+    },
+    {
+      "api": "sps_api",
+      "method": "list_voter_proposals",
+      "params": ["voter" , "order_by", "order_direction", "limit", "active"]
     }
 ];
