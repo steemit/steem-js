@@ -76,7 +76,7 @@ export default class WsTransport extends Transport {
         }
       });
 
-      if ((this.options.useAppbaseApi) && (api !== 'sps_api')) {
+      if (this.options.useAppbaseApi) {
         api = 'condenser_api';
       }
 

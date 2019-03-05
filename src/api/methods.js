@@ -493,17 +493,17 @@ export default [
       "params": []
     },
     {
-      "api": "sps_api",
+      "api": "condenser_api",
       "method": "find_proposals",
       "params": ["id_set"]
     },
     {
-      "api": "sps_api",
+      "api": "condenser_api",
       "method": "list_proposals",
       "params": ["start" , "order_by", "order_direction", "limit", "active"]
     },
     {
-      "api": "sps_api",
+      "api": "condenser_api",
       "method": "list_voter_proposals",
       "params": ["voter" , "order_by", "order_direction", "limit", "active"]
     }
