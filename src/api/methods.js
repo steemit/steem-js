@@ -492,6 +492,7 @@ export default [
       "method": "get_market_history_buckets",
       "params": []
     },
+    // condenser_api is wrapper among others below three methods
     {
       "api": "condenser_api",
       "method": "find_proposals",
