@@ -493,6 +493,7 @@ export default [
       "params": []
     },
     // condenser_api is wrapper among others below three methods (sps_api)
+    //
     {
       "api": "condenser_api",
       "method": "find_proposals",
