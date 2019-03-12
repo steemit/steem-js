@@ -441,7 +441,7 @@ module.exports = [
       "end_date",
       "daily_pay",
       "subject",
-      "url"
+      "permlink"
     ]
   },
   {

@@ -606,7 +606,7 @@ let create_proposal = new Serializer(
   end_date: time_point_sec,
   daily_pay: asset,
   subject: string,
-  url: string
+  permlink: string
 }
 );
 
