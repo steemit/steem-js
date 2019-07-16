@@ -501,11 +501,6 @@ export default [
   {
     api: "condenser_api",
     method: "list_proposals",
-    params: ["start", "order_by", "order_direction", "limit", "status"]
-  },
-  {
-    api: "condenser_api",
-    method: "list_voter_proposals",
-    params: ["voter", "order_by", "order_direction", "limit", "status"]
+    params: ["start", "limit", "order_by", "order_direction", "status"]
   }
 ];
