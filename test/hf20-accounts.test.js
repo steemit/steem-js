@@ -30,8 +30,7 @@ describe('steem.hf20-accounts:', () => {
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
         result.should.have.property('blockchain_version');
-        if(result['blockchain_version'] < '0.21.0') return done(); /* SKIP */
-        result.should.have.property('blockchain_version', '0.21.0')
+        //result.should.have.property('blockchain_version', '0.22.0')
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
           tx = steem.auth.signTransaction(tx, [activeWif]);
@@ -49,8 +48,7 @@ describe('steem.hf20-accounts:', () => {
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
         result.should.have.property('blockchain_version');
-        if(result['blockchain_version'] < '0.21.0') return done(); /* SKIP */
-        result.should.have.property('blockchain_version', '0.21.0')
+        //result.should.have.property('blockchain_version', '0.22.0')
 
         steem.broadcast.claimAccountAsync(activeWif, username, '0.000 TESTS', []).then((result) => {
             let newAccountName = username + '-' + Math.floor(Math.random() * 10000);
