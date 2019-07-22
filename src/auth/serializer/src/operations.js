@@ -614,6 +614,7 @@ let account_update2 = new Serializer(
     posting: optional(authority),
     memo_key: public_key,
     json_metadata: string,
+    posting_json_metadata: string,
     extensions: set(future_extensions)
 }
 );

@@ -450,6 +450,7 @@ module.exports = [
       "posting",
       "memo_key",
       "json_metadata",
+      "posting_json_metadata",
       "extensions"
     ]
   },
