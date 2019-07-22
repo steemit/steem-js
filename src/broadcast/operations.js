@@ -433,6 +433,28 @@ module.exports = [
   },
   {
     "roles": ["active", "owner"],
+    "operation": "witness_set_properties",
+    "params": [
+      "owner",
+      "props",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["posting", "active", "owner"],
+    "operation": "account_update2",
+    "params": [
+      "account",
+      "owner",
+      "active",
+      "posting",
+      "memo_key",
+      "json_metadata",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
     "operation": "create_proposal",
     "params": [
       "creator",
@@ -441,7 +463,8 @@ module.exports = [
       "end_date",
       "daily_pay",
       "subject",
-      "permlink"
+      "permlink",
+      "extensions"
     ]
   },
   {
@@ -450,7 +473,8 @@ module.exports = [
     "params": [
       "voter",
       "proposal_ids",
-      "approve"
+      "approve",
+      "extensions"
     ]
   },
   {
@@ -458,7 +482,8 @@ module.exports = [
     "operation": "remove_proposal",
     "params": [
       "proposal_owner",
-      "proposal_ids"
+      "proposal_ids",
+      "extensions"
     ]
   },
   {

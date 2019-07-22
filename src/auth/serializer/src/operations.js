@@ -598,6 +598,26 @@ let account_create_with_delegation = new Serializer(
 }
 );
 
+let witness_set_properties = new Serializer(
+    "witness_set_properties", {
+    owner: string,
+    props: string,
+    extensions: set(future_extensions)
+}
+);
+
+let account_update2 = new Serializer(
+    "account_update2", {
+    account: string,
+    owner: optional(authority),
+    active: optional(authority),
+    posting: optional(authority),
+    memo_key: public_key,
+    json_metadata: string,
+    extensions: set(future_extensions)
+}
+);
+
 let create_proposal = new Serializer(
   "create_proposal", {
   creator: string,
@@ -606,7 +626,8 @@ let create_proposal = new Serializer(
   end_date: time_point_sec,
   daily_pay: asset,
   subject: string,
-  permlink: string
+  permlink: string,
+  extensions: set(future_extensions)
 }
 );
 
@@ -614,14 +635,16 @@ let update_proposal_votes = new Serializer(
   "update_proposal_votes", {
   voter: string,
   proposal_ids: array(uint64),
-  approve: bool
+  approve: bool,
+  extensions: set(future_extensions)
 }
 );
 
 let remove_proposal = new Serializer(
   "remove_proposal", {
   proposal_owner: string,
-  proposal_ids: array(uint64)
+  proposal_ids: array(uint64),
+  extensions: set(future_extensions)
 }
 );
 
@@ -781,6 +804,8 @@ operation.st_operations = [
     claim_reward_balance,
     delegate_vesting_shares,
     account_create_with_delegation,
+    witness_set_properties,
+    account_update2,
     create_proposal,
     update_proposal_votes,
     remove_proposal,

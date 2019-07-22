@@ -20,8 +20,8 @@ describe('steem.hf21-accounts:', () => {
     should.exist(steem.broadcast.removeProposalAsync);
   });
 
-  describe('create proposal', () => {
-    it('signs and verifies auth', function(done) {
+  describe('create proposal ops', () => {
+    it('signs and verifies create_proposal', function(done) {
       let permlink = 'test';
 
       let tx = {
@@ -47,6 +47,25 @@ describe('steem.hf21-accounts:', () => {
             (err)    => {done(err);}
           );
         });
+      });
+    })
+
+    it('signs and verifies update_proposal_votes', function(done) {
+      let tx = {
+        'operations': [[
+          'update_proposal_votes', {
+            'voter': username,
+            'proposal_ids': [7],
+            'approve': true
+        }]]
+      }
+
+      steem.broadcast._prepareTransaction(tx).then(function(tx){
+        tx = steem.auth.signTransaction(tx, [activeWif]);
+        steem.api.verifyAuthorityAsync(tx).then(
+          (result) => {result.should.equal(true); done();},
+          (err)    => {done(err);}
+        );
       });
     })
   });
