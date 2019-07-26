@@ -55,7 +55,8 @@ module.exports = steemAPI => {
     let price_per_steem = undefined;
     const { base, quote } = feed_price;
     if (/ SBD$/.test(base) && / STEEM$/.test(quote)) {
-      price_per_steem = parseFloat(base.split(" ")[0]) / parseFloat(quote.split(" ")[0]);
+      price_per_steem =
+        parseFloat(base.split(" ")[0]) / parseFloat(quote.split(" ")[0]);
     }
     return price_per_steem;
   }
@@ -106,7 +107,7 @@ module.exports = steemAPI => {
     }
 
     return Promise.all(promises).then(() => {
-      let price_per_steem = pricePerSteem(feed_price);
+      const price_per_steem = pricePerSteem(feed_price);
 
       const savings_balance = account.savings_balance;
       const savings_sbd_balance = account.savings_sbd_balance;

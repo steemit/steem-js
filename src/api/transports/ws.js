@@ -1,23 +1,23 @@
-import Promise from 'bluebird';
-import isNode from 'detect-node';
-import newDebug from 'debug';
+import Promise from "bluebird";
+import isNode from "detect-node";
+import newDebug from "debug";
 
-import Transport from './base';
+import Transport from "./base";
 
 let WebSocket;
 if (isNode) {
-  WebSocket = require('ws'); // eslint-disable-line global-require
-} else if (typeof window !== 'undefined') {
+  WebSocket = require("ws"); // eslint-disable-line global-require
+} else if (typeof window !== "undefined") {
   WebSocket = window.WebSocket;
 } else {
   throw new Error("Couldn't decide on a `WebSocket` class");
 }
 
-const debug = newDebug('steem:ws');
+const debug = newDebug("steem:ws");
 
 export default class WsTransport extends Transport {
   constructor(options = {}) {
-    super(Object.assign({id: 0}, options));
+    super(Object.assign({ id: 0 }, options));
 
     this._requests = new Map();
     this.inFlight = 0;
@@ -25,14 +25,13 @@ export default class WsTransport extends Transport {
   }
 
   start() {
-
     if (this.startPromise) {
       return this.startPromise;
     }
 
     this.startPromise = new Promise((resolve, reject) => {
       this.ws = new WebSocket(this.options.websocket);
-      this.ws.onerror = (err) => {
+      this.ws.onerror = err => {
         this.startPromise = null;
         reject(err);
       };
@@ -48,7 +47,7 @@ export default class WsTransport extends Transport {
   }
 
   stop() {
-    debug('Stopping...');
+    debug("Stopping...");
 
     this.startPromise = null;
     this.isOpen = false;
@@ -62,22 +61,22 @@ export default class WsTransport extends Transport {
   }
 
   send(api, data, callback) {
-    debug('Steem::send', api, data);
+    debug("Steem::send", api, data);
     return this.start().then(() => {
       const deferral = {};
       new Promise((resolve, reject) => {
-        deferral.resolve = (val) => {
+        deferral.resolve = val => {
           resolve(val);
           callback(null, val);
         };
-        deferral.reject = (val) => {
+        deferral.reject = val => {
           reject(val);
           callback(val);
-        }
+        };
       });
 
       if (this.options.useAppbaseApi) {
-        api = 'condenser_api';
+        api = "condenser_api";
       }
 
       const _request = {
@@ -85,8 +84,8 @@ export default class WsTransport extends Transport {
         startedAt: Date.now(),
         message: {
           id: data.id || this.id++,
-          method: 'call',
-          jsonrpc: '2.0',
+          method: "call",
+          jsonrpc: "2.0",
           params: [api, data.method, data.params]
         }
       };
@@ -98,15 +97,15 @@ export default class WsTransport extends Transport {
   }
 
   onError(error) {
-    for (let _request of this._requests) {
+    for (const _request of this._requests) {
       _request.deferral.reject(error);
     }
     this.stop();
   }
 
   onClose() {
-    const error = new Error('Connection was closed');
-    for (let _request of this._requests) {
+    const error = new Error("Connection was closed");
+    for (const _request of this._requests) {
       _request.deferral.reject(error);
     }
     this._requests.clear();
@@ -114,9 +113,11 @@ export default class WsTransport extends Transport {
 
   onMessage(websocketMessage) {
     const message = JSON.parse(websocketMessage.data);
-    debug('-- Steem.onMessage -->', message.id);
+    debug("-- Steem.onMessage -->", message.id);
     if (!this._requests.has(message.id)) {
-      throw new Error(`Panic: no request in queue for message id ${message.id}`);
+      throw new Error(
+        `Panic: no request in queue for message id ${message.id}`
+      );
     }
     const _request = this._requests.get(message.id);
     this._requests.delete(message.id);
@@ -125,15 +126,18 @@ export default class WsTransport extends Transport {
     if (errorCause) {
       const err = new Error(
         // eslint-disable-next-line prefer-template
-        (errorCause.message || 'Failed to complete operation') +
-          ' (see err.payload for the full error payload)'
+        (errorCause.message || "Failed to complete operation") +
+          " (see err.payload for the full error payload)"
       );
       err.payload = message;
       _request.deferral.reject(err);
     } else {
-      this.emit('track-performance', _request.message.method, Date.now() - _request.startedAt);
+      this.emit(
+        "track-performance",
+        _request.message.method,
+        Date.now() - _request.startedAt
+      );
       _request.deferral.resolve(message.result);
     }
-
   }
 }

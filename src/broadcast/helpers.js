@@ -1,16 +1,26 @@
-import api from '../api';
+import api from "../api";
 
 exports = module.exports = steemBroadcast => {
-  steemBroadcast.addAccountAuth = ({ signingKey, username, authorizedUsername, role = 'posting', weight }, cb) => {
+  steemBroadcast.addAccountAuth = (
+    { signingKey, username, authorizedUsername, role = "posting", weight },
+    cb
+  ) => {
     api.getAccounts([username], (err, [userAccount]) => {
-      if (err) { return cb(new Error(err), null); }
-      if (!userAccount) { return cb(new Error('Invalid account name'), null); }
+      if (err) {
+        return cb(new Error(err), null);
+      }
+      if (!userAccount) {
+        return cb(new Error("Invalid account name"), null);
+      }
 
       const updatedAuthority = userAccount[role];
 
       /** Release callback if the account already exist in the account_auths array */
-      const authorizedAccounts = updatedAuthority.account_auths.map(auth => auth[0]);
-      const hasAuthority = authorizedAccounts.indexOf(authorizedUsername) !== -1;
+      const authorizedAccounts = updatedAuthority.account_auths.map(
+        auth => auth[0]
+      );
+      const hasAuthority =
+        authorizedAccounts.indexOf(authorizedUsername) !== -1;
       if (hasAuthority) {
         return cb(null, null);
       }
@@ -18,9 +28,9 @@ exports = module.exports = steemBroadcast => {
       /** Use weight_thresold as default weight */
       weight = weight || userAccount[role].weight_threshold;
       updatedAuthority.account_auths.push([authorizedUsername, weight]);
-      const owner = role === 'owner' ? updatedAuthority : undefined;
-      const active = role === 'active' ? updatedAuthority : undefined;
-      const posting = role === 'posting' ? updatedAuthority : undefined;
+      const owner = role === "owner" ? updatedAuthority : undefined;
+      const active = role === "active" ? updatedAuthority : undefined;
+      const posting = role === "posting" ? updatedAuthority : undefined;
 
       /** Add authority on user account */
       steemBroadcast.accountUpdate(
@@ -36,10 +46,17 @@ exports = module.exports = steemBroadcast => {
     });
   };
 
-  steemBroadcast.removeAccountAuth = ({ signingKey, username, authorizedUsername, role = 'posting' }, cb) => {
+  steemBroadcast.removeAccountAuth = (
+    { signingKey, username, authorizedUsername, role = "posting" },
+    cb
+  ) => {
     api.getAccounts([username], (err, [userAccount]) => {
-      if (err) { return cb(new Error(err), null); }
-      if (!userAccount) { return cb(new Error('Invalid account name'), null); }
+      if (err) {
+        return cb(new Error(err), null);
+      }
+      if (!userAccount) {
+        return cb(new Error("Invalid account name"), null);
+      }
 
       const updatedAuthority = userAccount[role];
       const totalAuthorizedUser = updatedAuthority.account_auths.length;
@@ -56,9 +73,9 @@ exports = module.exports = steemBroadcast => {
         return cb(null, null);
       }
 
-      const owner = role === 'owner' ? updatedAuthority : undefined;
-      const active = role === 'active' ? updatedAuthority : undefined;
-      const posting = role === 'posting' ? updatedAuthority : undefined;
+      const owner = role === "owner" ? updatedAuthority : undefined;
+      const active = role === "active" ? updatedAuthority : undefined;
+      const posting = role === "posting" ? updatedAuthority : undefined;
 
       steemBroadcast.accountUpdate(
         signingKey,
@@ -73,10 +90,17 @@ exports = module.exports = steemBroadcast => {
     });
   };
 
-  steemBroadcast.addKeyAuth = ({ signingKey, username, authorizedKey, role = 'posting', weight }, cb) => {
+  steemBroadcast.addKeyAuth = (
+    { signingKey, username, authorizedKey, role = "posting", weight },
+    cb
+  ) => {
     api.getAccounts([username], (err, [userAccount]) => {
-      if (err) { return cb(new Error(err), null); }
-      if (!userAccount) { return cb(new Error('Invalid account name'), null); }
+      if (err) {
+        return cb(new Error(err), null);
+      }
+      if (!userAccount) {
+        return cb(new Error("Invalid account name"), null);
+      }
 
       const updatedAuthority = userAccount[role];
 
@@ -90,9 +114,9 @@ exports = module.exports = steemBroadcast => {
       /** Use weight_thresold as default weight */
       weight = weight || userAccount[role].weight_threshold;
       updatedAuthority.key_auths.push([authorizedKey, weight]);
-      const owner = role === 'owner' ? updatedAuthority : undefined;
-      const active = role === 'active' ? updatedAuthority : undefined;
-      const posting = role === 'posting' ? updatedAuthority : undefined;
+      const owner = role === "owner" ? updatedAuthority : undefined;
+      const active = role === "active" ? updatedAuthority : undefined;
+      const posting = role === "posting" ? updatedAuthority : undefined;
 
       /** Add authority on user account */
       steemBroadcast.accountUpdate(
@@ -108,10 +132,17 @@ exports = module.exports = steemBroadcast => {
     });
   };
 
-  steemBroadcast.removeKeyAuth = ({ signingKey, username, authorizedKey, role = 'posting' }, cb) => {
+  steemBroadcast.removeKeyAuth = (
+    { signingKey, username, authorizedKey, role = "posting" },
+    cb
+  ) => {
     api.getAccounts([username], (err, [userAccount]) => {
-      if (err) { return cb(new Error(err), null); }
-      if (!userAccount) { return cb(new Error('Invalid account name'), null); }
+      if (err) {
+        return cb(new Error(err), null);
+      }
+      if (!userAccount) {
+        return cb(new Error("Invalid account name"), null);
+      }
 
       const updatedAuthority = userAccount[role];
       const totalAuthorizedKey = updatedAuthority.key_auths.length;
@@ -128,9 +159,9 @@ exports = module.exports = steemBroadcast => {
         return cb(null, null);
       }
 
-      const owner = role === 'owner' ? updatedAuthority : undefined;
-      const active = role === 'active' ? updatedAuthority : undefined;
-      const posting = role === 'posting' ? updatedAuthority : undefined;
+      const owner = role === "owner" ? updatedAuthority : undefined;
+      const active = role === "active" ? updatedAuthority : undefined;
+      const posting = role === "posting" ? updatedAuthority : undefined;
 
       steemBroadcast.accountUpdate(
         signingKey,

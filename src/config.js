@@ -1,5 +1,5 @@
-import each from 'lodash/each';
-const defaultConfig = require('../config.json');
+import each from "lodash/each";
+const defaultConfig = require("../config.json");
 
 class Config {
   constructor(c) {
@@ -18,7 +18,9 @@ class Config {
 }
 
 module.exports = new Config(defaultConfig);
-if(typeof module.exports.Config !== 'undefined') {
-  throw new Error("default config.json file may not contain a property 'Config'");
+if (typeof module.exports.Config !== "undefined") {
+  throw new Error(
+    "default config.json file may not contain a property 'Config'"
+  );
 }
 module.exports.Config = Config;

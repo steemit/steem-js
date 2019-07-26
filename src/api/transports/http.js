@@ -1,14 +1,14 @@
-import fetch from 'cross-fetch';
-import newDebug from 'debug';
-import retry from 'retry';
-import Transport from './base';
+import fetch from "cross-fetch";
+import newDebug from "debug";
+import retry from "retry";
+import Transport from "./base";
 
-const debug = newDebug('steem:http');
+const debug = newDebug("steem:http");
 
 class RPCError extends Error {
   constructor(rpcError) {
     super(rpcError.message);
-    this.name = 'RPCError';
+    this.name = "RPCError";
     this.code = rpcError.code;
     this.data = rpcError.data;
   }
@@ -25,46 +25,55 @@ class RPCError extends Error {
  * signature as `fetch`, which can be used to make the network request, or for
  * stubbing in tests.
  */
-export function jsonRpc(uri, {method, id, params, fetchMethod=fetch}) {
-  const payload = {id, jsonrpc: '2.0', method, params};
+export function jsonRpc(uri, { method, id, params, fetchMethod = fetch }) {
+  const payload = { id, jsonrpc: "2.0", method, params };
   return fetchMethod(uri, {
     body: JSON.stringify(payload),
-    method: 'post',
-    mode: 'cors',
+    method: "post",
+    mode: "cors",
     headers: {
-      Accept: 'application/json, text/plain, */*',
-      'Content-Type': 'application/json',
-    },
-  }).then(res => {
-    if (!res.ok) {
-      throw new Error(`HTTP ${ res.status }: ${ res.statusText }`);
+      Accept: "application/json, text/plain, */*",
+      "Content-Type": "application/json"
     }
-    return res.json();
-  }).then(rpcRes => {
-    if (rpcRes.id !== id) {
-      throw new Error(`Invalid response id: ${ rpcRes.id }`);
-    }
-    if (rpcRes.error) {
-      throw new RPCError(rpcRes.error);
-    }
-    return rpcRes.result
-  });
+  })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      return res.json();
+    })
+    .then(rpcRes => {
+      if (rpcRes.id !== id) {
+        throw new Error(`Invalid response id: ${rpcRes.id}`);
+      }
+      if (rpcRes.error) {
+        throw new RPCError(rpcRes.error);
+      }
+      return rpcRes.result;
+    });
 }
 
 export default class HttpTransport extends Transport {
   send(api, data, callback) {
     if (this.options.useAppbaseApi) {
-      api = 'condenser_api';
+      api = "condenser_api";
     }
-    debug('Steem::send', api, data);
+    debug("Steem::send", api, data);
     const id = data.id || this.id++;
     const params = [api, data.method, data.params];
     const retriable = this.retriable(api, data);
     const fetchMethod = this.options.fetchMethod;
     if (retriable) {
-      retriable.attempt((currentAttempt) => {
-        jsonRpc(this.options.uri, { method: 'call', id, params, fetchMethod }).then(
-          res => { callback(null, res); },
+      retriable.attempt(currentAttempt => {
+        jsonRpc(this.options.uri, {
+          method: "call",
+          id,
+          params,
+          fetchMethod
+        }).then(
+          res => {
+            callback(null, res);
+          },
           err => {
             if (retriable.retry(err)) {
               return;
@@ -74,25 +83,36 @@ export default class HttpTransport extends Transport {
         );
       });
     } else {
-      jsonRpc(this.options.uri, { method: 'call', id, params, fetchMethod }).then(
-        res => { callback(null, res); },
-        err => { callback(err); }
+      jsonRpc(this.options.uri, {
+        method: "call",
+        id,
+        params,
+        fetchMethod
+      }).then(
+        res => {
+          callback(null, res);
+        },
+        err => {
+          callback(err);
+        }
       );
     }
   }
 
   get nonRetriableOperations() {
-    return this.options.nonRetriableOperations || [
-      'broadcast_transaction',
-      'broadcast_transaction_with_callback',
-      'broadcast_transaction_synchronous',
-      'broadcast_block',
-    ];
+    return (
+      this.options.nonRetriableOperations || [
+        "broadcast_transaction",
+        "broadcast_transaction_with_callback",
+        "broadcast_transaction_synchronous",
+        "broadcast_block"
+      ]
+    );
   }
 
   // An object which can be used to track retries.
   retriable(api, data) {
-    if (this.nonRetriableOperations.some((o) => o === data.method)) {
+    if (this.nonRetriableOperations.some(o => o === data.method)) {
       // Do not retry if the operation is non-retriable.
       return null;
     } else if (Object(this.options.retry) === this.options.retry) {

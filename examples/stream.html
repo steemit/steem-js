@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Steem.js Stream</title>
-</head>
-<body>
-
-<script src="../dist/steem.min.js"></script>
-<script>
-steem.api.streamOperations(function (err, operations) {
-  operations.forEach(function (operation) {
-    console.log(operation);
-  });
-});
-</script>
-
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Steem.js Stream</title>
+  </head>
+  <body>
+    <script src="../dist/steem.min.js"></script>
+    <script>
+      steem.api.streamOperations(function(err, operations) {
+        operations.forEach(function(operation) {
+          console.log(operation);
+        });
+      });
+    </script>
+  </body>
 </html>
