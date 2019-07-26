@@ -61,6 +61,8 @@ describe('steem.hf21-accounts:', () => {
         }]]
       }
 
+      return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+
       steem.broadcast._prepareTransaction(tx).then(function(tx){
         tx = steem.auth.signTransaction(tx, [activeWif]);
         steem.api.verifyAuthorityAsync(tx).then(
