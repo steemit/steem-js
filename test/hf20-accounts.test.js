@@ -29,6 +29,7 @@ describe('steem.hf20-accounts:', () => {
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
+        if(result['blockchain_version'] < '0.21.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
         result.should.have.property('blockchain_version');
         //result.should.have.property('blockchain_version', '0.22.0')
 
@@ -47,6 +48,7 @@ describe('steem.hf20-accounts:', () => {
       this.skip(); // (!) need test account with enough RC
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
+        if(result['blockchain_version'] < '0.21.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
         result.should.have.property('blockchain_version');
         //result.should.have.property('blockchain_version', '0.22.0')
 
