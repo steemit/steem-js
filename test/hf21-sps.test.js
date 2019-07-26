@@ -3,7 +3,7 @@ import Promise from 'bluebird';
 import should from 'should';
 import steem from '../src';
 
-const username = process.env.STEEM_USERNAME;
+const username = process.env.STEEM_USERNAME || 'guest123';
 const password = process.env.STEEM_PASSWORD;
 const activeWif = steem.auth.toWif(username, password, 'active');
 
