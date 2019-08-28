@@ -433,6 +433,62 @@ module.exports = [
   },
   {
     "roles": ["active", "owner"],
+    "operation": "witness_set_properties",
+    "params": [
+      "owner",
+      "props",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["posting", "active", "owner"],
+    "operation": "account_update2",
+    "params": [
+      "account",
+      "owner",
+      "active",
+      "posting",
+      "memo_key",
+      "json_metadata",
+      "posting_json_metadata",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "create_proposal",
+    "params": [
+      "creator",
+      "receiver",
+      "start_date",
+      "end_date",
+      "daily_pay",
+      "subject",
+      "permlink",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "update_proposal_votes",
+    "params": [
+      "voter",
+      "proposal_ids",
+      "approve",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "remove_proposal",
+    "params": [
+      "proposal_owner",
+      "proposal_ids",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
     "operation": "fill_convert_request",
     "params": [
       "owner",

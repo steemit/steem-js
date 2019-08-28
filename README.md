@@ -42,9 +42,9 @@ steem.api.getAccounts(['ned', 'dan'], function(err, response){
 ```
 
 ## CDN
-https://cdn.steemjs.com/lib/latest/steem.min.js<br/>
+https://cdn.jsdelivr.net/npm/steem/dist/steem.min.js<br/>
 ```html
-<script src="//cdn.steemjs.com/lib/latest/steem.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/steem/dist/steem.min.js"></script>
 ```
 
 ## Webpack

@@ -54,7 +54,7 @@ steemBroadcast._prepareTransaction = function steemBroadcast$_prepareTransaction
       // Set defaults on the transaction
       const chainDate = new Date(properties.time + 'Z');
       const refBlockNum = (properties.last_irreversible_block_num - 1) & 0xFFFF;
-      return steemApi.getBlockAsync(properties.last_irreversible_block_num).then((block) => {
+      return steemApi.getBlockHeaderAsync(properties.last_irreversible_block_num).then((block) => {
         const headBlockId = block ? block.previous : '0000000000000000000000000000000000000000';
         return Object.assign({
           ref_block_num: refBlockNum,
