@@ -505,5 +505,10 @@ export default [
       "api": "condenser_api",
       "method": "list_proposal_votes",
       "params": ["start", "limit", "order_by", "order_direction", "status"]
+    },
+    {
+      "api": "condenser_api",
+      "method": "get_nai_pool",
+      "params": []
     }
 ];
