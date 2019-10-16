@@ -569,16 +569,6 @@ module.exports = [
   },
   {
     "roles": ["active", "owner"],
-    "operation": "smt_set_setup_parameters",
-    "params": [
-      "control_account",
-      "symbol",
-      "setup_parameters",
-      "extensions"
-    ]
-  },
-  {
-    "roles": ["active", "owner"],
     "operation": "smt_set_runtime_parameters",
     "params": [
       "control_account",

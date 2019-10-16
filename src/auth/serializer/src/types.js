@@ -391,16 +391,12 @@ Types.uint64 =
 
 Types.uint128 =
     {fromByteBuffer(b){
-        let u128 = b.readBigInt64();
-        u128 = u128 << 64;
-        u128 += b.readBigInt64();
-        return u128;
+        b.readBigInt64();
+        return b.readBigInt64();
     },
     appendByteBuffer(b, object){
-        let hi = object >> 64;
-        let lo = object % (1 << 64);
-        b.writeUint64(v.to_long(v.unsigned(hi)));
-        b.writeUint64(v.to_long(v.unsigned(lo)));
+        b.writeUint64(v.to_long(v.unsigned(0)));
+        b.writeUint64(v.to_long(v.unsigned(object)));
         return;
     },
     fromObject(object){
