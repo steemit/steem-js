@@ -114,29 +114,53 @@ Types.asset = {
         return amount_string + " " + symbol
     },
     appendByteBuffer(b, object){
-        object = object.trim()
-        if( ! /^[0-9]+\.?[0-9]* [A-Za-z0-9@]+$/.test(object))
-            throw new Error("Expecting amount like '99.000 SYMBOL', instead got '" + object + "'")
-
-        let [ amount, symbol ] = object.split(" ")
+        let amount = ""
+        let symbol = ""
         let nai = 0
-        if(symbol.startsWith("@@"))
+        let precision = 0
+
+        if(object["nai"])
         {
-            // NAI Case
-            nai = parseInt(symbol.slice(2))
-            let checksum = nai % 10
-            nai = nai / 10;
-            let expected_checksum = damm_checksum_8digit(nai)
+          symbol = object["nai"]
+          nai = parseInt(symbol.slice(2))
+          let checksum = nai % 10
+          nai = nai / 10;
+          let expected_checksum = damm_checksum_8digit(nai)
 
-            if(checksum != expected_checksum)
-                throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
+          if(checksum != expected_checksum)
+              throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
+
+          precision = object["precision"]
+          b.writeInt64(v.to_long(parseInt(object["amount"])))
         }
-        else if(symbol.length > 6)
-            throw new Error("Symbols are not longer than 6 characters " + symbol + "-"+ symbol.length)
+        else
+        {
+            object = object.trim()
+            if( ! /^[0-9]+\.?[0-9]* [A-Za-z0-9@]+$/.test(object))
+                throw new Error("Expecting amount like '99.000 SYMBOL', instead got '" + object + "'")
 
-        b.writeInt64(v.to_long(amount.replace(".", "")))
-        let dot = amount.indexOf(".") // 0.000
-        let precision = dot === -1 ? 0 : amount.length - dot - 1
+            let res = object.split(" ")
+            amount = res[0]
+            symbol = res[1]
+
+            if(symbol.startsWith("@@"))
+            {
+                // NAI Case
+                nai = parseInt(symbol.slice(2))
+                let checksum = nai % 10
+                nai = nai / 10;
+                let expected_checksum = damm_checksum_8digit(nai)
+
+                if(checksum != expected_checksum)
+                    throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
+            }
+            else if(symbol.length > 6)
+                throw new Error("Symbols are not longer than 6 characters " + symbol + "-"+ symbol.length)
+
+            b.writeInt64(v.to_long(amount.replace(".", "")))
+            let dot = amount.indexOf(".") // 0.000
+            precision = dot === -1 ? 0 : amount.length - dot - 1
+        }
 
 
         if(symbol.startsWith("@@"))
@@ -167,7 +191,7 @@ Types.asset_symbol = {
     fromByteBuffer(b){
         let precision = b.readUint8()
         let amount_string = ""
-        let symbol = ""
+        let nai_string = ""
 
         if(precision >= 16)
         {
@@ -175,7 +199,7 @@ Types.asset_symbol = {
             let b_copy = b.copy(b.offset - 1, b.offset + 3)
             let nai = new Buffer(b_copy.toBinary(), "binary").readInt32()
             nai = nai / 32
-            symbol = "@@" + nai.toString().padStart(8, '0') + damm_checksum_8digit(nai).to_String()
+            nai_string = "@@" + nai.toString().padStart(8, '0') + damm_checksum_8digit(nai).to_String()
             precision = precision % 16
             b.skip(3)
         }
@@ -183,22 +207,27 @@ Types.asset_symbol = {
         {
             // Legacy Case
             let b_copy = b.copy(b.offset, b.offset + 7)
-            symbol = new Buffer(b_copy.toBinary(), "binary").toString().replace(/\x00/g, "")
+            let symbol = new Buffer(b_copy.toBinary(), "binary").toString().replace(/\x00/g, "")
+            if(symbol == "STEEM" || symbol == "TESTS")
+              nai_string = "@@000000021"
+            else if(symbol == "SBD" || symbol == "TBD")
+              nai_string = "@@000000013"
+            else if(symbol == "VESTS")
+              nai_string = "@@000000037"
+            else
+              throw new Error("Expecting non-smt core asset symbol, instead got '" + symbol + "'")
             b.skip(7)
         }
 
-        return symbol
+        return {"nai" : nai_string, "precision" : precision}
     },
     appendByteBuffer(b, object){
-        object = object.trim()
-        if( ! /[A-Za-z0-9@]+$/.test(object))
-            throw new Error("Expecting symbol like 'SYMBOL', instead got '" + object + "'")
 
         let nai = 0
-        if(object.startsWith("@@"))
+        if(object["nai"].startsWith("@@"))
         {
             // NAI Case
-            nai = parseInt(object.slice(2))
+            nai = parseInt(object["nai"].slice(2))
             let checksum = nai % 10
             nai = nai / 10;
             let expected_checksum = damm_checksum_8digit(nai)
@@ -216,12 +245,29 @@ Types.asset_symbol = {
         }
         else
         {
-            let precision = 3
-            if(object == "VESTS") precision = 6
+            let precision = 0;
+            let symbol = "";
+            switch(object["nai"])
+            {
+              case "@@000000021":
+                precision = 3
+                //symbol = "STEEM"
+                symbol = "TESTS"
+                break
+              case "@@000000013":
+                precision = 3
+                //symbol = "SBD"
+                symbol = "TBD"
+                break
+              case "@@000000037":
+                precision = 6
+                symbol = "VESTS"
+                break
+            }
 
             b.writeUint8(precision)
-            b.append(object.toUpperCase(), 'binary')
-            for(let i = 0; i < 7 - object.length; i++)
+            b.append(symbol, 'binary')
+            for(let i = 0; i < 7 - symbol.length; i++)
                 b.writeUint8(0)
         }
 
