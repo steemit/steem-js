@@ -43,14 +43,14 @@ describe("steem.auth: derives", ()=> {
     
     it("child from public", ()=> assert.equal(
         to_public.child(child).toString(),
-        "STM6XA72XARQCain961PCJnXiKYdEMrndNGago2PV5bcUiVyzJ6iL",
+        config.get("address_prefix") + "6XA72XARQCain961PCJnXiKYdEMrndNGago2PV5bcUiVyzJ6iL",
         "derive child public key"
     ))
     
     // child = hash.sha256( one_time_private.get_secret( to_public ))
     it("child from private", ()=> assert.equal(
         PrivateKey.fromSeed("alice-brain-key").child(child).toPublicKey().toString(),
-        "STM6XA72XARQCain961PCJnXiKYdEMrndNGago2PV5bcUiVyzJ6iL",
+        config.get("address_prefix") + "6XA72XARQCain961PCJnXiKYdEMrndNGago2PV5bcUiVyzJ6iL",
         "derive child from private key"
     ))
     

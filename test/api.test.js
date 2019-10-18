@@ -12,7 +12,7 @@ describe('steem.api:', function () {
     it('works', () => {
       let url = steem.config.get('uri');
       if(! url) url = steem.config.get('websocket');
-      steem.api.setOptions({ url: url, useAppbaseApi: true });
+      steem.api.setOptions({ url: url });
     });
   });
 
@@ -142,10 +142,9 @@ describe('steem.api:', function () {
 
   describe('useApiOptions', () => {
     it('works ok with the prod instances', async() => {
-      steem.api.setOptions({ useAppbaseApi: true, url: steem.config.get('uri') });
+      steem.api.setOptions({ url: steem.config.get('uri') });
 
       const result = await steem.api.getContentAsync('yamadapc', 'test-1-2-3-4-5-6-7-9');
-      steem.api.setOptions({ useAppbaseApi: false, url: steem.config.get('uri') });
 
       result.should.have.properties(testPost);
     });

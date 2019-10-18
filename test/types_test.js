@@ -1,3 +1,4 @@
+import config from "../src/config"
 var Convert = require('../src/auth/serializer/src/convert');
 var Long = require('bytebuffer').Long;
 
@@ -51,15 +52,16 @@ describe("steem.auth: types", function() {
     })
 
     it("public_key sort", function() {
+        let prefix = config.get("address_prefix")
         let mapType = type.map(type.public_key, type.uint16)
         let map = mapType.fromObject([//not sorted
-          ["STM8me6d9PqzTgcoHxx6b4rnvWVTqz11kafidRAZwfacJkcJtfd75",0],
-          ["STM56ankGHKf6qUsQe7vPsXTSEqST6Dt1ff73aV3YQbedzRua8NLQ",0],
+          [prefix + "8me6d9PqzTgcoHxx6b4rnvWVTqz11kafidRAZwfacJkcJtfd75",0],
+          [prefix + "56ankGHKf6qUsQe7vPsXTSEqST6Dt1ff73aV3YQbedzRua8NLQ",0],
         ])
         let mapObject = mapType.toObject(map)
         assert.deepEqual(mapObject, [ // sorted (uppercase comes first)
-            ["STM56ankGHKf6qUsQe7vPsXTSEqST6Dt1ff73aV3YQbedzRua8NLQ",0],
-            ["STM8me6d9PqzTgcoHxx6b4rnvWVTqz11kafidRAZwfacJkcJtfd75",0],
+            [prefix + "56ankGHKf6qUsQe7vPsXTSEqST6Dt1ff73aV3YQbedzRua8NLQ",0],
+            [prefix + "8me6d9PqzTgcoHxx6b4rnvWVTqz11kafidRAZwfacJkcJtfd75",0],
         ])
     })
 
