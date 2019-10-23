@@ -1,4 +1,4 @@
-import assert from "assert"
+import assert from 'assert'
 import Promise from 'bluebird';
 import should from 'should';
 import steem from '../src';
@@ -13,11 +13,11 @@ describe('steem.smt:', () => {
     it('signs and verifies smt_create', function(done) {
       let tx = {
         'operations': [[
-          'create_proposal', {
-            'creator': username,
-            'symbol': {'nai':'@@123456789','precision':'3'},
-            'smt_creation_fee': '10.000 STEEM',
-            'precision': '3',
+          'smt_create', {
+            'control_account': username,
+            'symbol': {'nai':'@@631672482','precision':3},
+            'smt_creation_fee': {'amount':'10000','precision':3,'nai':'@@000000013'},
+            'precision': 3,
         }]]
       }
 
@@ -40,11 +40,11 @@ describe('steem.smt:', () => {
         'operations': [[
           'smt_setup', {
             'control_account' : username,
-            'symbol' : {'nai':'@@123456789','precision':'3'},
-            'max_supply' : '1000000000000000',
-            'initial_generation_policy' : {
-              'type' : 'smt_capped_generation_policy',
-              'value': {
+            'symbol' : {'nai':'@@631672482','precision':3},
+            'max_supply' : 1000000000000000,
+            'initial_generation_policy' : [[
+              'smt_capped_generation_policy',
+              {
                 'pre_soft_cap_unit' : {
                   'steem_unit' : [
                     ['$!alice.vesting',2],
@@ -79,10 +79,11 @@ describe('steem.smt:', () => {
               'max_unit_ratio' : 100,
               'extensions':[]
             }
-          },
+          ]],
           'contribution_begin_time' : '2020-12-21T00:00:00',
           'contribution_end_time' : '2021-12-21T00:00:00',
           'launch_time' : '2021-12-22T00:00:00',
+          'steem_units_min' : 0,
           'steem_units_soft_cap' : 2000,
           'steem_units_hard_cap' : 10000,
           'extensions':[]
@@ -107,8 +108,8 @@ describe('steem.smt:', () => {
       let tx = {
         'operations': [[
           'smt_setup_emissions', {
-            'control_account' : 'alice',
-            'symbol' : {'nai':'@@123456789','precision':'3'},
+            'control_account' : username,
+            'symbol' : {'nai':'@@631672482','precision':3},
             'schedule_time' : '2019-10-16T19:47:05',
             'emissions_unit' : {
               'token_unit' : [
@@ -121,8 +122,8 @@ describe('steem.smt:', () => {
             'interval_count' : 1,
             'lep_time' : '1970-01-01T00:00:00',
             'rep_time' : '1970-01-01T00:00:00',
-            'lep_abs_amount' : '0',
-            'rep_abs_amount': '0',
+            'lep_abs_amount' : 0,
+            'rep_abs_amount': 0,
             'lep_rel_amount_numerator' : 1,
             'rep_rel_amount_numerator' : 0,
             'rel_amount_denom_bits' : 0,
@@ -150,8 +151,8 @@ describe('steem.smt:', () => {
       let tx = {
         'operations': [[
           'smt_set_setup_parameters', {
-            'control_account' : 'alice',
-            'symbol' : {'nai':'@@123456789','precision':'3'},
+            'control_account' : username,
+            'symbol' : {'nai':'@@631672482','precision':3},
             'setup_parameters' : [[
               'smt_param_allow_voting', {
                 'value':false
@@ -178,8 +179,8 @@ describe('steem.smt:', () => {
       let tx = {
         'operations': [[
           'smt_set_runtime_parameters', {
-            'control_account' : 'alice',
-            'symbol' : {'nai':'@@123456789','precision':'3'},
+            'control_account' : username,
+            'symbol' : {'nai':'@@631672482','precision':3},
             'runtime_parameters' : [[
               'smt_param_vote_regeneration_period_seconds_v1', {
                 'vote_regeneration_period_seconds' : 604800,
@@ -207,10 +208,10 @@ describe('steem.smt:', () => {
       let tx = {
         'operations': [[
           'smt_contribute', {
-            'contributor' : 'alice',
-            'symbol' : {'nai':'@@123456789','precision':'3'},
+            'contributor' : username,
+            'symbol' : {'nai':'@@631672482','precision':3},
             'contribution_id' : 1,
-            'contribution': '1.000 STEEM',
+            'contribution': {'amount':'1000','precision':3,'nai':'@@000000013'},
             'extensions':[]
         }]]
       }
@@ -237,15 +238,17 @@ describe('steem.smt:', () => {
       let tx = {
         'operations': [[
           'claim_rewards2', {
-            "account" : "alice",
-            "reward_tokens" : [
-              {"amount":"1000","precision":3,"nai":"@@000000013"},
-              {"amount":"1000","precision":3,"nai":"@@000000021"},
-              {"amount":"1000000","precision":6,"nai":"@@000000037"},
-              {"amount":"1","precision":1,"nai":"@@631672482"},
-              {"amount":"1","precision":0,"nai":"@@642246725"},
-              {"amount":"1","precision":1,"nai":"@@678264426"}
-        ]}]]
+            'account' : username,
+            'reward_tokens' : [
+              {'amount':'1000','precision':3,'nai':'@@000000013'},
+              {'amount':'1000','precision':3,'nai':'@@000000021'},
+              {'amount':'1000000','precision':6,'nai':'@@000000037'},
+              {'amount':'1','precision':1,'nai':'@@631672482'},
+              {'amount':'1','precision':0,'nai':'@@642246725'},
+              {'amount':'1','precision':1,'nai':'@@678264426'}
+            ],
+            'extensions':[]
+        }]]
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
@@ -266,22 +269,22 @@ describe('steem.smt:', () => {
       let tx = {
         'operations': [[
           'comment_options', {
-            "author" : username,
-            "permlink" : permlink,
-            "max_accepted_payout" : "1000000.000 STEEM",
-            "percent_steem_dollars" : 10000,
-            "allow_votes" : true,
-            "allow_curation_rewards" : true,
-            "extensions" : [[
-              "allowed_vote_assets", {
-                "votable_assets":[[
-                  {'nai':'@@123456789','precision':'3'}, {
-                    "max_accepted_payout" : 10,
-                    "allow_curation_rewards" : true,
-                    "beneficiaries" : {
-                      "beneficiaries" : [
-                        { "account" : "alice", "weight" : 100 },
-                        { "account": "bob" , "weight" : 100 }
+            'author' : username,
+            'permlink' : permlink,
+            'max_accepted_payout' : '1000000.000 TESTS',
+            'percent_steem_dollars' : 10000,
+            'allow_votes' : true,
+            'allow_curation_rewards' : true,
+            'extensions' : [[
+              'allowed_vote_assets', {
+                'votable_assets':[[
+                  {'nai':'@@631672482','precision':3}, {
+                    'max_accepted_payout' : 10,
+                    'allow_curation_rewards' : true,
+                    'beneficiaries' : {
+                      'beneficiaries' : [
+                        { 'account' : 'alice', 'weight' : 100 },
+                        { 'account': 'bob' , 'weight' : 100 }
         ]}}]]}]]}]]
       }
 
@@ -303,14 +306,14 @@ describe('steem.smt:', () => {
       let tx = {
         'operations': [[
           'vote2', {
-            "voter" : username,
-            "author" : username,
-            "permlink" : permlink,
-            "rshares": [
-              [{'nai':'@@123456789','precision':'3'},,"2000000000"],
-              [{'nai':'@@000000013','precision':'3'},"81502331182"]
+            'voter' : username,
+            'author' : username,
+            'permlink' : permlink,
+            'rshares': [
+              [{'nai':'@@631672482','precision':3},2000000000],
+              [{'nai':'@@000000013','precision':3},81502331182]
             ],
-            "extensions":[]
+            'extensions':[]
         }]]
       }
 

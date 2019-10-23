@@ -82,9 +82,8 @@ const votable_asset_options = new Serializer(
   beneficiaries: comment_payout_beneficiaries
 });
 
-const allowed_vote_assets = new Serializer(
-  "allowed_vote_assets", {
-  votable_assets: map((string), (votable_asset_options))
+const allowed_vote_assets = new Serializer(1, {
+  votable_assets: map((asset_symbol), (votable_asset_options))
 });
 
 const smt_generation_unit = new Serializer(
@@ -107,33 +106,28 @@ const smt_emissions_unit = new Serializer(
   token_unit: map((string), (uint16))
 });
 
-const smt_param_allow_voting = new Serializer(
-  "smt_param_allow_voting", {
+const smt_param_allow_voting = new Serializer(0, {
   value: bool
 });
 
-const smt_param_windows_v1 = new Serializer(
-  "smt_param_window_v1", {
+const smt_param_windows_v1 = new Serializer(0, {
   cashout_window_seconds: uint32,
   reverse_auction_window_seconds: uint32
 });
 
-const smt_param_vote_regeneration_period_seconds_v1 = new Serializer(
-  "smt_param_vote_regeneration_period_seconds_v1", {
+const smt_param_vote_regeneration_period_seconds_v1 = new Serializer(1, {
     vote_regeneration_period_seconds: uint32,
     votes_per_regeneration_period: uint32
 });
 
-const smt_param_rewards_v1 = new Serializer(
-  "smt_param_rewards_v1", {
+const smt_param_rewards_v1 = new Serializer(2, {
   content_constant: uint128,
   percent_curation_rewards: uint16,
   author_reward_curve: int64,
   curation_reward_curve: int64
 });
 
-const smt_param_allow_downvotes = new Serializer(
-  "smt_param_allow_downvotes", {
+const smt_param_allow_downvotes = new Serializer(3, {
   value: bool
 });
 
@@ -421,7 +415,8 @@ let comment_options = new Serializer(
     allow_votes: bool,
     allow_curation_rewards: bool,
     extensions: set(static_variant([
-        comment_payout_beneficiaries
+        comment_payout_beneficiaries,
+        allowed_vote_assets
     ]))
 }
 );
@@ -774,8 +769,8 @@ let smt_setup_emissions = new Serializer(
   interval_count: uint32,
   lep_time: time_point_sec,
   rep_time: time_point_sec,
-  lep_abs_amount: asset,
-  rep_abs_amount: asset,
+  lep_abs_amount: int64,
+  rep_abs_amount: int64,
   lep_rel_amount_numerator: uint32,
   rep_rel_amount_numerator: uint32,
   rel_amount_denom_bits: uint8,

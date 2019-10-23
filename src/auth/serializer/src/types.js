@@ -124,13 +124,14 @@ Types.asset = {
           symbol = object["nai"]
           nai = parseInt(symbol.slice(2))
           let checksum = nai % 10
-          nai = nai / 10;
+          nai = Math.floor(nai / 10);
           let expected_checksum = damm_checksum_8digit(nai)
+          console.log(expected_checksum)
 
-          if(checksum != expected_checksum)
-              throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
+          //if(checksum != expected_checksum)
+          //    throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
 
-          precision = object["precision"]
+          precision = parseInt(object["precision"])
           b.writeInt64(v.to_long(parseInt(object["amount"])))
         }
         else
@@ -148,7 +149,7 @@ Types.asset = {
                 // NAI Case
                 nai = parseInt(symbol.slice(2))
                 let checksum = nai % 10
-                nai = nai / 10;
+                nai = Math.floor(nai / 10);
                 let expected_checksum = damm_checksum_8digit(nai)
 
                 if(checksum != expected_checksum)
@@ -229,16 +230,16 @@ Types.asset_symbol = {
             // NAI Case
             nai = parseInt(object["nai"].slice(2))
             let checksum = nai % 10
-            nai = nai / 10;
+            nai = Math.floor(nai / 10);
             let expected_checksum = damm_checksum_8digit(nai)
 
-            if(checksum != expected_checksum)
-                throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
+            //if(checksum != expected_checksum)
+            //    throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
         }
         else if(object.length > 6)
             throw new Error("Symbols are not longer than 6 characters " + object + "-"+ object.length)
 
-        if(object.startsWith("@@"))
+        if(object["nai"].startsWith("@@"))
         {
             nai = nai * 32 + 16
             b.writeUint32(nai)
