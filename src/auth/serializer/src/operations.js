@@ -92,8 +92,7 @@ const smt_generation_unit = new Serializer(
   token_unit: map((string), (uint16))
 });
 
-const smt_capped_generation_policy = new Serializer(
-  "smt_capped_generation_policy", {
+const smt_capped_generation_policy = new Serializer(0, {
   pre_soft_cap_unit: smt_generation_unit,
   post_soft_cap_unit: smt_generation_unit,
   min_unit_ratio: uint32,
@@ -746,9 +745,9 @@ let smt_setup = new Serializer(
   control_account: string,
   symbol: asset_symbol,
   max_supply: int64,
-  initial_generation_policy: set(static_variant([
+  initial_generation_policy: static_variant([
     smt_capped_generation_policy
-  ])),
+  ]),
   contribution_begin_time: time_point_sec,
   contribution_end_time: time_point_sec,
   launch_time: time_point_sec,

@@ -126,10 +126,27 @@ Types.asset = {
           let checksum = nai % 10
           nai = Math.floor(nai / 10);
           let expected_checksum = damm_checksum_8digit(nai)
-          console.log(expected_checksum)
 
           //if(checksum != expected_checksum)
           //    throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
+
+          switch(object["nai"])
+          {
+            case "@@000000021":
+              precision = 3
+              //symbol = "STEEM"
+              symbol = "TESTS"
+              break
+            case "@@000000013":
+              precision = 3
+              //symbol = "SBD"
+              symbol = "TBD"
+              break
+            case "@@000000037":
+              precision = 6
+              symbol = "VESTS"
+              break
+          }
 
           precision = parseInt(object["precision"])
           b.writeInt64(v.to_long(parseInt(object["amount"])))
@@ -166,7 +183,7 @@ Types.asset = {
 
         if(symbol.startsWith("@@"))
         {
-            nai = nai * 32 + 16 + precision
+            nai = (nai << 5) + 16 + precision
             b.writeUint32(nai)
         }
         else
@@ -174,7 +191,7 @@ Types.asset = {
             b.writeUint8(precision)
             b.append(symbol.toUpperCase(), 'binary')
             for(let i = 0; i < 7 - symbol.length; i++)
-                b.writeUint8(0)
+              b.writeUint8(0)
         }
 
         return
@@ -225,52 +242,80 @@ Types.asset_symbol = {
     appendByteBuffer(b, object){
 
         let nai = 0
-        if(object["nai"].startsWith("@@"))
-        {
-            // NAI Case
-            nai = parseInt(object["nai"].slice(2))
-            let checksum = nai % 10
-            nai = Math.floor(nai / 10);
-            let expected_checksum = damm_checksum_8digit(nai)
+        if(!object["nai"].startsWith("@@"))
+          throw new Error("Asset Symbols NAIs must be prefixed with '@@'. Was " + object["nai"])
 
-            //if(checksum != expected_checksum)
-            //    throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
+        nai = parseInt(object["nai"].slice(2))
+        let checksum = nai % 10
+        nai = Math.floor(nai / 10);
+        let expected_checksum = damm_checksum_8digit(nai)
+
+        //if(checksum != expected_checksum)
+        //    throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
+
+        let precision = 0;
+        let symbol = "";
+        switch(object["nai"])
+        {
+          case "@@000000021":
+            precision = 3
+            //symbol = "STEEM"
+            symbol = "TESTS"
+            break
+          case "@@000000013":
+            precision = 3
+            //symbol = "SBD"
+            symbol = "TBD"
+            break
+          case "@@000000037":
+            precision = 6
+            symbol = "VESTS"
+            break
         }
-        else if(object.length > 6)
-            throw new Error("Symbols are not longer than 6 characters " + object + "-"+ object.length)
 
-        if(object["nai"].startsWith("@@"))
+        if( precision > 0 )
         {
-            nai = nai * 32 + 16
-            b.writeUint32(nai)
+          //Core Symbol Case
+          b.writeUint8(precision)
+          b.append(symbol, 'binary')
+          for(let i = 0; i < 7 - symbol.length; i++)
+              b.writeUint8(0)
         }
         else
         {
-            let precision = 0;
-            let symbol = "";
-            switch(object["nai"])
-            {
-              case "@@000000021":
-                precision = 3
-                //symbol = "STEEM"
-                symbol = "TESTS"
-                break
-              case "@@000000013":
-                precision = 3
-                //symbol = "SBD"
-                symbol = "TBD"
-                break
-              case "@@000000037":
-                precision = 6
-                symbol = "VESTS"
-                break
-            }
-
-            b.writeUint8(precision)
-            b.append(symbol, 'binary')
-            for(let i = 0; i < 7 - symbol.length; i++)
-                b.writeUint8(0)
+          nai = (nai << 5) + 16 + object["precision"]
+          b.writeUint32(nai)
         }
+
+        //if(object["nai"].startsWith("@@"))
+        //{
+        //    nai = (nai << 5) + 16 + object["precision"]
+        //    b.writeUint32(nai)
+        //}
+        //else
+        //{
+        //    let precision = 0;
+        //    let symbol = "";
+        //    switch(object["nai"])
+        //    {
+        //      case "@@000000021":
+        //        precision = 3
+        //        //symbol = "STEEM"
+        //        symbol = "TESTS"
+        //        break
+        //      case "@@000000013":
+        //        precision = 3
+        //        //symbol = "SBD"
+        //        symbol = "TBD"
+        //        break
+        //      case "@@000000037":
+        //        precision = 6
+        //        symbol = "VESTS"
+        //        break
+        //    }
+//
+//
+        //}
 
         return
     },

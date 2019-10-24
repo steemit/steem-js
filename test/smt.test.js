@@ -10,6 +10,31 @@ const activeWif = steem.auth.toWif(username, password, 'active');
 describe('steem.smt:', () => {
 
   describe('smt creation ops', () => {
+    it('signs and verifies transfer', function(done) {
+      let tx = {
+        'operations': [[
+          'transfer', {
+            'from': username,
+            'to': 'null',
+            'amount': '10.000 TESTS',
+            'memo': ''
+        }]]
+      }
+
+      steem.api.callAsync('condenser_api.get_version', []).then((result) => {
+        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        result.should.have.property('blockchain_version');
+
+        steem.broadcast._prepareTransaction(tx).then(function(tx){
+          tx = steem.auth.signTransaction(tx, [activeWif]);
+          steem.api.verifyAuthorityAsync(tx).then(
+            (result) => {result.should.equal(true); done();},
+            (err)    => {done(err);}
+          );
+        });
+      });
+    })
+
     it('signs and verifies smt_create', function(done) {
       let tx = {
         'operations': [[
@@ -41,9 +66,9 @@ describe('steem.smt:', () => {
           'smt_setup', {
             'control_account' : username,
             'symbol' : {'nai':'@@631672482','precision':3},
-            'max_supply' : 1000000000000000,
-            'initial_generation_policy' : [[
-              'smt_capped_generation_policy',
+            'max_supply' : '1000000000000000',
+            'initial_generation_policy' : [
+              0,
               {
                 'pre_soft_cap_unit' : {
                   'steem_unit' : [
@@ -65,21 +90,20 @@ describe('steem.smt:', () => {
                     ['$!alice.vesting',1],
                     ['$market_maker',1],
                     ['alice',1]
-                ],
-                'token_unit' : [
-                  ['$!alice.vesting',1],
-                  ['$from',1],
-                  ['$from.vesting',1],
-                  ['$market_maker',1],
-                  ['$rewards',1],
-                  ['alice',1]
-                ]
-              },
-              'min_unit_ratio' : 50,
-              'max_unit_ratio' : 100,
-              'extensions':[]
-            }
-          ]],
+                  ],
+                  'token_unit' : [
+                    ['$!alice.vesting',1],
+                    ['$from',1],
+                    ['$from.vesting',1],
+                    ['$market_maker',1],
+                    ['$rewards',1],
+                    ['alice',1]
+                  ]
+                },
+                'min_unit_ratio' : 50,
+                'max_unit_ratio' : 100,
+                'extensions':[]
+          }],
           'contribution_begin_time' : '2020-12-21T00:00:00',
           'contribution_end_time' : '2021-12-21T00:00:00',
           'launch_time' : '2021-12-22T00:00:00',
@@ -154,7 +178,7 @@ describe('steem.smt:', () => {
             'control_account' : username,
             'symbol' : {'nai':'@@631672482','precision':3},
             'setup_parameters' : [[
-              'smt_param_allow_voting', {
+              0, {
                 'value':false
             }]],
           'extensions':[]
@@ -182,7 +206,7 @@ describe('steem.smt:', () => {
             'control_account' : username,
             'symbol' : {'nai':'@@631672482','precision':3},
             'runtime_parameters' : [[
-              'smt_param_vote_regeneration_period_seconds_v1', {
+              1, {
                 'vote_regeneration_period_seconds' : 604800,
                 'votes_per_regeneration_period' : 6999
             }]],
@@ -234,10 +258,10 @@ describe('steem.smt:', () => {
   describe('smt extended ops', () => {
     let permlink = 'test';
 
-    it('signs and verifies claim_rewards2', function(done) {
+    it('signs and verifies claim_rewards_balance2', function(done) {
       let tx = {
         'operations': [[
-          'claim_rewards2', {
+          'claim_reward_balance2', {
             'account' : username,
             'reward_tokens' : [
               {'amount':'1000','precision':3,'nai':'@@000000013'},
@@ -276,7 +300,7 @@ describe('steem.smt:', () => {
             'allow_votes' : true,
             'allow_curation_rewards' : true,
             'extensions' : [[
-              'allowed_vote_assets', {
+              1, {
                 'votable_assets':[[
                   {'nai':'@@631672482','precision':3}, {
                     'max_accepted_payout' : 10,
