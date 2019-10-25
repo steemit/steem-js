@@ -134,13 +134,13 @@ Types.asset = {
           {
             case "@@000000021":
               precision = 3
-              //symbol = "STEEM"
-              symbol = "TESTS"
+              symbol = "STEEM"
+              //symbol = "TESTS"
               break
             case "@@000000013":
               precision = 3
-              //symbol = "SBD"
-              symbol = "TBD"
+              symbol = "SBD"
+              //symbol = "TBD"
               break
             case "@@000000037":
               precision = 6
@@ -259,13 +259,13 @@ Types.asset_symbol = {
         {
           case "@@000000021":
             precision = 3
-            //symbol = "STEEM"
-            symbol = "TESTS"
+            symbol = "STEEM"
+            //symbol = "TESTS"
             break
           case "@@000000013":
             precision = 3
-            //symbol = "SBD"
-            symbol = "TBD"
+            symbol = "SBD"
+            //symbol = "TBD"
             break
           case "@@000000037":
             precision = 6
