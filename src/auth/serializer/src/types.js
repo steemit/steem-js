@@ -11,7 +11,7 @@ const chain_types = require('./ChainTypes')
 import { PublicKey, Address, ecc_config } from "../../ecc"
 import { fromImpliedDecimal } from "./number_utils"
 
-const Types = {}
+const Types = { useTestNet:false }
 module.exports = Types
 
 const HEX_DUMP = process.env.npm_config__graphene_serializer_hex_dump
@@ -134,13 +134,11 @@ Types.asset = {
           {
             case "@@000000021":
               precision = 3
-              symbol = "STEEM"
-              //symbol = "TESTS"
+              symbol = this.useTestNet ? "TESTS" : "STEEM"
               break
             case "@@000000013":
               precision = 3
-              symbol = "SBD"
-              //symbol = "TBD"
+              symbol = this.useTestNet ? "TBD" : "SBD"
               break
             case "@@000000037":
               precision = 6
@@ -259,13 +257,11 @@ Types.asset_symbol = {
         {
           case "@@000000021":
             precision = 3
-            symbol = "STEEM"
-            //symbol = "TESTS"
+              symbol = this.useTestNet ? "TESTS" : "STEEM"
             break
           case "@@000000013":
             precision = 3
-            symbol = "SBD"
-            //symbol = "TBD"
+            symbol = this.useTestNet ? "TBD" : "SBD"
             break
           case "@@000000037":
             precision = 6

@@ -31,7 +31,7 @@ describe('steem.hf21-accounts:', () => {
             'receiver': username,
             'start_date': '2019-09-01T00:00:00',
             'end_date': '2019-10-01T00:00:00',
-            'daily_pay': '1.000 TBD',
+            'daily_pay': '1.000 SBD',
             'subject': 'testing',
             'permlink': permlink
         }]]

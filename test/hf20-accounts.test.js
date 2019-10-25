@@ -25,7 +25,7 @@ describe('steem.hf20-accounts:', () => {
         'operations': [[
           'claim_account', {
             'creator': username,
-            'fee': '0.000 TESTS'}]]
+            'fee': '0.000 STEEM'}]]
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
@@ -48,7 +48,7 @@ describe('steem.hf20-accounts:', () => {
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
         if(result['blockchain_version'] < '0.22.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
 
-        steem.broadcast.claimAccountAsync(activeWif, username, '0.000 TESTS', []).then((result) => {
+        steem.broadcast.claimAccountAsync(activeWif, username, '0.000 STEEM', []).then((result) => {
             let newAccountName = username + '-' + Math.floor(Math.random() * 10000);
             let keys = steem.auth.generateKeys(
                 username, password, ['posting', 'active', 'owner', 'memo']);
