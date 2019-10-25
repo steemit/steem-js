@@ -10,31 +10,6 @@ const activeWif = steem.auth.toWif(username, password, 'active');
 describe('steem.smt:', () => {
 
   describe('smt creation ops', () => {
-    it('signs and verifies transfer', function(done) {
-      let tx = {
-        'operations': [[
-          'transfer', {
-            'from': username,
-            'to': 'null',
-            'amount': '10.000 TESTS',
-            'memo': ''
-        }]]
-      }
-
-      steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
-        result.should.have.property('blockchain_version');
-
-        steem.broadcast._prepareTransaction(tx).then(function(tx){
-          tx = steem.auth.signTransaction(tx, [activeWif]);
-          steem.api.verifyAuthorityAsync(tx).then(
-            (result) => {result.should.equal(true); done();},
-            (err)    => {done(err);}
-          );
-        });
-      });
-    })
-
     it('signs and verifies smt_create', function(done) {
       let tx = {
         'operations': [[

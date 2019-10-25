@@ -160,7 +160,7 @@ describe('steem.api:', function () {
     it('works by default', async function() {
       let attempts = 0;
       steemApi.setOptions({
-        //url: 'https://api.steemit.com',
+        url: 'https://api.steemit.com',
         fetchMethod: (uri, req) => new Promise((res, rej) => {
           const data = JSON.parse(req.body);
           res({
@@ -182,7 +182,7 @@ describe('steem.api:', function () {
     it('does not retry by default', async() => {
       let attempts = 0;
       steemApi.setOptions({
-        //url: 'https://api.steemit.com',
+        url: 'https://api.steemit.com',
         fetchMethod: (uri, req) => new Promise((res, rej) => {
           rej(new Error('Bad request'));
           attempts++;
@@ -203,7 +203,7 @@ describe('steem.api:', function () {
     it('works with retry passed as a boolean', async() => {
       let attempts = 0;
       steemApi.setOptions({
-        //url: 'https://api.steemit.com',
+        url: 'https://api.steemit.com',
         fetchMethod: (uri, req) => new Promise((res, rej) => {
           const data = JSON.parse(req.body);
           res({
@@ -226,7 +226,7 @@ describe('steem.api:', function () {
     it('retries with retry passed as a boolean', async() => {
       let attempts = 0;
       steemApi.setOptions({
-        //url: 'https://api.steemit.com',
+        url: 'https://api.steemit.com',
         retry: true,
         fetchMethod: (uri, req) => new Promise((res, rej) => {
           if (attempts < 1) {
@@ -260,7 +260,7 @@ describe('steem.api:', function () {
 
     it('works with retry passed as an object', async() => {
       steemApi.setOptions({
-        //url: 'https://api.steemit.com',
+        url: 'https://api.steemit.com',
         retry: {
           retries: 3,
           minTimeout: 1, // 1ms
@@ -285,7 +285,7 @@ describe('steem.api:', function () {
     it('retries with retry passed as an object', async() => {
       let attempts = 0;
       steemApi.setOptions({
-        //url: 'https://api.steemit.com',
+        url: 'https://api.steemit.com',
         retry: {
           retries: 3,
           minTimeout: 1,

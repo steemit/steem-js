@@ -287,36 +287,6 @@ Types.asset_symbol = {
           b.writeUint32(nai)
         }
 
-        //if(object["nai"].startsWith("@@"))
-        //{
-        //    nai = (nai << 5) + 16 + object["precision"]
-        //    b.writeUint32(nai)
-        //}
-        //else
-        //{
-        //    let precision = 0;
-        //    let symbol = "";
-        //    switch(object["nai"])
-        //    {
-        //      case "@@000000021":
-        //        precision = 3
-        //        //symbol = "STEEM"
-        //        symbol = "TESTS"
-        //        break
-        //      case "@@000000013":
-        //        precision = 3
-        //        //symbol = "SBD"
-        //        symbol = "TBD"
-        //        break
-        //      case "@@000000037":
-        //        precision = 6
-        //        symbol = "VESTS"
-        //        break
-        //    }
-//
-//
-        //}
-
         return
     },
     fromObject(object){
