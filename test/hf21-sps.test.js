@@ -73,6 +73,6 @@ describe('steem.hf21-accounts:', () => {
         );
       });
     })
-  });
 */
+  });
 });
