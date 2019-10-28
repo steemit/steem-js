@@ -20,16 +20,18 @@ describe('steem.hf20-accounts:', () => {
 
   describe('claimAccount', () => {
 
+/*  Skip these tests. Steem-js test infrastructure not set up for testing active auths
+    Blocked by Steem issue #3546
     it('signs and verifies auth', function(done) {
       let tx = {
         'operations': [[
           'claim_account', {
             'creator': username,
-            'fee': '0.000 TESTS'}]]
+            'fee': '0.000 STEEM'}]]
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.22.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.22.0') return done();
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
           tx = steem.auth.signTransaction(tx, [activeWif]);
@@ -46,9 +48,9 @@ describe('steem.hf20-accounts:', () => {
       this.skip(); // (!) need test account with enough RC
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.22.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.22.0') return done();
 
-        steem.broadcast.claimAccountAsync(activeWif, username, '0.000 TESTS', []).then((result) => {
+        steem.broadcast.claimAccountAsync(activeWif, username, '0.000 STEEM', []).then((result) => {
             let newAccountName = username + '-' + Math.floor(Math.random() * 10000);
             let keys = steem.auth.generateKeys(
                 username, password, ['posting', 'active', 'owner', 'memo']);
@@ -69,6 +71,6 @@ describe('steem.hf20-accounts:', () => {
         }, (err) => {done(err)});
       });
     });
-
+*/
   });
 });

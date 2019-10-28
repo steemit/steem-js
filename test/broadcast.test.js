@@ -73,7 +73,7 @@ describe('steem.broadcast:', () => {
           operations: [[
             'account_create',
             {
-              fee: '0.000 TESTS',
+              fee: '0.000 STEEM',
               creator: username,
               new_account_name: newAccountName,
               owner: {
@@ -210,7 +210,7 @@ describe('steem.broadcast:', () => {
       ]);
     });
   });
-  
+
   describe('writeOperations', () => {
     it('receives a properly formatted error response', () => {
       const wif = steem.auth.toWif('username', 'password', 'posting');

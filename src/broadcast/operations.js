@@ -488,6 +488,107 @@ module.exports = [
     ]
   },
   {
+    "roles": ["posting", "active", "owner"],
+    "operation": "claim_reward_balance2",
+    "params": [
+      "account",
+      "reward_tokens",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["posting", "active", "owner"],
+    "operation": "vote2",
+    "params": [
+      "voter",
+      "author",
+      "permlink",
+      "rshares",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_create",
+    "params": [
+      "control_account",
+      "symbol",
+      "smt_creation_fee",
+      "precision",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_setup",
+    "params": [
+      "control_account",
+      "symbol",
+      "max_supply",
+      "initial_generation_policy",
+      "contribution_begin_time",
+      "contribution_end_time",
+      "launch_time",
+      "steem_units_min",
+      "steem_units_soft_cap",
+      "steem_units_hard_cap",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_setup_emissions",
+    "params": [
+      "control_account",
+      "symbol",
+      "schedule_time",
+      "emissions_unit",
+      "interval_seconds",
+      "interval_coount",
+      "lep_time",
+      "rep_time",
+      "lep_abs_amount",
+      "rep_abs_amount",
+      "lep_rel_amount_numerator",
+      "rep_rel_amount_numerator",
+      "rel_amount_denom_bits",
+      "remove",
+      "floor_emissions",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_set_setup_parameters",
+    "params": [
+      "control_account",
+      "symbol",
+      "setup_parameters",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_set_runtime_parameters",
+    "params": [
+      "control_account",
+      "symbol",
+      "runtime_parameters",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_contribute",
+    "params": [
+      "contributor",
+      "symbol",
+      "contribution_id",
+      "contribution",
+      "extensions"
+    ]
+  },
+  {
     "roles": ["active", "owner"],
     "operation": "fill_convert_request",
     "params": [

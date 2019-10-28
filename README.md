@@ -92,6 +92,25 @@ var reputation = steem.formatter.reputation(user.reputation);
 console.log(reputation);
 ```
 
+### Steem Testnet
+Steem-js requires some configuration to work on the public Steem testnet.
+
+You need to set two Steem API options, `address_prefix` and `chain_id`.
+```js
+steem.api.setOptions({
+  address_prefix: 'TST',
+  chain_id: '46d82ab7d8db682eb1959aed0ada039a6d49afa1602491f93dde9cac3e8e6c32',
+});
+```
+
+The Chain ID could change. If it does, it may not be reflected here, but will be documented on any testnet launch announcements.
+
+Furthermore, you need to change asset serializations for the testnet.
+
+```js
+Types.useTestNet = true
+```
+
 ## Contributions
 Patches are welcome! Contributors are listed in the package.json file. Please run the tests before opening a pull request and make sure that you are passing all of them. If you would like to contribute, but don't know what to work on, check the issues list or on Steemit Chat channel #steemjs https://steemit.chat/channel/steemjs.
 

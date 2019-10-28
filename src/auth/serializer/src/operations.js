@@ -37,7 +37,7 @@ import SerializerImpl from "./serializer"
 const {
     //id_type,
     //varint32, uint8, int64, fixed_array, object_id_type, vote_id, address,
-    uint16, uint32, int16, uint64,
+    uint8, uint16, int16, uint32, uint64, int64, uint128,
     string, string_binary, bytes, bool, array,
     // protocol_id_type,
     static_variant, map, set,
@@ -45,11 +45,14 @@ const {
     time_point_sec,
     optional,
     asset,
+    asset_symbol
 } = types
 
 const future_extensions = types.void
 const hardfork_version_vote = types.void
 const version = types.void
+const required_automated_actions = types.void
+const optional_automated_actions = types.void
 
 // Place-holder, their are dependencies on "operation" .. The final list of
 // operations is not avialble until the very end of the generated code.
@@ -70,6 +73,61 @@ const beneficiaries = new Serializer("beneficiaries", {
 
 const comment_payout_beneficiaries = new Serializer(0, {
   beneficiaries: set(beneficiaries)
+});
+
+const votable_asset_options = new Serializer(
+  "votable_asset_options", {
+  max_accepted_payout: int64,
+  allow_curation_rewards: bool,
+  beneficiaries: comment_payout_beneficiaries
+});
+
+const allowed_vote_assets = new Serializer(1, {
+  votable_assets: map((asset_symbol), (votable_asset_options))
+});
+
+const smt_generation_unit = new Serializer(
+  "smt_generation_unit", {
+  steem_unit: map((string), (uint16)),
+  token_unit: map((string), (uint16))
+});
+
+const smt_capped_generation_policy = new Serializer(0, {
+  pre_soft_cap_unit: smt_generation_unit,
+  post_soft_cap_unit: smt_generation_unit,
+  min_unit_ratio: uint32,
+  max_unit_ratio: uint32,
+  extensions: set(future_extensions)
+});
+
+const smt_emissions_unit = new Serializer(
+  "smt_emissions_unit", {
+  token_unit: map((string), (uint16))
+});
+
+const smt_param_allow_voting = new Serializer(0, {
+  value: bool
+});
+
+const smt_param_windows_v1 = new Serializer(0, {
+  cashout_window_seconds: uint32,
+  reverse_auction_window_seconds: uint32
+});
+
+const smt_param_vote_regeneration_period_seconds_v1 = new Serializer(1, {
+    vote_regeneration_period_seconds: uint32,
+    votes_per_regeneration_period: uint32
+});
+
+const smt_param_rewards_v1 = new Serializer(2, {
+  content_constant: uint128,
+  percent_curation_rewards: uint16,
+  author_reward_curve: int64,
+  curation_reward_curve: int64
+});
+
+const smt_param_allow_downvotes = new Serializer(3, {
+  value: bool
 });
 
 // Custom-types after Generated code
@@ -116,7 +174,9 @@ let signed_block = new Serializer(
     extensions: set(static_variant([
         future_extensions,
         version,
-        hardfork_version_vote
+        hardfork_version_vote,
+        required_automated_actions,
+        optional_automated_actions
     ])),
     witness_signature: bytes(65),
     transactions: array(signed_transaction)
@@ -146,7 +206,9 @@ let signed_block_header = new Serializer(
     extensions: set(static_variant([
         future_extensions,
         version,
-        hardfork_version_vote
+        hardfork_version_vote,
+        required_automated_actions,
+        optional_automated_actions
     ])),
     witness_signature: bytes(65)
 }
@@ -352,7 +414,8 @@ let comment_options = new Serializer(
     allow_votes: bool,
     allow_curation_rewards: bool,
     extensions: set(static_variant([
-        comment_payout_beneficiaries
+        comment_payout_beneficiaries,
+        allowed_vote_assets
     ]))
 }
 );
@@ -649,6 +712,108 @@ let remove_proposal = new Serializer(
 }
 );
 
+let claim_reward_balance2 = new Serializer(
+  "claim_reward_balance2", {
+  account: string,
+  reward_tokens: array(asset),
+  extensions: set(future_extensions)
+}
+);
+
+let vote2 = new Serializer(
+  "vote2", {
+  voter: string,
+  author: string,
+  permlink: string,
+  rshares: map((asset_symbol), (int64)),
+  extensions: set(future_extensions)
+}
+);
+
+let smt_create = new Serializer(
+  "smt_create", {
+  control_account: string,
+  symbol: asset_symbol,
+  smt_creation_fee: asset,
+  precision: uint8,
+  extensions: set(future_extensions)
+}
+);
+
+let smt_setup = new Serializer(
+  "smt_setup", {
+  control_account: string,
+  symbol: asset_symbol,
+  max_supply: int64,
+  initial_generation_policy: static_variant([
+    smt_capped_generation_policy
+  ]),
+  contribution_begin_time: time_point_sec,
+  contribution_end_time: time_point_sec,
+  launch_time: time_point_sec,
+  steem_units_min: int64,
+  steem_units_soft_cap: int64,
+  steem_units_hard_cap: int64,
+  extensions: set(future_extensions)
+}
+);
+
+let smt_setup_emissions = new Serializer(
+  "smt_setup_emissions", {
+  control_account: string,
+  symbol: asset_symbol,
+  schedule_time: time_point_sec,
+  emissions_unit: smt_emissions_unit,
+  interval_seconds: uint32,
+  interval_count: uint32,
+  lep_time: time_point_sec,
+  rep_time: time_point_sec,
+  lep_abs_amount: int64,
+  rep_abs_amount: int64,
+  lep_rel_amount_numerator: uint32,
+  rep_rel_amount_numerator: uint32,
+  rel_amount_denom_bits: uint8,
+  remove: bool,
+  floor_emissions: bool,
+  extensions: set(future_extensions)
+}
+);
+
+let smt_set_setup_parameters = new Serializer(
+  "smt_set_setup_parameters", {
+  control_account: string,
+  symbol: asset_symbol,
+  setup_parameters: set(static_variant([
+    smt_param_allow_voting
+  ])),
+  extensions: set(future_extensions)
+}
+);
+
+let smt_set_runtime_parameters = new Serializer(
+  "smt_set_runtime_parameters", {
+  control_account: string,
+  symbol: asset_symbol,
+  runtime_parameters: set(static_variant([
+    smt_param_windows_v1,
+    smt_param_vote_regeneration_period_seconds_v1,
+    smt_param_rewards_v1,
+    smt_param_allow_downvotes
+  ])),
+  extensions: set(future_extensions)
+}
+);
+
+let smt_contribute = new Serializer(
+  "smt_contribute", {
+  contributor: string,
+  symbol: asset_symbol,
+  contribution_id: uint32,
+  contribution: asset,
+  extensions: set(future_extensions)
+}
+);
+
 let fill_convert_request = new Serializer(
     "fill_convert_request", {
     owner: string,
@@ -810,6 +975,14 @@ operation.st_operations = [
     create_proposal,
     update_proposal_votes,
     remove_proposal,
+    claim_reward_balance2,
+    vote2,
+    smt_setup,
+    smt_setup_emissions,
+    smt_set_setup_parameters,
+    smt_set_runtime_parameters,
+    smt_create,
+    smt_contribute,
     fill_convert_request,
     author_reward,
     curation_reward,
