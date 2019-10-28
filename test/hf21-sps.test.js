@@ -21,6 +21,8 @@ describe('steem.hf21-accounts:', () => {
   });
 
   describe('create proposal ops', () => {
+/*  Skip these tests. Steem-js test infrastructure not set up for testing active auths
+    Blocked by Steem issue #3546
     it('signs and verifies create_proposal', function(done) {
       let permlink = 'test';
 
@@ -38,7 +40,7 @@ describe('steem.hf21-accounts:', () => {
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.22.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.22.0') return done();
         result.should.have.property('blockchain_version');
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
@@ -61,7 +63,7 @@ describe('steem.hf21-accounts:', () => {
         }]]
       }
 
-      return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+      return done();
 
       steem.broadcast._prepareTransaction(tx).then(function(tx){
         tx = steem.auth.signTransaction(tx, [activeWif]);
@@ -72,4 +74,5 @@ describe('steem.hf21-accounts:', () => {
       });
     })
   });
+*/
 });
