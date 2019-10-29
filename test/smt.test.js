@@ -11,6 +11,9 @@ describe('steem.smt:', () => {
 
   describe('smt creation ops', () => {
     it('signs and verifies smt_create', function(done) {
+      let url = steem.config.get('uri');
+      steem.api.setOptions({ url: url, useAppbaseApi: true });
+
       let tx = {
         'operations': [[
           'smt_create', {
