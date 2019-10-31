@@ -4,8 +4,13 @@ import should from 'should';
 import steem from '../src';
 
 const username = process.env.STEEM_USERNAME || 'guest123';
-const password = process.env.STEEM_PASSWORD;
-const activeWif = steem.auth.toWif(username, password, 'active');
+const activeWif = '5K4RDXLLjoyvKttRj8jG9utT7GZmM9qNkePT6uRfWxKf19g322R';
+const activePub = steem.auth.wifToPublic( activeWif );
+const testAuth = {
+  'weight_threshold': 1,
+  'account_auths': [],
+  'key_auths': [[activePub, 1]]
+};
 
 describe('steem.smt:', () => {
 
@@ -30,7 +35,7 @@ describe('steem.smt:', () => {
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
           tx = steem.auth.signTransaction(tx, [activeWif]);
-          steem.api.verifyAuthorityAsync(tx).then(
+          steem.api.verifyAuthorityAsync(tx, testAuth).then(
             (result) => {result.should.equal(true); done();},
             (err)    => {done(err);}
           );
@@ -98,7 +103,7 @@ describe('steem.smt:', () => {
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
           tx = steem.auth.signTransaction(tx, [activeWif]);
-          steem.api.verifyAuthorityAsync(tx).then(
+          steem.api.verifyAuthorityAsync(tx, testAuth).then(
             (result) => {result.should.equal(true); done();},
             (err)    => {done(err);}
           );
@@ -141,7 +146,7 @@ describe('steem.smt:', () => {
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
           tx = steem.auth.signTransaction(tx, [activeWif]);
-          steem.api.verifyAuthorityAsync(tx).then(
+          steem.api.verifyAuthorityAsync(tx, testAuth).then(
             (result) => {result.should.equal(true); done();},
             (err)    => {done(err);}
           );
@@ -169,7 +174,7 @@ describe('steem.smt:', () => {
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
           tx = steem.auth.signTransaction(tx, [activeWif]);
-          steem.api.verifyAuthorityAsync(tx).then(
+          steem.api.verifyAuthorityAsync(tx, testAuth).then(
             (result) => {result.should.equal(true); done();},
             (err)    => {done(err);}
           );
@@ -198,7 +203,7 @@ describe('steem.smt:', () => {
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
           tx = steem.auth.signTransaction(tx, [activeWif]);
-          steem.api.verifyAuthorityAsync(tx).then(
+          steem.api.verifyAuthorityAsync(tx, testAuth).then(
             (result) => {result.should.equal(true); done();},
             (err)    => {done(err);}
           );
@@ -224,7 +229,7 @@ describe('steem.smt:', () => {
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
           tx = steem.auth.signTransaction(tx, [activeWif]);
-          steem.api.verifyAuthorityAsync(tx).then(
+          steem.api.verifyAuthorityAsync(tx, testAuth).then(
             (result) => {result.should.equal(true); done();},
             (err)    => {done(err);}
           );
@@ -259,7 +264,7 @@ describe('steem.smt:', () => {
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
           tx = steem.auth.signTransaction(tx, [activeWif]);
-          steem.api.verifyAuthorityAsync(tx).then(
+          steem.api.verifyAuthorityAsync(tx, testAuth).then(
             (result) => {result.should.equal(true); done();},
             (err)    => {done(err);}
           );
@@ -296,7 +301,7 @@ describe('steem.smt:', () => {
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
           tx = steem.auth.signTransaction(tx, [activeWif]);
-          steem.api.verifyAuthorityAsync(tx).then(
+          steem.api.verifyAuthorityAsync(tx, testAuth).then(
             (result) => {result.should.equal(true); done();},
             (err)    => {done(err);}
           );
@@ -325,7 +330,7 @@ describe('steem.smt:', () => {
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
           tx = steem.auth.signTransaction(tx, [activeWif]);
-          steem.api.verifyAuthorityAsync(tx).then(
+          steem.api.verifyAuthorityAsync(tx, testAuth).then(
             (result) => {result.should.equal(true); done();},
             (err)    => {done(err);}
           );

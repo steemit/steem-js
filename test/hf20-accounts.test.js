@@ -3,8 +3,14 @@ import should from 'should';
 import steem from '../src';
 
 const username = process.env.STEEM_USERNAME || 'guest123';
-const password = process.env.STEEM_PASSWORD;
-const activeWif = steem.auth.toWif(username, password, 'active');
+const passwrod = process.env.STEEM_PASSWORD;
+const activeWif = '5K4RDXLLjoyvKttRj8jG9utT7GZmM9qNkePT6uRfWxKf19g322R';
+const activePub = steem.auth.wifToPublic( activeWif );
+const testAuth = {
+  'weight_threshold': 1,
+  'account_auths': [],
+  'key_auths': [[activePub, 1]]
+};
 
 describe('steem.hf20-accounts:', () => {
   it('has generated methods', () => {
@@ -20,9 +26,10 @@ describe('steem.hf20-accounts:', () => {
 
   describe('claimAccount', () => {
 
-/*  Skip these tests. Steem-js test infrastructure not set up for testing active auths
-    Blocked by Steem issue #3546
     it('signs and verifies auth', function(done) {
+      let url = steem.config.get('uri');
+      steem.api.setOptions({ url: url, useAppbaseApi: true });
+
       let tx = {
         'operations': [[
           'claim_account', {
@@ -35,7 +42,7 @@ describe('steem.hf20-accounts:', () => {
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
           tx = steem.auth.signTransaction(tx, [activeWif]);
-          steem.api.verifyAuthorityAsync(tx).then(
+          steem.api.verifyAuthorityAsync(tx, testAuth).then(
             (result) => {result.should.equal(true); done();},
             (err)    => {done(err);}
           );
@@ -71,6 +78,5 @@ describe('steem.hf20-accounts:', () => {
         }, (err) => {done(err)});
       });
     });
-*/
   });
 });
