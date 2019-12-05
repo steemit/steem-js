@@ -525,13 +525,12 @@ module.exports = [
       "control_account",
       "symbol",
       "max_supply",
-      "initial_generation_policy",
       "contribution_begin_time",
       "contribution_end_time",
       "launch_time",
       "steem_units_min",
-      "steem_units_soft_cap",
-      "steem_units_hard_cap",
+      "min_unit_ratio",
+      "max_unit_ratio",
       "extensions"
     ]
   },
@@ -554,6 +553,18 @@ module.exports = [
       "rel_amount_denom_bits",
       "remove",
       "floor_emissions",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_setup_ico_tier",
+    "params": [
+      "control_account",
+      "symbol",
+      "steem_units_cap",
+      "generation_policy",
+      "remove",
       "extensions"
     ]
   },

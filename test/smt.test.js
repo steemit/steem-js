@@ -45,10 +45,42 @@ describe('steem.smt:', () => {
             'control_account' : username,
             'symbol' : {'nai':'@@631672482','precision':3},
             'max_supply' : '1000000000000000',
-            'initial_generation_policy' : [
+            'contribution_begin_time' : '2020-12-21T00:00:00',
+            'contribution_end_time' : '2021-12-21T00:00:00',
+            'launch_time' : '2021-12-22T00:00:00',
+            'steem_units_min' : 0,
+            'min_unit_ratio' : 50,
+            'max_unit_ratio' : 100,
+            'extensions':[]
+          }
+        ]]
+      }
+
+      steem.api.callAsync('condenser_api.get_version', []).then((result) => {
+        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        result.should.have.property('blockchain_version');
+
+        steem.broadcast._prepareTransaction(tx).then(function(tx){
+          tx = steem.auth.signTransaction(tx, [activeWif]);
+          steem.api.verifyAuthorityAsync(tx).then(
+            (result) => {result.should.equal(true); done();},
+            (err)    => {done(err);}
+          );
+        });
+      });
+    })
+
+    it('signs and verifies smt_setup_ico_tier', function(done) {
+      let tx = {
+        'operations': [[
+          'smt_setup_ico_tier', {
+            'control_account' : username,
+            'symbol' : {'nai':'@@631672482','precision':3},
+            'steem_units_cap' : 10000,
+            'generation_policy' : [
               0,
               {
-                'pre_soft_cap_unit' : {
+                'generation_unit' : {
                   'steem_unit' : [
                     ['$!alice.vesting',2],
                     ['$market_maker',2],
@@ -63,32 +95,11 @@ describe('steem.smt:', () => {
                     ['alice',2]
                   ]
                 },
-                'post_soft_cap_unit' : {
-                  'steem_unit' : [
-                    ['$!alice.vesting',1],
-                    ['$market_maker',1],
-                    ['alice',1]
-                  ],
-                  'token_unit' : [
-                    ['$!alice.vesting',1],
-                    ['$from',1],
-                    ['$from.vesting',1],
-                    ['$market_maker',1],
-                    ['$rewards',1],
-                    ['alice',1]
-                  ]
-                },
-                'min_unit_ratio' : 50,
-                'max_unit_ratio' : 100,
                 'extensions':[]
-          }],
-          'contribution_begin_time' : '2020-12-21T00:00:00',
-          'contribution_end_time' : '2021-12-21T00:00:00',
-          'launch_time' : '2021-12-22T00:00:00',
-          'steem_units_min' : 0,
-          'steem_units_soft_cap' : 2000,
-          'steem_units_hard_cap' : 10000,
-          'extensions':[]
+              }
+            ],
+            'remove' : false,
+            'extensions':[]
         }]]
       }
 

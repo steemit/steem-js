@@ -93,10 +93,7 @@ const smt_generation_unit = new Serializer(
 });
 
 const smt_capped_generation_policy = new Serializer(0, {
-  pre_soft_cap_unit: smt_generation_unit,
-  post_soft_cap_unit: smt_generation_unit,
-  min_unit_ratio: uint32,
-  max_unit_ratio: uint32,
+  generation_unit: smt_generation_unit,
   extensions: set(future_extensions)
 });
 
@@ -745,15 +742,12 @@ let smt_setup = new Serializer(
   control_account: string,
   symbol: asset_symbol,
   max_supply: int64,
-  initial_generation_policy: static_variant([
-    smt_capped_generation_policy
-  ]),
   contribution_begin_time: time_point_sec,
   contribution_end_time: time_point_sec,
   launch_time: time_point_sec,
   steem_units_min: int64,
-  steem_units_soft_cap: int64,
-  steem_units_hard_cap: int64,
+  min_unit_ratio: uint32,
+  max_unit_ratio: uint32,
   extensions: set(future_extensions)
 }
 );
@@ -778,6 +772,19 @@ let smt_setup_emissions = new Serializer(
   extensions: set(future_extensions)
 }
 );
+
+let smt_setup_ico_tier = new Serializer(
+    "smt_setup_ico_tier", {
+    control_account: string,
+    symbol: asset_symbol,
+    steem_units_cap: int64,
+    generation_policy: static_variant([
+        smt_capped_generation_policy
+    ]),
+    remove: bool,
+    extensions: set(future_extensions)
+  }
+  );
 
 let smt_set_setup_parameters = new Serializer(
   "smt_set_setup_parameters", {
@@ -979,6 +986,7 @@ operation.st_operations = [
     vote2,
     smt_setup,
     smt_setup_emissions,
+    smt_setup_ico_tier,
     smt_set_setup_parameters,
     smt_set_runtime_parameters,
     smt_create,
