@@ -76,7 +76,7 @@ operations.forEach((operation) => {
   const operationParams = operation.params || [];
 
   const useCommentPermlink =
-    operationParams.indexOf('parent_permlink') !== -1 &&
+    operationParams.indexOf('parent_author') !== -1 &&
     operationParams.indexOf('parent_permlink') !== -1;
 
   steemBroadcast[`${operationName}With`] =
