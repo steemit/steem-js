@@ -132,7 +132,7 @@ describe('steem.smt:', () => {
               ]
             },
             'interval_seconds' : 21600,
-            'interval_count' : 1,
+            'emission_count' : 1,
             'lep_time' : '1970-01-01T00:00:00',
             'rep_time' : '1970-01-01T00:00:00',
             'lep_abs_amount' : 0,

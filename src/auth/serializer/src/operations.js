@@ -759,7 +759,7 @@ let smt_setup_emissions = new Serializer(
   schedule_time: time_point_sec,
   emissions_unit: smt_emissions_unit,
   interval_seconds: uint32,
-  interval_count: uint32,
+  emission_count: uint32,
   lep_time: time_point_sec,
   rep_time: time_point_sec,
   lep_abs_amount: int64,
