@@ -128,9 +128,6 @@ Types.asset = {
           nai = Math.floor(nai / 10);
           let expected_checksum = damm_checksum_8digit(nai)
 
-          //if(checksum != expected_checksum)
-          //    throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
-
           switch(object["nai"])
           {
             case "@@000000021":
@@ -167,9 +164,6 @@ Types.asset = {
                 let checksum = nai % 10
                 nai = Math.floor(nai / 10);
                 let expected_checksum = damm_checksum_8digit(nai)
-
-                if(checksum != expected_checksum)
-                    throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
             }
             else if(symbol.length > 6)
                 throw new Error("Symbols are not longer than 6 characters " + symbol + "-"+ symbol.length)
@@ -248,9 +242,6 @@ Types.asset_symbol = {
         let checksum = nai % 10
         nai = Math.floor(nai / 10);
         let expected_checksum = damm_checksum_8digit(nai)
-
-        //if(checksum != expected_checksum)
-        //    throw new Error("Checksums do not match, expected " + expected_checksum + " actual " + checksum)
 
         let precision = 0;
         let symbol = "";
