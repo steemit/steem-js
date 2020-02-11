@@ -513,6 +513,7 @@ module.exports = [
     "params": [
       "control_account",
       "symbol",
+      "desired_ticker",
       "smt_creation_fee",
       "precision",
       "extensions"
@@ -528,7 +529,7 @@ module.exports = [
       "contribution_begin_time",
       "contribution_end_time",
       "launch_time",
-      "steem_units_min",
+      "steem_satoshi_min",
       "min_unit_ratio",
       "max_unit_ratio",
       "extensions"
@@ -562,7 +563,7 @@ module.exports = [
     "params": [
       "control_account",
       "symbol",
-      "steem_units_cap",
+      "steem_satoshi_cap",
       "generation_policy",
       "remove",
       "extensions"

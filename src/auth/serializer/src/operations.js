@@ -731,6 +731,7 @@ let smt_create = new Serializer(
   "smt_create", {
   control_account: string,
   symbol: asset_symbol,
+  desired_ticker: string,
   smt_creation_fee: asset,
   precision: uint8,
   extensions: set(future_extensions)
@@ -745,7 +746,7 @@ let smt_setup = new Serializer(
   contribution_begin_time: time_point_sec,
   contribution_end_time: time_point_sec,
   launch_time: time_point_sec,
-  steem_units_min: int64,
+  steem_satoshi_min: int64,
   min_unit_ratio: uint32,
   max_unit_ratio: uint32,
   extensions: set(future_extensions)
@@ -777,7 +778,7 @@ let smt_setup_ico_tier = new Serializer(
     "smt_setup_ico_tier", {
     control_account: string,
     symbol: asset_symbol,
-    steem_units_cap: int64,
+    steem_satoshi_cap: int64,
     generation_policy: static_variant([
         smt_capped_generation_policy
     ]),

@@ -19,6 +19,7 @@ describe('steem.smt:', () => {
           'smt_create', {
             'control_account': username,
             'symbol': {'nai':'@@631672482','precision':3},
+            'desired_ticker': '',
             'smt_creation_fee': {'amount':'10000','precision':3,'nai':'@@000000013'},
             'precision': 3,
         }]]
@@ -48,7 +49,7 @@ describe('steem.smt:', () => {
             'contribution_begin_time' : '2020-12-21T00:00:00',
             'contribution_end_time' : '2021-12-21T00:00:00',
             'launch_time' : '2021-12-22T00:00:00',
-            'steem_units_min' : 0,
+            'steem_satoshi_min' : 0,
             'min_unit_ratio' : 50,
             'max_unit_ratio' : 100,
             'extensions':[]
@@ -76,7 +77,7 @@ describe('steem.smt:', () => {
           'smt_setup_ico_tier', {
             'control_account' : username,
             'symbol' : {'nai':'@@631672482','precision':3},
-            'steem_units_cap' : 10000,
+            'steem_satoshi_cap' : 10000,
             'generation_policy' : [
               0,
               {
