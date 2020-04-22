@@ -51,6 +51,67 @@ describe('steem.broadcast:', () => {
     });
   });
 
+  describe('no blocks on chain', () => {
+    it('works', async () => {
+      const newAccountName = username + '-' + Math.floor(Math.random() * 10000);
+      const keys = steem.auth.generateKeys(
+        username, password, ['posting', 'active', 'owner', 'memo']);
+
+      const oldGetDynamicGlobalProperties = steem.api.getDynamicGlobalPropertiesAsync;
+      steem.api.getDynamicGlobalPropertiesAsync = () => Promise.resolve({
+        time: '2019-04-14T21:30:56',
+        last_irreversible_block_num: 32047459,
+      });
+
+      // If the block returned is `null`, then no blocks are on the chain yet.
+      const oldGetBlockAsync = steem.api.getBlockAsync;
+      steem.api.getBlockAsync = () => Promise.resolve(null);
+
+      try {
+        const tx = await steem.broadcast._prepareTransaction({
+          extensions: [],
+          operations: [[
+            'account_create',
+            {
+              fee: '0.000 STEEM',
+              creator: username,
+              new_account_name: newAccountName,
+              owner: {
+                weight_threshold: 1,
+                account_auths: [],
+                key_auths: [[keys.owner, 1]],
+              },
+              active: {
+                weight_threshold: 1,
+                account_auths: [],
+                key_auths: [[keys.active, 1]],
+              },
+              posting: {
+                weight_threshold: 1,
+                account_auths: [],
+                key_auths: [[keys.posting, 1]],
+              },
+              memo_key: keys.memo,
+              json_metadata: '',
+              extensions: [],
+            }
+          ]],
+        });
+
+        tx.should.have.properties([
+          'expiration',
+          'ref_block_num',
+          'ref_block_prefix',
+          'extensions',
+          'operations',
+        ]);
+      } finally {
+        steem.api.getDynamicGlobalPropertiesAsync = oldGetDynamicGlobalProperties;
+        steem.api.getBlockAsync = oldGetBlockAsync;
+      }
+    });
+  });
+
   describe('downvoting', () => {
     it('works', async () => {
       const tx = await steem.broadcast.voteAsync(
@@ -149,7 +210,7 @@ describe('steem.broadcast:', () => {
       ]);
     });
   });
-  
+
   describe('writeOperations', () => {
     it('receives a properly formatted error response', () => {
       const wif = steem.auth.toWif('username', 'password', 'posting');

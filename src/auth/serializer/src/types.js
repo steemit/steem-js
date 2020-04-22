@@ -6,14 +6,62 @@ const v = require('./validation');
 const ObjectId = require('./object_id')
 const fp = require('./fast_parser');
 const chain_types = require('./ChainTypes')
+//const BigInt = require('BigInt')
 
 import { PublicKey, Address, ecc_config } from "../../ecc"
 import { fromImpliedDecimal } from "./number_utils"
+import Config from "../../../config.js"
 
 const Types = {}
 module.exports = Types
 
 const HEX_DUMP = process.env.npm_config__graphene_serializer_hex_dump
+
+// Highly optimized implementation of Damm algorithm
+// https://en.wikipedia.org/wiki/Damm_algorithm
+function damm_checksum_8digit( value ) {
+    if( value >= 100000000 )
+        throw new Error("Expected value less than 100000000, instead got " + value )
+
+    const t = [
+         0, 30, 10, 70, 50, 90, 80, 60, 40, 20,
+        70,  0, 90, 20, 10, 50, 40, 80, 60, 30,
+        40, 20,  0, 60, 80, 70, 10, 30, 50, 90,
+        10, 70, 50,  0, 90, 80, 30, 40, 20, 60,
+        60, 10, 20, 30,  0, 40, 50, 90, 70, 80,
+        30, 60, 70, 40, 20,  0, 90, 50, 80, 10,
+        50, 80, 60, 90, 70, 20,  0, 10, 30, 40,
+        80, 90, 40, 50, 30, 60, 20,  0, 10, 70,
+        90, 40, 30, 80, 60, 10, 70, 20,  0, 50,
+        20, 50, 80, 10, 40, 30, 60, 70, 90, 0
+    ];
+
+    let q0 = value/10
+    let d0 = value%10
+    let q1 = q0/10
+    let d1 = q0%10
+    let q2 = q1/10
+    let d2 = q1%10
+    let q3 = q2/10
+    let d3 = q2%10
+    let q4 = q3/10
+    let d4 = q3%10
+    let q5 = q4/10
+    let d5 = q4%10
+    let d6 = q5%10
+    let d7 = q5/10
+
+    let x = t[d7]
+    x = t[x+d6]
+    x = t[x+d5]
+    x = t[x+d4]
+    x = t[x+d3]
+    x = t[x+d2]
+    x = t[x+d1]
+    x = t[x+d0]
+
+    return x/10
+}
 
 /**
 * Asset symbols contain the following information
@@ -25,34 +73,120 @@ const HEX_DUMP = process.env.npm_config__graphene_serializer_hex_dump
 *
 *  It is treated as a uint64_t for all internal operations, but
 *  is easily converted to something that can be displayed.
+*
+*  Legacy serialization of assets
+*  0000pppp aaaaaaaa bbbbbbbb cccccccc dddddddd eeeeeeee ffffffff 00000000
+*  Symbol = abcdef
+*
+*  NAI serialization of assets
+*  aaa1pppp bbbbbbbb cccccccc dddddddd
+*  NAI = (MSB to LSB) dddddddd cccccccc bbbbbbbb aaa
+*
+*  NAI internal storage of legacy assets
 */
 Types.asset = {
     fromByteBuffer(b){
         let amount = b.readInt64()
         let precision = b.readUint8()
-        let b_copy = b.copy(b.offset, b.offset + 7)
-        let symbol = new Buffer(b_copy.toBinary(), "binary").toString().replace(/\x00/g, "")
-        b.skip(7);
-        // "1.000 STEEM" always written with full precision
-        let amount_string = fromImpliedDecimal(amount, precision)
+        let amount_string = ""
+        let symbol = ""
+
+        if(precision >= 16)
+        {
+            // NAI Case
+            let b_copy = b.copy(b.offset - 1, b.offset + 3)
+            let nai = new Buffer(b_copy.toBinary(), "binary").readInt32()
+            nai = nai / 32
+            symbol = "@@" + nai.toString().padStart(8, '0') + damm_checksum_8digit(nai).to_String()
+            precision = precision % 16
+            b.skip(3)
+            amount_string = fromImpliedDecimal(amount,precision)
+        }
+        else
+        {
+            // Legacy Case
+            let b_copy = b.copy(b.offset, b.offset + 7)
+            symbol = new Buffer(b_copy.toBinary(), "binary").toString().replace(/\x00/g, "")
+            b.skip(7)
+            // "1.000 STEEM" always written with full precision
+            amount_string = fromImpliedDecimal(amount, precision)
+        }
+
         return amount_string + " " + symbol
     },
     appendByteBuffer(b, object){
-        object = object.trim()
-        if( ! /^[0-9]+\.?[0-9]* [A-Za-z0-9]+$/.test(object))
-            throw new Error("Expecting amount like '99.000 SYMBOL', instead got '" + object + "'")
+        let amount = ""
+        let symbol = ""
+        let nai = 0
+        let precision = 0
 
-        let [ amount, symbol ] = object.split(" ")
-        if(symbol.length > 6)
-            throw new Error("Symbols are not longer than 6 characters " + symbol + "-"+ symbol.length)
+        if(object["nai"])
+        {
+          symbol = object["nai"]
+          nai = parseInt(symbol.slice(2))
+          let checksum = nai % 10
+          nai = Math.floor(nai / 10);
+          let expected_checksum = damm_checksum_8digit(nai)
 
-        b.writeInt64(v.to_long(amount.replace(".", "")))
-        let dot = amount.indexOf(".") // 0.000
-        let precision = dot === -1 ? 0 : amount.length - dot - 1
-        b.writeUint8(precision)
-        b.append(symbol.toUpperCase(), 'binary')
-        for(let i = 0; i < 7 - symbol.length; i++)
-            b.writeUint8(0)
+          switch(object["nai"])
+          {
+            case "@@000000021":
+              precision = 3
+              symbol = Config.get( "address_prefix" ) == "STM" ? "STEEM" : "TESTS"
+              break
+            case "@@000000013":
+              precision = 3
+              symbol = Config.get( "address_prefix" ) == "STM" ? "SBD" : "TBD"
+              break
+            case "@@000000037":
+              precision = 6
+              symbol = "VESTS"
+              break
+          }
+
+          precision = parseInt(object["precision"])
+          b.writeInt64(v.to_long(parseInt(object["amount"])))
+        }
+        else
+        {
+            object = object.trim()
+            if( ! /^[0-9]+\.?[0-9]* [A-Za-z0-9@]+$/.test(object))
+                throw new Error("Expecting amount like '99.000 SYMBOL', instead got '" + object + "'")
+
+            let res = object.split(" ")
+            amount = res[0]
+            symbol = res[1]
+
+            if(symbol.startsWith("@@"))
+            {
+                // NAI Case
+                nai = parseInt(symbol.slice(2))
+                let checksum = nai % 10
+                nai = Math.floor(nai / 10);
+                let expected_checksum = damm_checksum_8digit(nai)
+            }
+            else if(symbol.length > 6)
+                throw new Error("Symbols are not longer than 6 characters " + symbol + "-"+ symbol.length)
+
+            b.writeInt64(v.to_long(amount.replace(".", "")))
+            let dot = amount.indexOf(".") // 0.000
+            precision = dot === -1 ? 0 : amount.length - dot - 1
+        }
+
+
+        if(symbol.startsWith("@@"))
+        {
+            nai = (nai << 5) + 16 + precision
+            b.writeUint32(nai)
+        }
+        else
+        {
+            b.writeUint8(precision)
+            b.append(symbol.toUpperCase(), 'binary')
+            for(let i = 0; i < 7 - symbol.length; i++)
+              b.writeUint8(0)
+        }
+
         return
     },
     fromObject(object){
@@ -60,6 +194,94 @@ Types.asset = {
     },
     toObject(object, debug = {}){
         if (debug.use_default && object === undefined) { return "0.000 STEEM"; }
+        return object
+    }
+}
+
+Types.asset_symbol = {
+    fromByteBuffer(b){
+        let precision = b.readUint8()
+        let amount_string = ""
+        let nai_string = ""
+
+        if(precision >= 16)
+        {
+            // NAI Case
+            let b_copy = b.copy(b.offset - 1, b.offset + 3)
+            let nai = new Buffer(b_copy.toBinary(), "binary").readInt32()
+            nai = nai / 32
+            nai_string = "@@" + nai.toString().padStart(8, '0') + damm_checksum_8digit(nai).to_String()
+            precision = precision % 16
+            b.skip(3)
+        }
+        else
+        {
+            // Legacy Case
+            let b_copy = b.copy(b.offset, b.offset + 7)
+            let symbol = new Buffer(b_copy.toBinary(), "binary").toString().replace(/\x00/g, "")
+            if(symbol == "STEEM" || symbol == "TESTS")
+              nai_string = "@@000000021"
+            else if(symbol == "SBD" || symbol == "TBD")
+              nai_string = "@@000000013"
+            else if(symbol == "VESTS")
+              nai_string = "@@000000037"
+            else
+              throw new Error("Expecting non-smt core asset symbol, instead got '" + symbol + "'")
+            b.skip(7)
+        }
+
+        return {"nai" : nai_string, "precision" : precision}
+    },
+    appendByteBuffer(b, object){
+
+        let nai = 0
+        if(!object["nai"].startsWith("@@"))
+          throw new Error("Asset Symbols NAIs must be prefixed with '@@'. Was " + object["nai"])
+
+        nai = parseInt(object["nai"].slice(2))
+        let checksum = nai % 10
+        nai = Math.floor(nai / 10);
+        let expected_checksum = damm_checksum_8digit(nai)
+
+        let precision = 0;
+        let symbol = "";
+        switch(object["nai"])
+        {
+          case "@@000000021":
+            precision = 3
+              symbol = Config.get( "address_prefix" ) == "STM" ? "STEEM" : "TESTS"
+            break
+          case "@@000000013":
+            precision = 3
+            symbol = Config.get( "address_prefix" ) == "STM" ? "SBD" : "TBD"
+            break
+          case "@@000000037":
+            precision = 6
+            symbol = "VESTS"
+            break
+        }
+
+        if( precision > 0 )
+        {
+          //Core Symbol Case
+          b.writeUint8(precision)
+          b.append(symbol, 'binary')
+          for(let i = 0; i < 7 - symbol.length; i++)
+              b.writeUint8(0)
+        }
+        else
+        {
+          nai = (nai << 5) + 16 + object["precision"]
+          b.writeUint32(nai)
+        }
+
+        return
+    },
+    fromObject(object){
+        return object
+    },
+    toObject(object, debug = {}){
+        if (debug.use_default && object === undefined) { return "STEEM"; }
         return object
     }
 }
@@ -205,6 +427,25 @@ Types.uint64 =
         return b.readUint64();
     },
     appendByteBuffer(b, object){
+        b.writeUint64(v.to_long(v.unsigned(object)));
+        return;
+    },
+    fromObject(object){
+        return v.to_long(v.unsigned(object));
+    },
+    toObject(object, debug = {}){
+        if (debug.use_default && object === undefined) { return "0"; }
+        return v.to_long(object).toString();
+    }
+    };
+
+Types.uint128 =
+    {fromByteBuffer(b){
+        b.readBigInt64();
+        return b.readBigInt64();
+    },
+    appendByteBuffer(b, object){
+        b.writeUint64(v.to_long(v.unsigned(0)));
         b.writeUint64(v.to_long(v.unsigned(object)));
         return;
     },
