@@ -1,6 +1,6 @@
 {
   "name": "@steemit/steem-js",
-  "version": "0.7.1",
+  "version": "0.7.4",
   "description": "Steem.js the JavaScript API for Steem blockchain",
   "main": "lib/index.js",
   "scripts": {
@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/steemit/steem-js#readme",
   "dependencies": {
-    "@steemit/rpc-auth": "^1.1.0",
+    "@steemit/rpc-auth": "^1.1.1",
     "bigi": "^1.4.2",
     "bluebird": "^3.4.6",
     "browserify-aes": "^1.0.6",
@@ -47,6 +47,7 @@
     "detect-node": "^2.0.3",
     "ecurve": "^1.0.5",
     "lodash": "^4.16.4",
+    "retry": "^0.12.0",
     "secure-random": "^1.1.1",
     "ws": "^3.3.2"
   },

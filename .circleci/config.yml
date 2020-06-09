@@ -1,0 +1,23 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: docker:17-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          command: docker build -f node-6.dockerfile -t steemjs .
+      - run:
+          name: Save Docker image
+          command: docker save -o steemjs.tar steemjs
+      - persist_to_workspace:
+          root: .
+          paths:
+            - steemjs.tar
+workflows:
+  version: 2
+  condenser:
+    jobs:
+      - build

@@ -221,20 +221,26 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting", "active", "owner"],
-    "operation": "challenge_authority",
+    "roles": ["active", "owner"],
+    "operation": "claim_account",
     "params": [
-      "challenger",
-      "challenged",
-      "require_owner"
+      "creator",
+      "fee",
+      "extensions"
     ]
   },
   {
     "roles": ["active", "owner"],
-    "operation": "prove_authority",
+    "operation": "create_claimed_account",
     "params": [
-      "challenged",
-      "require_owner"
+      "creator",
+      "new_account_name",
+      "owner",
+      "active",
+      "posting",
+      "memo_key",
+      "json_metadata",
+      "extensions"
     ]
   },
   {

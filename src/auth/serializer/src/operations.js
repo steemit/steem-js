@@ -377,18 +377,24 @@ let limit_order_create2 = new Serializer(
 }
 );
 
-let challenge_authority = new Serializer( 
-    "challenge_authority", {
-    challenger: string,
-    challenged: string,
-    require_owner: bool
+let claim_account = new Serializer( 
+    "claim_account", {
+    creator: string,
+    fee: asset,
+    extensions: set(future_extensions)
 }
 );
 
-let prove_authority = new Serializer( 
-    "prove_authority", {
-    challenged: string,
-    require_owner: bool
+let create_claimed_account = new Serializer( 
+    "create_claimed_account", {
+    creator: string,
+    new_account_name: string,
+    owner: authority,
+    active: authority,
+    posting: authority,
+    memo_key: public_key,
+    json_metadata: string,
+    extensions: set(future_extensions)
 }
 );
 
@@ -728,8 +734,8 @@ operation.st_operations = [
     comment_options,    
     set_withdraw_vesting_route,    
     limit_order_create2,    
-    challenge_authority,    
-    prove_authority,    
+    claim_account,    
+    create_claimed_account,    
     request_account_recovery,    
     recover_account,    
     change_recovery_account,    
