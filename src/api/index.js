@@ -181,6 +181,10 @@ class Steem extends EventEmitter {
         this._setLogger(options);
         this._setTransport(options);
         this.transport.setOptions(options);
+        if( options.hasOwnProperty('useTestNet') )
+        {
+          config.set( 'address_prefix', options.useTestNet ? 'TST' : 'STM' )
+        }
     }
 
     setWebSocket(url) {
