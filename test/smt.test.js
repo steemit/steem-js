@@ -25,7 +25,7 @@ describe('steem.smt:', () => {
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.24.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
         result.should.have.property('blockchain_version');
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
@@ -57,7 +57,7 @@ describe('steem.smt:', () => {
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.24.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
         result.should.have.property('blockchain_version');
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
@@ -104,7 +104,7 @@ describe('steem.smt:', () => {
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.24.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
         result.should.have.property('blockchain_version');
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
@@ -147,7 +147,7 @@ describe('steem.smt:', () => {
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.24.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
         result.should.have.property('blockchain_version');
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
@@ -175,7 +175,7 @@ describe('steem.smt:', () => {
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.24.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
         result.should.have.property('blockchain_version');
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
@@ -204,7 +204,7 @@ describe('steem.smt:', () => {
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.24.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
         result.should.have.property('blockchain_version');
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
@@ -230,7 +230,7 @@ describe('steem.smt:', () => {
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.24.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
         result.should.have.property('blockchain_version');
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
@@ -265,7 +265,7 @@ describe('steem.smt:', () => {
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.24.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
         result.should.have.property('blockchain_version');
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
@@ -302,7 +302,7 @@ describe('steem.smt:', () => {
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.24.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
         result.should.have.property('blockchain_version');
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
@@ -331,7 +331,7 @@ describe('steem.smt:', () => {
       }
 
       steem.api.callAsync('condenser_api.get_version', []).then((result) => {
-        if(result['blockchain_version'] < '0.23.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
+        if(result['blockchain_version'] < '0.24.0') return done(); /* SKIP AS THIS WILL ONLY PASS ON A TESTNET CURRENTLY */
         result.should.have.property('blockchain_version');
 
         steem.broadcast._prepareTransaction(tx).then(function(tx){
