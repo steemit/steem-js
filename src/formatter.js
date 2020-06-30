@@ -156,7 +156,8 @@ module.exports = steemAPI => {
 
   return {
     reputation: function(reputation) {
-      if (reputation == null) return reputation;
+      if (reputation == 0) return 25;
+      if (!reputation) return reputation;      
       let neg = reputation < 0;
       let rep = String(reputation);
       rep = neg ? rep.substring(1) : rep;
