@@ -13,8 +13,8 @@
     "author": "",
     "license": "BSD-2-Clause-FreeBSD",
     "dependencies": {
+        "@exodus/bytebuffer": "git+https://github.com/ExodusMovement/bytebuffer.js.git#exodus",
         "bigi": "^1.4.1",
-        "bytebuffer": "^5.0.0",
         "ecc": "^1.0.0"
     },
     "devDependencies": {

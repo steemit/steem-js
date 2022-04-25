@@ -63,7 +63,7 @@ Auth.getPrivateKeys = function (name, password, roles = ['owner', 'active', 'pos
 Auth.isWif = function (privWif) {
 	var isWif = false;
 	try {
-		var bufWif = new Buffer(bs58.decode(privWif));
+		var bufWif = new Buffer.from(bs58.decode(privWif));
 		var privKey = bufWif.slice(0, -4);
 		var checksum = bufWif.slice(-4);
 		var newChecksum = hash.sha256(privKey);
@@ -80,7 +80,7 @@ Auth.toWif = function (name, password, role) {
 	var seed = name + role + password;
 	var brainKey = seed.trim().split(/[\t\n\v\f\r ]+/).join(' ');
 	var hashSha256 = hash.sha256(brainKey);
-	var privKey = Buffer.concat([new Buffer([0x80]), hashSha256]);
+	var privKey = Buffer.concat([new Buffer.from([0x80]), hashSha256]);
 	var checksum = hash.sha256(privKey);
 	checksum = hash.sha256(checksum);
 	checksum = checksum.slice(0, 4);
@@ -108,7 +108,7 @@ Auth.signTransaction = function (trx, keys) {
 		signatures = [].concat(trx.signatures);
 	}
 
-	var cid = new Buffer(config.get('chain_id'), 'hex');
+	var cid = new Buffer.from(config.get('chain_id'), 'hex');
 	var buf = transaction.toBuffer(trx);
 
 	for (var key in keys) {
