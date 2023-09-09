@@ -327,7 +327,6 @@ describe('steem.api:', function () {
     describe('getting a RC of an account', () => {
       it('works', async () => {
         const result = await steem.api.findRcAccountsAsync(["justinsunsteemit"]);
-        console.debug(result);
         result.should.have.properties("rc_accounts");
         result["rc_accounts"][0].should.have.properties("rc_manabar");
       });
