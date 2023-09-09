@@ -323,4 +323,17 @@ describe('steem.api:', function () {
     it('does not retry non-retriable operations');
   });
 
+  describe('getRC', () => {
+    describe('getting a RC of an account', () => {
+      it('works', async () => {
+        const result = await steem.api.findRcAccountsAsync(["justinsunsteemit"]);
+        console.debug(result);
+        result.should.have.properties("rc_accounts");
+        result["rc_accounts"][0].should.have.properties("rc_manabar");
+      });
+      it('clears listeners', async () => {
+        steem.api.listeners('message').should.have.lengthOf(0);
+      });
+    });
+  });
 });
