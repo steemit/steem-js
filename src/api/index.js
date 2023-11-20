@@ -31,9 +31,15 @@ class Steem extends EventEmitter {
             const methodParams = method.params || [];
 
             this[`${methodName}With`] = (options, callback) => {
+                let params;
+                if (!method.is_object) {
+                    params = methodParams.map(param => options[param]);
+                } else {
+                    params = options;
+                }
                 return this.send(method.api, {
                     method: method.method,
-                    params: methodParams.map(param => options[param])
+                    params: params
                 }, callback);
             };
 
@@ -46,7 +52,7 @@ class Steem extends EventEmitter {
                 return this[`${methodName}With`](options, callback);
             };
 
-	          this[`${methodName}WithAsync`] = Promise.promisify(this[`${methodName}With`]);
+            this[`${methodName}WithAsync`] = Promise.promisify(this[`${methodName}With`]);
             this[`${methodName}Async`] = Promise.promisify(this[methodName]);
         });
         this.callAsync = Promise.promisify(this.call);
