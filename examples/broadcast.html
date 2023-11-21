@@ -100,6 +100,32 @@
       console.log(err, result);
     }
   );
+
+  /** Resteem a post */ 
+  var username = 'guest123'; // Your account
+  /* For resteeming it must(!) be your posting key, otherwise it will fail */
+  var postingWif = '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg'; // Your posting key
+  var account = 'dan'; // Author of post
+  var link ='https://steemit.com/steem/@dan/steemit-s-evil-plan-for-cryptocurrency-world-domination'; // Post to resteem  
+
+  const jsonObj = JSON.stringify(
+      ['reblog', {
+        account: username,
+        author: account,
+        permlink: link
+   }]
+ );
+
+  steem.broadcast.customJson(
+     postingWif,
+     [],
+     [username],
+     'follow',
+     jsonObj,
+     function(err, result) => {
+     console.log(err, result);
+  }
+);
 </script>
 
 </body>
