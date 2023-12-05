@@ -510,5 +510,11 @@ export default [
       "api": "condenser_api",
       "method": "get_nai_pool",
       "params": []
-    }
+    },
+    {
+      "api": "rc_api",
+      "method": "find_rc_accounts",
+      "params": ["accounts"],
+      "is_object": true
+    },
 ];

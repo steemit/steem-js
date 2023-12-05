@@ -58,8 +58,6 @@ $ npm install steem --save
 
 ## RPC Servers
 https://api.steemit.com By Default<br/>
-https://node.steem.ws<br/>
-https://this.piston.rocks<br/>
 
 ## Examples
 ### Broadcast Vote
@@ -107,7 +105,7 @@ steem.api.setOptions({
 The Chain ID could change. If it does, it may not be reflected here, but will be documented on any testnet launch announcements.
 
 ## Contributions
-Patches are welcome! Contributors are listed in the package.json file. Please run the tests before opening a pull request and make sure that you are passing all of them. If you would like to contribute, but don't know what to work on, check the issues list or on Steemit Chat channel #steemjs https://steemit.chat/channel/steemjs.
+Patches are welcome! Contributors are listed in the package.json file. Please run the tests before opening a pull request and make sure that you are passing all of them. If you would like to contribute, but don't know what to work on, check the issues list.
 
 ## Issues
 When you find issues, please report them!
