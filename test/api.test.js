@@ -19,7 +19,7 @@ describe('steem.api:', function () {
   describe('getFollowers', () => {
     describe('getting ned\'s followers', () => {
       it('works', async () => {
-        const result = await steem.api.getFollowersAsync('ned', 0, 'blog', 5);
+        const result = await steem.api.getFollowerssync('ned', 0, 'blog', 5);
         assert(result, 'getFollowersAsync resoved to null?');
         result.should.have.lengthOf(5);
       });
