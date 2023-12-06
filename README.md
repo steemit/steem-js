@@ -111,4 +111,4 @@ Patches are welcome! Contributors are listed in the package.json file. Please ru
 When you find issues, please report them!
 
 ## License
-MIT
+MIT    
