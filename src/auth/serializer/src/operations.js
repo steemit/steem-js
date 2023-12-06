@@ -340,7 +340,8 @@ let witness_update = new Serializer(
     "witness_update", {
     owner: string,
     url: string,
-    block_signing_key: public_key,
+    block_signing_key: string,  // This can't be a public_key, because we need to be able to null it if we want to stop
+                                // being a witness.
     props: chain_properties,
     fee: asset
 }
