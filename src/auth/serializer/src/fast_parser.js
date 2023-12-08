@@ -15,7 +15,7 @@ class FastParser {
         } else {
             let b_copy = b.copy(b.offset, b.offset + len);
             b.skip(len);
-            return new Buffer(b_copy.toBinary(), 'binary');
+            return new Buffer.from(b_copy.toBinary(), 'binary');
         }
     }
 

@@ -29,7 +29,7 @@ class Signature {
 
     toBuffer() {
         var buf;
-        buf = new Buffer(65);
+        buf = new Buffer.alloc(65);
         buf.writeUInt8(this.i, 0);
         this.r.toBuffer(32).copy(buf, 1);
         this.s.toBuffer(32).copy(buf, 33);
@@ -63,7 +63,7 @@ class Signature {
         var _hash = hash.sha256(buf);
         return Signature.signBufferSha256(_hash, private_key)
     }
-    
+
     /** Sign a buffer of exactally 32 bytes in size (sha256(text))
         @param {Buffer} buf - 32 bytes binary
         @param {PrivateKey} private_key
@@ -98,7 +98,7 @@ class Signature {
     };
 
     static sign(string, private_key) {
-        return Signature.signBuffer(new Buffer(string), private_key);
+        return Signature.signBuffer(new Buffer.from(string), private_key);
     };
 
 
@@ -129,7 +129,7 @@ class Signature {
     // };
 
     static fromHex(hex) {
-        return Signature.fromBuffer(new Buffer(hex, "hex"));
+        return Signature.fromBuffer(new Buffer.from(hex, "hex"));
     };
 
     toHex() {
@@ -138,13 +138,13 @@ class Signature {
 
     static signHex(hex, private_key) {
         var buf;
-        buf = new Buffer(hex, 'hex');
+        buf = new Buffer.from(hex, 'hex');
         return Signature.signBuffer(buf, private_key);
     };
 
     verifyHex(hex, public_key) {
         var buf;
-        buf = new Buffer(hex, 'hex');
+        buf = new Buffer.from(hex, 'hex');
         return this.verifyBuffer(buf, public_key);
     };
 

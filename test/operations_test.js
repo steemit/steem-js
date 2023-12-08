@@ -19,7 +19,7 @@ describe("steem.auth: operation test", ()=> {
         let tx_hex = "614bde71d95f911bf3560109000000000000000003535445454d000009696e69746d696e65720573636f74740100000000010332757668fa45c2bc21447a2ff1dc2bbed9d9dda1616fd7b700255bd28e9d674a010001000000000103fb8900a262d51b908846be54fcf04b3a80d12ee749b9446f976b58b220ba4eed010001000000000102af4963d0f034043f4b4b0c99220e6a4b5d8b9cc71e5cd7d110f7602f3a0a11d1010002ff0de11ef55b998daf88047f1a00a60ed5dffb0c23c3279f8bd42a733845c5da000000"
 
         // 03 53 54 45 45 4d 0000
-        assert.equal("STEEM", new Buffer("535445454d", "hex").toString())
+        assert.equal("STEEM", new Buffer.from("535445454d", "hex").toString())
         let tx_object1 = ops.signed_transaction.fromObject(tx)
         let tx_object2 = ops.signed_transaction.fromHex(tx_hex)
         assert.deepEqual(tx, ops.signed_transaction.toObject(tx_object1))
