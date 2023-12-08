@@ -287,7 +287,7 @@ export default [
     {
       "api": "database_api",
       "method": "verify_authority",
-      "params": ["trx"]
+      "params": ["trx", "auth"]
     },
     {
       "api": "database_api",
