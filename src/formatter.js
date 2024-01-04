@@ -183,7 +183,15 @@ module.exports = steemAPI => {
         .replace(/[^a-zA-Z0-9]+/g, "")
         .toLowerCase();
       parentPermlink = parentPermlink.replace(/(-\d{8}t\d{9}z)/g, "");
-      return "re-" + parentAuthor + "-" + parentPermlink + "-" + timeStr;
+      let permLink =
+        "re-" + parentAuthor + "-" + parentPermlink + "-" + timeStr;
+      if (permLink.length > 255) {
+        // pay respect to STEEMIT_MAX_PERMLINK_LENGTH
+        permLink.substr(permLink.length - 255, permLink.length);
+      }
+      // permlinks must be lower case and not contain anything but
+      // alphanumeric characters plus dashes
+      return permLink.toLowerCase().replace(/[^a-z0-9-]+/g, "");
     },
 
     amount: function(amount, asset) {

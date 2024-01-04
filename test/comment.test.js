@@ -2,6 +2,7 @@ import Promise from 'bluebird';
 import should from 'should';
 import steem from '../src';
 import pkg from '../package.json';
+import assert from 'assert'
 
 const username = process.env.STEEM_USERNAME || 'guest123';
 const password = process.env.STEEM_PASSWORD;
@@ -65,5 +66,16 @@ describe('steem.broadcast:', () => {
         'signatures',
       ]);
     });
+  });
+});
+
+describe('commentPermLink:', () => {
+  it('does not return dots', () => {
+    var commentPermlink = steem.formatter.commentPermlink(
+      'foo.bar',
+      'the-first-physical-foo-bar-ready-to-be-shipped'
+    );
+    console.log(commentPermlink);
+    assert.equal(-1, commentPermlink.indexOf('.'));
   });
 });
