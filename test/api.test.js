@@ -339,17 +339,7 @@ describe('steem.api:', function () {
   describe('getExpiringDelegations', () => {
     describe('getting expired delegation of an account', () => {
       it('works', async () => {
-        function now() {
-          const date = new Date();
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0'); // Adding 1 because getMonth() returns 0-11
-          const day = String(date.getDate()).padStart(2, '0');
-          const hours = String(date.getHours()).padStart(2, '0');
-          const minutes = String(date.getMinutes()).padStart(2, '0');
-          const seconds = String(date.getSeconds()).padStart(2, '0');
-          return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-        }
-        const result = await steem.api.getExpiringVestingDelegationsAsync("justyy", now(), 100);
+        const result = await steem.api.getExpiringVestingDelegationsAsync("justyy", "2004-01-02T00:11:22", 100);
         result.should.have.properties("length");
       });
       it('clears listeners', async () => {
