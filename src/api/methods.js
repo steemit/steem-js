@@ -517,4 +517,9 @@ export default [
       "params": ["accounts"],
       "is_object": true
     },
+    {
+      "api": "condenser_api",
+      "method": "get_expiring_vesting_delegations",
+      "params": ["account", "start", "limit"],
+    }
 ];
