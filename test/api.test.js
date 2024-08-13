@@ -335,4 +335,16 @@ describe('steem.api:', function () {
       });
     });
   });
+
+  describe('getExpiringDelegations', () => {
+    describe('getting expired delegation of an account', () => {
+      it('works', async () => {
+        const result = await steem.api.getExpiringVestingDelegationsAsync("justyy", "2004-01-02T00:11:22", 100);
+        result.should.have.properties("length");
+      });
+      it('clears listeners', async () => {
+        steem.api.listeners('message').should.have.lengthOf(0);
+      });
+    });
+  })
 });
