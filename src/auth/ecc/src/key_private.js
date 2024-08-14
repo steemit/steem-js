@@ -20,7 +20,7 @@ class PrivateKey {
 
     static fromBuffer(buf) {
         if (!Buffer.isBuffer(buf)) {
-            throw new Error("Expecting paramter to be a Buffer type");
+            throw new Error("Expecting parameter to be a Buffer type");
         }
         if (32 !== buf.length) {
             console.log(`WARN: Expecting 32 bytes, instead got ${buf.length}, stack trace:`, new Error().stack);
