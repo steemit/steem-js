@@ -71,7 +71,7 @@ class Signature {
     */
     static signBufferSha256(buf_sha256, private_key) {
         if( buf_sha256.length !== 32 || ! Buffer.isBuffer(buf_sha256) )
-            throw new Error("buf_sha256: 32 byte buffer requred")
+            throw new Error("buf_sha256: 32 byte buffer required")
         private_key = toPrivateObj(private_key)
         assert(private_key, 'private_key required')
 
