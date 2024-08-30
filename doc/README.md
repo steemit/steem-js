@@ -1156,6 +1156,30 @@ Return Example:
    { account: 'username-taken', reputation: 0 } ]
 ```
 - - - - - - - - - - - - - - - - - -
+## Recovery Account Change Requests
+Get the change requests of recovery account for multiple accounts.
+
+```js
+steem.api.findChangeRecoveryAccountRequests(['justyy222', 'ety001', 'justyy'], function(err, data) {
+	console.log(err, data);
+});
+```
+
+Return Example:
+
+```js
+{"requests":
+  [
+    {
+      "id":2238,
+      "account_to_recover":"justyy222",
+      "recovery_account":"happyukgo",
+      "effective_on":"2024-09-24T06:15:33"
+    }
+  ]
+}
+```
+- - - - - - - - - - - - - - - - - -
 ## Market
 - - - - - - - - - - - - - - - - - -
 ### Get Order Book

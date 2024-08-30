@@ -521,5 +521,11 @@ export default [
       "api": "condenser_api",
       "method": "get_expiring_vesting_delegations",
       "params": ["account", "start", "limit"],
+    },
+    {
+      "api": "database_api",
+      "method": "find_change_recovery_account_requests",
+      "params": ["account"],
+      "is_object": true
     }
 ];
