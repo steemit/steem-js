@@ -346,5 +346,18 @@ describe('steem.api:', function () {
         steem.api.listeners('message').should.have.lengthOf(0);
       });
     });
-  })
+  });
+
+  describe('Account Recovery', () => {
+    describe('findChangeRecoveryAccountRequests', () => {
+      it('works', async () => {
+        const result = await steem.api.findChangeRecoveryAccountRequestsAsync(["justyy", "ety001"]);
+        result.should.have.properties("requests");
+        result.requests.should.have.properties("length");
+      });
+      it('clears listeners', async () => {
+        steem.api.listeners('message').should.have.lengthOf(0);
+      });
+    });
+  });
 });
