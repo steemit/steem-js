@@ -27,7 +27,6 @@ export default class Transport extends EventEmitter {
   send() {}
   start() {}
   stop() {}
-
 }
 
 Promise.promisifyAll(Transport.prototype);

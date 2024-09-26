@@ -4,7 +4,7 @@ import assert from "assert"
 var test = function(key) {
     describe("steem.auth: key_formats", function() {
         
-        it("Calcualtes public key from private key", function() {
+        it("Calculates public key from private key", function() {
             var private_key = PrivateKey.fromHex(key.private_key);
             var public_key = private_key.toPublicKey();
             assert.equal(key.public_key, public_key.toPublicKeyString());
@@ -70,6 +70,16 @@ var test = function(key) {
             var address = Address.fromPublic(public_key, true, 56);
             assert.equal(key.Compressed_PTS, address.toString());
         });
+        
+        it("null hex to pubkey", function() {
+            var public_key = PublicKey.fromHex(key.null_hex);
+            assert.equal(key.null_address, public_key.toPublicKeyString());
+        });
+        
+        it("null pubkey to hex", function() {
+            var public_key = PublicKey.fromString(key.null_address);
+            assert.equal(key.null_hex, public_key.toHex());
+        });
     });
 };
 
@@ -87,6 +97,9 @@ test({
     Uncompressed_BTC:	"STMLAFmEtM8as1mbmjVcj5dphLdPguXquimn",
     Compressed_BTC:	"STMANNTSEaUviJgWLzJBersPmyFZBY4jJETY",
     Uncompressed_PTS:	"STMEgj7RM6FBwSoccGaESJLC3Mi18785bM3T",
-    Compressed_PTS:	"STMD5rYtofD6D4UHJH6mo953P5wpBfMhdMEi"
+    Compressed_PTS:	"STMD5rYtofD6D4UHJH6mo953P5wpBfMhdMEi",
+    // https://github.com/steemit/steem-js/issues/267
+    null_hex: "000000000000000000000000000000000000000000000000000000000000000000",
+    null_address: "STM1111111111111111111111111111111114T1Anm"
 });
 

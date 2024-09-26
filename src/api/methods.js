@@ -398,8 +398,7 @@ export default [
     {
       "api": "follow_api",
       "method": "get_feed_entries",
-      "params": ["account", "entryId", "limit"
-      ]
+      "params": ["account", "entryId", "limit"]
     },
     {
       "api": "follow_api",
@@ -485,11 +484,48 @@ export default [
     {
       "api": "market_history_api",
       "method": "get_market_history",
-      "params": ["bucket_seconds" , "start", "end"]
+      "params": ["bucket_seconds", "start", "end"]
     },
     {
       "api": "market_history_api",
       "method": "get_market_history_buckets",
       "params": []
+    },
+    {
+      "api": "condenser_api",
+      "method": "find_proposals",
+      "params": ["id_set"]
+    },
+    {
+      "api": "condenser_api",
+      "method": "list_proposals",
+      "params": ["start", "limit", "order_by", "order_direction", "status"]
+    },
+    {
+      "api": "condenser_api",
+      "method": "list_proposal_votes",
+      "params": ["start", "limit", "order_by", "order_direction", "status"]
+    },
+    {
+      "api": "condenser_api",
+      "method": "get_nai_pool",
+      "params": []
+    },
+    {
+      "api": "rc_api",
+      "method": "find_rc_accounts",
+      "params": ["accounts"],
+      "is_object": true
+    },
+    {
+      "api": "condenser_api",
+      "method": "get_expiring_vesting_delegations",
+      "params": ["account", "start", "limit"],
+    },
+    {
+      "api": "database_api",
+      "method": "find_change_recovery_account_requests",
+      "params": ["account"],
+      "is_object": true
     }
 ];

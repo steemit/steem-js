@@ -20,10 +20,20 @@ class PublicKey {
     }
 
     static fromBuffer(buffer) {
+        if (
+            buffer.toString("hex") ===
+            "000000000000000000000000000000000000000000000000000000000000000000"
+        )
+            return new PublicKey(null);
         return new PublicKey(ecurve.Point.decodeFrom(secp256k1, buffer));
     }
 
-    toBuffer(compressed = this.Q.compressed) {
+    toBuffer(compressed = this.Q ? this.Q.compressed : null) {
+        if (this.Q === null)
+            return Buffer.from(
+                "000000000000000000000000000000000000000000000000000000000000000000",
+                "hex"
+            );
         return this.Q.getEncoded(compressed);
     }
 
