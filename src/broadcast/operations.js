@@ -221,20 +221,26 @@ module.exports = [
     ]
   },
   {
-    "roles": ["posting", "active", "owner"],
-    "operation": "challenge_authority",
+    "roles": ["active", "owner"],
+    "operation": "claim_account",
     "params": [
-      "challenger",
-      "challenged",
-      "require_owner"
+      "creator",
+      "fee",
+      "extensions"
     ]
   },
   {
     "roles": ["active", "owner"],
-    "operation": "prove_authority",
+    "operation": "create_claimed_account",
     "params": [
-      "challenged",
-      "require_owner"
+      "creator",
+      "new_account_name",
+      "owner",
+      "active",
+      "posting",
+      "memo_key",
+      "json_metadata",
+      "extensions"
     ]
   },
   {
@@ -422,6 +428,174 @@ module.exports = [
       "posting",
       "memo_key",
       "json_metadata",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "witness_set_properties",
+    "params": [
+      "owner",
+      "props",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["posting", "active", "owner"],
+    "operation": "account_update2",
+    "params": [
+      "account",
+      "owner",
+      "active",
+      "posting",
+      "memo_key",
+      "json_metadata",
+      "posting_json_metadata",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "create_proposal",
+    "params": [
+      "creator",
+      "receiver",
+      "start_date",
+      "end_date",
+      "daily_pay",
+      "subject",
+      "permlink",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "update_proposal_votes",
+    "params": [
+      "voter",
+      "proposal_ids",
+      "approve",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "remove_proposal",
+    "params": [
+      "proposal_owner",
+      "proposal_ids",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["posting", "active", "owner"],
+    "operation": "claim_reward_balance2",
+    "params": [
+      "account",
+      "reward_tokens",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["posting", "active", "owner"],
+    "operation": "vote2",
+    "params": [
+      "voter",
+      "author",
+      "permlink",
+      "rshares",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_create",
+    "params": [
+      "control_account",
+      "symbol",
+      "smt_creation_fee",
+      "precision",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_setup",
+    "params": [
+      "control_account",
+      "symbol",
+      "max_supply",
+      "contribution_begin_time",
+      "contribution_end_time",
+      "launch_time",
+      "steem_units_min",
+      "min_unit_ratio",
+      "max_unit_ratio",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_setup_emissions",
+    "params": [
+      "control_account",
+      "symbol",
+      "schedule_time",
+      "emissions_unit",
+      "interval_seconds",
+      "interval_coount",
+      "lep_time",
+      "rep_time",
+      "lep_abs_amount",
+      "rep_abs_amount",
+      "lep_rel_amount_numerator",
+      "rep_rel_amount_numerator",
+      "rel_amount_denom_bits",
+      "remove",
+      "floor_emissions",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_setup_ico_tier",
+    "params": [
+      "control_account",
+      "symbol",
+      "steem_units_cap",
+      "generation_policy",
+      "remove",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_set_setup_parameters",
+    "params": [
+      "control_account",
+      "symbol",
+      "setup_parameters",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_set_runtime_parameters",
+    "params": [
+      "control_account",
+      "symbol",
+      "runtime_parameters",
+      "extensions"
+    ]
+  },
+  {
+    "roles": ["active", "owner"],
+    "operation": "smt_contribute",
+    "params": [
+      "contributor",
+      "symbol",
+      "contribution_id",
+      "contribution",
       "extensions"
     ]
   },

@@ -1,0 +1,31 @@
+name: run-test-unit
+
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  node6:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      -
+        name: Build to run test unit
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: node-6.dockerfile
+          push: false
+          tags: test
