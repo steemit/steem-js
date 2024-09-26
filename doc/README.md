@@ -1784,13 +1784,6 @@ steem.broadcast.accountWitnessVote(wif, account, witness, approve, function(err,
 });
 ```
 - - - - - - - - - - - - - - - - - -
-### Challenge Authority
-```js
-steem.broadcast.challengeAuthority(wif, challenger, challenged, requireOwner, function(err, result) {
-  console.log(err, result);
-});
-```
-- - - - - - - - - - - - - - - - - -
 ### Change Recovery Account
 ```js
 steem.broadcast.changeRecoveryAccount(wif, accountToRecover, newRecoveryAccount, extensions, function(err, result) {
@@ -1819,23 +1812,9 @@ steem.broadcast.commentPayout(wif, author, permlink, payout, function(err, resul
 });
 ```
 - - - - - - - - - - - - - - - - - -
-### Comment Reward
-```js
-steem.broadcast.commentReward(wif, author, permlink, sbdPayout, vestingPayout, function(err, result) {
-  console.log(err, result);
-});
-```
-- - - - - - - - - - - - - - - - - -
 ### Convert
 ```js
 steem.broadcast.convert(wif, owner, requestid, amount, function(err, result) {
-  console.log(err, result);
-});
-```
-- - - - - - - - - - - - - - - - - -
-### Curate Reward
-```js
-steem.broadcast.curateReward(wif, curator, reward, commentAuthor, commentPermlink, function(err, result) {
   console.log(err, result);
 });
 ```
@@ -1911,13 +1890,6 @@ steem.api.getEscrow("username", 23456789, function(err, data) {
 ### Feed Publish
 ```js
 steem.broadcast.feedPublish(wif, publisher, exchangeRate, function(err, result) {
-  console.log(err, result);
-});
-```
-- - - - - - - - - - - - - - - - - -
-### Pow2
-```js
-steem.broadcast.pow2(wif, work, newOwnerKey, props, function(err, result) {
   console.log(err, result);
 });
 ```
@@ -2034,43 +2006,6 @@ Creates a limit order on the [internal market](http://steemit.com/market) to tra
 
 ```js
 steem.broadcast.limitOrderCreate2(wif, owner, orderid, amountToSell, exchangeRate, fillOrKill, expiration, function(err, result) {
-  console.log(err, result);
-});
-```
-
-|Parameter|Description|Datatype|Notes|
-|---|---|---|---|
-|wif|Active private key|String||
-|owner|Account name|String|No leading @ symbol|
-|orderid|User defined order identifier|Integer|Used to cancel orders|
-|amountToSell|Amount to sell|String|"X.XXX ASSET" must have 3 decimal places. e.g. "25.100 SBD"|
-|exchangeRate|The exchange rate|Integer|`amountToSell` is multiplied by the `exchangeRate` to have the same effect as `minToReceive`|
-|fillOrKill|Fill order from current order book or kill the order|Boolean|`false` places the order into the Order Book until either canceled, filled, or the expiration time is reached|
-|expiration|Time when order expires|Integer|Unit milliseconds. Zero is UNIX epoch|
-|function()|Your callback|function||
-
-
-See also: [getOrderBook](#get-order-book), [getOpenOrders](#get-open-orders), [limitOrderCancel](#limit-order-cancel), [limitOrderCreate](#limit-order-create2)
-
-
-- - - - - - - - - - - - - - - - - -
-### Liquidity Reward
-```js
-steem.broadcast.liquidityReward(wif, owner, payout, function(err, result) {
-  console.log(err, result);
-});
-```
-- - - - - - - - - - - - - - - - - -
-### Pow
-```js
-steem.broadcast.pow(wif, worker, input, signature, work, function(err, result) {
-  console.log(err, result);
-});
-```
-- - - - - - - - - - - - - - - - - -
-### Prove Authority
-```js
-steem.broadcast.proveAuthority(wif, challenged, requireOwner, function(err, result) {
   console.log(err, result);
 });
 ```
