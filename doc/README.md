@@ -2151,7 +2151,7 @@ steem.broadcast.transfer(wif, from, to, amount, memo, function(err, result) {
 |wif|Active private key for the `from` account|String||
 |from|Account name to take asset from|String|No leading @ symbol|
 |to|Account name to place asset into|String|No leading @ symbol|
-|amount|Amount of of asset to transfer|String|"X.XXX ASSET" must have 3 decimal places. e.g. "5.150 SBD"|
+|amount|Amount of asset to transfer|String|"X.XXX ASSET" must have 3 decimal places. e.g. "5.150 SBD"|
 |function()|Your callback|function||
 
 See also: [transferToVesting](#transfer-to-vesting)
