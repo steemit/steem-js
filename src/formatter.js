@@ -155,7 +155,7 @@ module.exports = steemAPI => {
   }
 
   return {
-    reputation: function(reputation) {
+    reputation: function(reputation, decimal_places = 0) {
       if (reputation == 0) return 25;
       if (!reputation) return reputation;      
       let neg = reputation < 0;
@@ -163,7 +163,11 @@ module.exports = steemAPI => {
       rep = neg ? rep.substring(1) : rep;
       let v = (Math.log10((rep > 0 ? rep : -rep) - 10) - 9);
       v =  neg ? -v : v;
-      return parseInt(v * 9 + 25);
+      v = v * 9 + 25;
+      if (decimal_places > 0) {
+        return +(Math.round(v + "e+" + decimal_places) + "e-" + decimal_places);
+      }
+      return parseInt(v);
     },
 
     vestToSteem: function(
