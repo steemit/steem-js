@@ -2444,7 +2444,7 @@ console.log(commentPermlink);
 - - - - - - - - - - - - - - - - - -
 ### Estimate Account Value
 ```js
-var steemPower = steem.formatter.estimateAccountValue(account);
+var accountValue = steem.formatter.estimateAccountValue(account);
 ```
 - - - - - - - - - - - - - - - - - -
 ### Reputation
