@@ -4,7 +4,7 @@ import assert from "assert"
 var test = function(key) {
     describe("steem.auth: key_formats", function() {
         
-        it("Calcualtes public key from private key", function() {
+        it("Calculates public key from private key", function() {
             var private_key = PrivateKey.fromHex(key.private_key);
             var public_key = private_key.toPublicKey();
             assert.equal(key.public_key, public_key.toPublicKeyString());
