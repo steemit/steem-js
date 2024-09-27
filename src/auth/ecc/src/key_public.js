@@ -16,7 +16,7 @@ class PublicKey {
     constructor(Q) { this.Q = Q; }
 
     static fromBinary(bin) {
-        return PublicKey.fromBuffer(new Buffer(bin, 'binary'));
+        return PublicKey.fromBuffer(new Buffer.from(bin, 'binary'));
     }
 
     static fromBuffer(buffer) {
@@ -98,7 +98,7 @@ class PublicKey {
             `Expecting key to begin with ${address_prefix}, instead got ${prefix}`);
             public_key = public_key.slice(address_prefix.length);
 
-        public_key = new Buffer(base58.decode(public_key), 'binary');
+        public_key = new Buffer.from(base58.decode(public_key), 'binary');
         var checksum = public_key.slice(-4);
         public_key = public_key.slice(0, -4);
         var new_checksum = hash.ripemd160(public_key);
@@ -120,7 +120,7 @@ class PublicKey {
         var pub_buf = this.toBuffer();
         var pub_sha = hash.sha256(pub_buf);
         var addy = hash.ripemd160(pub_sha);
-        addy = Buffer.concat([new Buffer([0x38]), addy]); //version 56(decimal)
+        addy = Buffer.concat([new Buffer.from([0x38]), addy]); //version 56(decimal)
 
         var checksum = hash.sha256(addy);
         checksum = hash.sha256(checksum);
@@ -159,7 +159,7 @@ class PublicKey {
     // }
 
     static fromHex(hex) {
-        return PublicKey.fromBuffer(new Buffer(hex, 'hex'));
+        return PublicKey.fromBuffer(new Buffer.from(hex, 'hex'));
     }
 
     toHex() {
@@ -167,7 +167,7 @@ class PublicKey {
     }
 
     static fromStringHex(hex) {
-        return PublicKey.fromString(new Buffer(hex, 'hex'));
+        return PublicKey.fromString(new Buffer.from(hex, 'hex'));
     }
 
     /* </HEX> */

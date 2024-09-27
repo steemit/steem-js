@@ -15,3 +15,7 @@ module.exports = {
   config,
   utils,
 };
+
+process.on('warning', (warning) => {
+    console.log('warning_stack: ', warning.stack);
+});

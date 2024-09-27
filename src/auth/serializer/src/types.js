@@ -95,7 +95,7 @@ Types.asset = {
         {
             // NAI Case
             let b_copy = b.copy(b.offset - 1, b.offset + 3)
-            let nai = new Buffer(b_copy.toBinary(), "binary").readInt32()
+            let nai = new Buffer.from(b_copy.toBinary(), "binary").readInt32()
             nai = nai / 32
             symbol = "@@" + nai.toString().padStart(8, '0') + damm_checksum_8digit(nai).to_String()
             precision = precision % 16
@@ -106,7 +106,7 @@ Types.asset = {
         {
             // Legacy Case
             let b_copy = b.copy(b.offset, b.offset + 7)
-            symbol = new Buffer(b_copy.toBinary(), "binary").toString().replace(/\x00/g, "")
+            symbol = new Buffer.from(b_copy.toBinary(), "binary").toString().replace(/\x00/g, "")
             b.skip(7)
             // "1.000 STEEM" always written with full precision
             amount_string = fromImpliedDecimal(amount, precision)
@@ -208,7 +208,7 @@ Types.asset_symbol = {
         {
             // NAI Case
             let b_copy = b.copy(b.offset - 1, b.offset + 3)
-            let nai = new Buffer(b_copy.toBinary(), "binary").readInt32()
+            let nai = new Buffer.from(b_copy.toBinary(), "binary").readInt32()
             nai = nai / 32
             nai_string = "@@" + nai.toString().padStart(8, '0') + damm_checksum_8digit(nai).to_String()
             precision = precision % 16
@@ -218,7 +218,7 @@ Types.asset_symbol = {
         {
             // Legacy Case
             let b_copy = b.copy(b.offset, b.offset + 7)
-            let symbol = new Buffer(b_copy.toBinary(), "binary").toString().replace(/\x00/g, "")
+            let symbol = new Buffer.from(b_copy.toBinary(), "binary").toString().replace(/\x00/g, "")
             if(symbol == "STEEM" || symbol == "TESTS")
               nai_string = "@@000000021"
             else if(symbol == "SBD" || symbol == "TBD")
@@ -460,7 +460,7 @@ Types.uint128 =
 
 Types.string =
     {fromByteBuffer(b){
-        return new Buffer(b.readVString(), 'utf8');
+        return new Buffer.from(b.readVString(), 'utf8');
     },
     appendByteBuffer(b, object){
         v.required(object);
@@ -469,7 +469,7 @@ Types.string =
     },
     fromObject(object){
         v.required(object);
-        return new Buffer(object, 'utf8');
+        return new Buffer.from(object, 'utf8');
     },
     toObject(object, debug = {}){
         if (debug.use_default && object === undefined) { return ""; }
@@ -482,7 +482,7 @@ Types.string_binary =
         var b_copy;
         var len = b.readVarint32();
         b_copy = b.copy(b.offset, b.offset + len), b.skip(len);
-        return new Buffer(b_copy.toBinary(), 'binary');
+        return new Buffer.from(b_copy.toBinary(), 'binary');
 
     },
     appendByteBuffer(b, object){
@@ -492,7 +492,7 @@ Types.string_binary =
     },
     fromObject(object){
         v.required(object);
-        return new Buffer(object);
+        return new Buffer.from(object);
     },
     toObject(object, debug = {}){
         if (debug.use_default && object === undefined) { return ""; }
@@ -506,16 +506,16 @@ Types.bytes = function(size){
             var b_copy;
             var len = b.readVarint32();
             b_copy = b.copy(b.offset, b.offset + len), b.skip(len);
-            return new Buffer(b_copy.toBinary(), 'binary');
+            return new Buffer.from(b_copy.toBinary(), 'binary');
         } else {
             b_copy = b.copy(b.offset, b.offset + size), b.skip(size);
-            return new Buffer(b_copy.toBinary(), 'binary');
+            return new Buffer.from(b_copy.toBinary(), 'binary');
         }
     },
     appendByteBuffer(b, object){
         v.required(object);
         if(typeof object === "string")
-            object = new Buffer(object, "hex")
+            object = new Buffer.from(object, "hex")
 
         if (size === undefined) {
             b.writeVarint32(object.length);
@@ -528,7 +528,7 @@ Types.bytes = function(size){
         if( Buffer.isBuffer(object) )
             return object
 
-        return new Buffer(object, 'hex');
+        return new Buffer.from(object, 'hex');
     },
     toObject(object, debug = {}){
         if (debug.use_default && object === undefined) {
