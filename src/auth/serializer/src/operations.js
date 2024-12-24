@@ -661,7 +661,7 @@ let account_create_with_delegation = new Serializer(
 let witness_set_properties = new Serializer(
     "witness_set_properties", {
     owner: string,
-    props: string,
+    props: map(string, bytes()),
     extensions: set(future_extensions)
 }
 );

@@ -1,3 +1,25 @@
+
+import types from "./auth/serializer/src/types"
+import Serializer from "./auth/serializer/src/serializer"
+import ByteBuffer from '@exodus/bytebuffer'
+
+let price = new Serializer(
+  "price", {
+  base: types.asset,
+  quote: types.asset
+}
+);
+const propTypes = {
+  key: types.public_key,
+  new_signing_key: types.public_key,
+  account_creation_fee: types.asset,
+  account_subsidy_budget: types.uint32,
+  account_subsidy_decay: types.uint32,
+  maximum_block_size: types.uint32,
+  sbd_interest_rate: types.uint16,
+  sbd_exchange_rate: price,
+  url: types.string
+};
 const snakeCaseRe = /_([a-z])/g;
 export function camelCase(str) {
   return str.replace(snakeCaseRe, function(_m, l) {
@@ -42,4 +64,30 @@ export function validateAccountName(value) {
     }
   }
   return null;
+}
+
+function serialize(serializer, data) {
+  const buffer = new ByteBuffer(
+    ByteBuffer.DEFAULT_CAPACITY,
+    ByteBuffer.LITTLE_ENDIAN
+  );
+  serializer.appendByteBuffer(buffer, data);
+  buffer.flip();
+  return buffer.toString('hex');
+}
+
+export function buildWitnessSetProperties(props) {
+  const data = [];
+
+  for (const [key, value] of Object.entries(props)) {
+    const type = propTypes[key];
+
+    if (!type) {
+      throw new Error(`Unknown witness property: ${key}`);
+    }
+
+    data.push([key, serialize(type, value)]);
+  }
+
+  return data;
 }

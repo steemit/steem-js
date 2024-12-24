@@ -1894,6 +1894,28 @@ steem.broadcast.feedPublish(wif, publisher, exchangeRate, function(err, result) 
 });
 ```
 - - - - - - - - - - - - - - - - - -
+### Build Witness Update Properties
+```
+const owner = 'starlord28'
+const props = {
+  "key": "Public Signing Key", // MANDATORY
+  "new_signing_key": "Public Signing Key", // optional
+  "account_creation_fee": "3.000 STEEM", // optional
+  "account_subsidy_budget": 0, // optional
+  "account_subsidy_decay": 0, // optional
+  "maximum_block_size": 65536, // optional
+  "sbd_interest_rate": "0.000 STEEM", // optional
+  "sbd_exchange_rate": {"base": "0.237 SBD", "quote": "1.000 STEEM"}, // optional
+  "url": "https://steemcryptic.me", // optional
+}
+
+const witnessOps = steem.utils.buildWitnessSetProperties(props);
+
+steem.broadcast.witnessSetProperties('Private Signing Key', owner, witnessOps, [], function(err, result) {
+  console.log(err, result);
+});
+```
+- - - - - - - - - - - - - - - - - -
 ### Fill Convert Request
 ```js
 steem.broadcast.fillConvertRequest(wif, owner, requestid, amountIn, amountOut, function(err, result) {
