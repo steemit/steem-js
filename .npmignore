@@ -1,0 +1,10 @@
+node_modules
+src
+rollup.config.js
+tsconfig.json
+package-lock.json
+pnpm-lock.yaml
+.gitignore
+.vscode
+.github
+.env
