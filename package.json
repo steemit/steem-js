@@ -12,20 +12,31 @@
   "scripts": {
     "es": "tsc",
     "build": "rollup -c",
-    "generate": "pnpm es && pnpm build"
+    "generate": "pnpm es && pnpm build",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
-  "keywords": ["steem"],
+  "keywords": [
+    "steem"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^9.20.0",
     "@rollup/plugin-commonjs": "^28.0.2",
+    "@rollup/plugin-eslint": "^9.0.5",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
+    "eslint": "^9.20.1",
+    "globals": "^15.14.0",
     "rollup": "^4.34.6",
     "rollup-plugin-delete": "^2.1.0",
     "rollup-plugin-dts": "^6.1.1",
     "tslib": "^2.8.1",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.24.0"
   }
 }
