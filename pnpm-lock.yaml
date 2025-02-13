@@ -38,6 +38,9 @@ importers:
       globals:
         specifier: ^15.14.0
         version: 15.14.0
+      prettier:
+        specifier: ^3.5.0
+        version: 3.5.0
       rollup:
         specifier: ^4.34.6
         version: 4.34.6
@@ -837,6 +840,11 @@ packages:
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
+
+  prettier@3.5.0:
+    resolution: {integrity: sha512-quyMrVt6svPS7CjQ9gKb3GLEX/rl3BCL2oa/QkNcXv4YNVBC9olt3s+H7ukto06q7B1Qz46PbrKLO34PR6vXcA==}
+    engines: {node: '>=14'}
+    hasBin: true
 
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
@@ -1812,6 +1820,8 @@ snapshots:
   picomatch@4.0.2: {}
 
   prelude-ls@1.2.1: {}
+
+  prettier@3.5.0: {}
 
   punycode@2.3.1: {}
 

@@ -14,7 +14,8 @@
     "build": "rollup -c",
     "generate": "pnpm es && pnpm build",
     "lint": "eslint src",
-    "lint:fix": "eslint src --fix"
+    "lint:fix": "eslint src --fix",
+    "format": "prettier --write src/**/*.ts"
   },
   "keywords": [
     "steem"
@@ -32,6 +33,7 @@
     "@typescript-eslint/parser": "^8.24.0",
     "eslint": "^9.20.1",
     "globals": "^15.14.0",
+    "prettier": "^3.5.0",
     "rollup": "^4.34.6",
     "rollup-plugin-delete": "^2.1.0",
     "rollup-plugin-dts": "^6.1.1",

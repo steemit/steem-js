@@ -7,5 +7,5 @@ export default function padZero(n: number): string {
   if (!Number.isInteger(n)) {
     return String(n);
   }
-  return (n < 10 ? `0${n}` : String(n));
+  return n < 10 ? `0${n}` : String(n);
 }
