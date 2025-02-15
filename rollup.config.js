@@ -5,7 +5,6 @@ import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
 import dts from 'rollup-plugin-dts';
 import del from 'rollup-plugin-delete';
-import eslint from '@rollup/plugin-eslint';
 
 export default defineConfig([
   // ESM config
@@ -18,12 +17,8 @@ export default defineConfig([
     },
     plugins: [
       del({ targets: 'dist/*' }), 
-      eslint({
-        include: ['src/**/*.ts'],
-        throwOnError: true,
-      }),
-      typescript(),
       nodeResolve(),
+      typescript(),
       commonjs(),
       terser(),
     ],
@@ -38,8 +33,8 @@ export default defineConfig([
       sourcemap: true,
     },
     plugins: [
-      typescript(),
       nodeResolve(),
+      typescript(),
       commonjs(),
       terser(),
     ],

@@ -1,5 +1,7 @@
 node_modules
 src
+dist/src
+dist/test
 rollup.config.js
 tsconfig.json
 package-lock.json
