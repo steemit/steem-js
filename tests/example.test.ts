@@ -1,9 +1,8 @@
-import { expect } from 'chai';
 import padZero from '../src/padZero';
 
 describe('padZero', () => {
   it('should return the correct result', () => {
     const result = padZero(1);
-    expect(result).to.equal('01');
+    expect(result).toBe('01');
   });
 });
