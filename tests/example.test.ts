@@ -1,4 +1,4 @@
-import padZero from '../src/padZero';
+import { padZero } from '../src/padZero';
 
 describe('padZero', () => {
   it('should return the correct result', () => {

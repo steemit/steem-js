@@ -15,8 +15,7 @@
     "lint:fix": "eslint src --fix",
     "format": "prettier --write {src,test}/**/*.ts",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "build": "pnpm type-check && pnpm lint && rollup -c",
-    "generate": "pnpm build"
+    "build": "pnpm lint && pnpm type-check && pnpm test && rollup -c"
   },
   "keywords": [
     "steem"

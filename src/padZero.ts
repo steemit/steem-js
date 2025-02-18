@@ -3,7 +3,7 @@
  * @param {number} n
  * @returns {string}
  */
-export default function padZero(n: number): string {
+export function padZero(n: number): string {
   if (!Number.isInteger(n)) {
     return String(n);
   }
