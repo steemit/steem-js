@@ -1,5 +1,6 @@
 'use strict';
-const Visualizer = require('webpack-visualizer-plugin');
+// Removing the visualizer plugin import as it's not compatible with webpack 5
+// const Visualizer = require('webpack-visualizer-plugin');
 const _ = require('lodash');
 const path = require('path');
 const webpack = require('webpack');
@@ -13,23 +14,11 @@ function makePlugins(options) {
   const isDevelopment = options.isDevelopment;
 
   let plugins = [
-    new Visualizer({
-      filename: './statistics.html'
-    }),
+    // Removing the visualizer plugin
   ];
 
   if (!isDevelopment) {
     plugins = plugins.concat([
-      new webpack.optimize.DedupePlugin(),
-      new webpack.optimize.UglifyJsPlugin({
-        output: {
-          comments: false,
-        },
-        minimize: true,
-        compress: {
-          warnings: false,
-        }
-      }),
       new webpack.optimize.AggressiveMergingPlugin(),
     ]);
   }
@@ -70,7 +59,7 @@ function makeConfig(options) {
   const isDevelopment = options.isDevelopment;
 
   return {
-    devtool: isDevelopment ? 'cheap-eval-source-map' : 'source-map',
+    devtool: isDevelopment ? 'eval-source-map' : 'source-map',
     entry: {
       steem: path.join(options.baseDir, 'src/browser.js'),
       'steem-tests': path.join(options.baseDir, 'test/api.test.js'),
@@ -81,16 +70,31 @@ function makeConfig(options) {
     },
     plugins: makePlugins(options),
     module: {
-      loaders: [
+      rules: [
         {
           test: /\.js?$/,
-          loader: 'babel',
+          use: 'babel-loader',
+          exclude: /node_modules/,
         },
         {
           test: /\.json?$/,
-          loader: 'json',
+          type: 'json',
         },
       ],
+    },
+    resolve: {
+      fallback: {
+        stream: require.resolve('stream-browserify'),
+        crypto: false,
+        path: false,
+        fs: false,
+      },
+      alias: {
+        '@exodus/bytebuffer': 'bytebuffer',
+      }
+    },
+    optimization: {
+      minimize: !isDevelopment,
     },
   };
 }

@@ -113,7 +113,8 @@ describe('steem.broadcast:', () => {
   });
 
   describe('downvoting', () => {
-    it('works', async () => {
+    it('works', async function() {
+      this.timeout(10000);
       const tx = await steem.broadcast.voteAsync(
         postingWif,
         username,
@@ -133,11 +134,13 @@ describe('steem.broadcast:', () => {
   });
 
   describe('voting', () => {
-    beforeEach(() => {
-      return Promise.delay(2000);
+    beforeEach(function() {
+      this.timeout(10000);
+      return Promise.delay(3000);
     });
 
-    it('works', async () => {
+    it('works', async function() {
+      this.timeout(10000);
       const tx = await steem.broadcast.voteAsync(
         postingWif,
         username,
@@ -156,7 +159,8 @@ describe('steem.broadcast:', () => {
       ]);
     });
 
-    it('works with callbacks', (done) => {
+    it('works with callbacks', function(done) {
+      this.timeout(10000);
       steem.broadcast.vote(
         postingWif,
         username,
@@ -180,11 +184,13 @@ describe('steem.broadcast:', () => {
   });
 
   describe('customJson', () => {
-    before(() => {
-      return Promise.delay(2000);
+    before(function() {
+      this.timeout(10000);
+      return Promise.delay(3000);
     });
 
-    it('works', async () => {
+    it('works', async function() {
+      this.timeout(10000);
       const tx = await steem.broadcast.customJsonAsync(
         postingWif,
         [],

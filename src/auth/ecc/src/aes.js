@@ -1,10 +1,10 @@
-import secureRandom from 'secure-random';
-import ByteBuffer from '@exodus/bytebuffer';
-import crypto from 'browserify-aes';
-import assert from 'assert';
-import PublicKey from './key_public';
-import PrivateKey from './key_private';
-import hash from './hash';
+const secureRandom = require('secure-random');
+const ByteBuffer = require('bytebuffer');
+const crypto = require('browserify-aes');
+const assert = require('assert');
+const PublicKey = require('./key_public');
+const PrivateKey = require('./key_private');
+const hash = require('./hash');
 
 const Long = ByteBuffer.Long;
 
@@ -20,7 +20,7 @@ const Long = ByteBuffer.Long;
     @property {Buffer} message - Plain text message
     @property {number} checksum - shared secret checksum
 */
-export function encrypt(private_key, public_key, message, nonce = uniqueNonce()) {
+function encrypt(private_key, public_key, message, nonce = uniqueNonce()) {
     return crypt(private_key, public_key, nonce, message)
 }
 
@@ -34,7 +34,7 @@ export function encrypt(private_key, public_key, message, nonce = uniqueNonce())
     @throws {Error|TypeError} - "Invalid Key, ..."
     @return {Buffer} - message
 */
-export function decrypt(private_key, public_key, nonce, message, checksum) {
+function decrypt(private_key, public_key, nonce, message, checksum) {
     return crypt(private_key, public_key, nonce, message, checksum).message
 }
 
@@ -148,3 +148,8 @@ const toPrivateObj = o => (o ? o.d ? o : PrivateKey.fromWif(o) : o/*null or unde
 const toPublicObj = o => (o ? o.Q ? o : PublicKey.fromString(o) : o/*null or undefined*/)
 const toLongObj = o => (o ? Long.isLong(o) ? o : Long.fromString(o) : o)
 const toBinaryBuffer = o => (o ? Buffer.isBuffer(o) ? o : new Buffer.from(o, 'binary') : o)
+
+module.exports = {
+    encrypt,
+    decrypt
+}

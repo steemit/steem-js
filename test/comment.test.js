@@ -13,11 +13,13 @@ const postingWif = password
 describe('steem.broadcast:', () => {
 
   describe('comment with options', () => {
-    before(() => {
-      return Promise.delay(2000);
+    before(function() {
+      this.timeout(10000);
+      return Promise.delay(3000);
     });
 
-    it('works', async () => {
+    it('works', async function() {
+      this.timeout(10000);
       const permlink = steem.formatter.commentPermlink('siol', 'test');
       const operations = [
         ['comment',

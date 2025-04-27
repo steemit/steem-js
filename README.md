@@ -70,6 +70,27 @@ steem.broadcast.vote(wif, voter, author, permlink, weight, function(err, result)
 });
 ```
 
+### Broadcast Vote with Promises
+```js
+var steem = require('steem');
+
+var wif = steem.auth.toWif(username, password, 'posting');
+// Using Promises
+steem.broadcast.vote(wif, voter, author, permlink, weight)
+  .then(result => console.log(result))
+  .catch(error => console.error(error));
+
+// Or using async/await
+async function castVote() {
+  try {
+    const result = await steem.broadcast.vote(wif, voter, author, permlink, weight);
+    console.log(result);
+  } catch (error) {
+    console.error(error);
+  }
+}
+```
+
 ### Get Accounts
 ```js
 steem.api.getAccounts(['ned', 'dan'], function(err, result) {

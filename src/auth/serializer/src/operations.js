@@ -1,4 +1,3 @@
-
 // This file is merge updated from steemd's js_operation_serializer program.
 /*
 
@@ -31,8 +30,8 @@ static_variant [
 
 // Merge tmp.js - See "Generated code follows" below
 
-import types from "./types"
-import SerializerImpl from "./serializer"
+const types = require("./types");
+const SerializerImpl = require("./serializer");
 
 const {
     //id_type,
@@ -46,13 +45,13 @@ const {
     optional,
     asset,
     asset_symbol
-} = types
+} = types;
 
-const future_extensions = types.void
-const hardfork_version_vote = types.void
-const version = types.void
-const required_automated_actions = types.void
-const optional_automated_actions = types.void
+const future_extensions = types.void;
+const hardfork_version_vote = types.void;
+const version = types.void;
+const required_automated_actions = types.void;
+const optional_automated_actions = types.void;
 
 // Place-holder, their are dependencies on "operation" .. The final list of
 // operations is not avialble until the very end of the generated code.

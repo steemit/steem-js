@@ -13,7 +13,7 @@ var get_protocol_instance;
 var get_protocol_type;
 var require_implementation_type;
 var get_implementation_instance;
-var Long = require('@exodus/bytebuffer').Long;
+var Long = require('bytebuffer').Long;
 // var BigInteger = require('bigi');
 
 var chain_types = require('./ChainTypes');

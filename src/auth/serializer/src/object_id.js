@@ -1,4 +1,4 @@
-var Long = (require('@exodus/bytebuffer')).Long;
+var Long = (require('bytebuffer')).Long;
 
 var v = require('./validation');
 var DB_MAX_INSTANCE_ID = Long.fromNumber(((Math.pow(2,48))-1));
