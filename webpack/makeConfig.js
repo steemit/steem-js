@@ -14,7 +14,11 @@ function makePlugins(options) {
   const isDevelopment = options.isDevelopment;
 
   let plugins = [
-    // Removing the visualizer plugin
+    // Add node polyfills for browser compatibility
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+      Buffer: ['buffer', 'Buffer'],
+    }),
   ];
 
   if (!isDevelopment) {
@@ -83,15 +87,15 @@ function makeConfig(options) {
       ],
     },
     resolve: {
-      fallback: {
-        stream: require.resolve('stream-browserify'),
-        crypto: false,
-        path: false,
-        fs: false,
-      },
       alias: {
         '@exodus/bytebuffer': 'bytebuffer',
+        'stream': 'stream-browserify',
+        'path': 'path-browserify',
       }
+    },
+    node: {
+      fs: 'empty',
+      crypto: 'empty',
     },
     optimization: {
       minimize: !isDevelopment,
