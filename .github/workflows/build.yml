@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  node6:
+  node12:
     runs-on: ubuntu-latest
     steps:
       -
@@ -26,6 +26,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: node-6.dockerfile
+          file: node-12.dockerfile
           push: false
           tags: test
