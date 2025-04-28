@@ -8,7 +8,7 @@
     "build-browser": "cross-env NODE_ENV=production rimraf dist && webpack",
     "build-node": "babel src --out-dir lib",
     "prepare": "npm run build",
-    "test": "mocha --require @babel/register test/*.js",
+    "test": "mocha --require @babel/register --require babel-polyfill test/*.js",
     "test-auth": "npm test -- --grep 'steem.auth'",
     "lint": "eslint src",
     "prepublish": "npm run build"
@@ -68,6 +68,7 @@
   "devDependencies": {
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.6",
+    "@babel/plugin-transform-modules-commonjs": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
     "@babel/register": "^7.9.0",
     "ajv": "^6.12.2",
