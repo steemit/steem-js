@@ -1,5 +1,5 @@
 {
-  "name": "steem-js",
+  "name": "@steemit/steem-js",
   "version": "0.8.0",
   "description": "JavaScript library for the Steem blockchain",
   "main": "lib/index.js",
