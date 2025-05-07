@@ -24,10 +24,22 @@ class RPCError extends Error {
  * @param {function} [options.fetchMethod=fetch] - A function with the same
  * signature as `fetch`, which can be used to make the network request, or for
  * stubbing in tests.
+ * @param {number} [options.timeoutMs=30000] - Request timeout in milliseconds.
  */
-export function jsonRpc(uri, {method, id, params, fetchMethod=fetch}) {
+export function jsonRpc(uri, {method, id, params, fetchMethod=fetch, timeoutMs=30000}) {
   const payload = {id, jsonrpc: '2.0', method, params};
-  return fetchMethod(uri, {
+  
+  let timeoutId = null;
+  
+  // Create a promise that will reject after the timeout
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`Request timeout after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+  
+  // Create the fetch promise
+  const fetchPromise = fetchMethod(uri, {
     body: JSON.stringify(payload),
     method: 'post',
     mode: 'cors',
@@ -37,18 +49,27 @@ export function jsonRpc(uri, {method, id, params, fetchMethod=fetch}) {
     },
   }).then(res => {
     if (!res.ok) {
-      throw new Error(`HTTP ${ res.status }: ${ res.statusText }`);
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     }
     return res.json();
   }).then(rpcRes => {
     if (rpcRes.id !== id) {
-      throw new Error(`Invalid response id: ${ rpcRes.id }`);
+      throw new Error(`Invalid response id: ${rpcRes.id}`);
     }
     if (rpcRes.error) {
       throw new RPCError(rpcRes.error);
     }
-    return rpcRes.result
+    return rpcRes.result;
   });
+  
+  // Race the fetch against the timeout
+  return Promise.race([fetchPromise, timeoutPromise])
+    .finally(() => {
+      // Clear the timeout to avoid memory leaks
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    });
 }
 
 export default class HttpTransport extends Transport {
@@ -61,9 +82,13 @@ export default class HttpTransport extends Transport {
     const params = [api, data.method, data.params];
     const retriable = this.retriable(api, data);
     const fetchMethod = this.options.fetchMethod;
+    
+    // Use a longer timeout for broadcast operations (60s) and standard operations (30s)
+    const timeoutMs = this.isBroadcastOperation(data.method) ? 60000 : 30000;
+    
     if (retriable) {
       retriable.attempt((currentAttempt) => {
-        jsonRpc(this.options.uri, { method: 'call', id, params, fetchMethod }).then(
+        jsonRpc(this.options.uri, { method: 'call', id, params, fetchMethod, timeoutMs }).then(
           res => { callback(null, res); },
           err => {
             if (retriable.retry(err)) {
@@ -74,11 +99,15 @@ export default class HttpTransport extends Transport {
         );
       });
     } else {
-      jsonRpc(this.options.uri, { method: 'call', id, params, fetchMethod }).then(
+      jsonRpc(this.options.uri, { method: 'call', id, params, fetchMethod, timeoutMs }).then(
         res => { callback(null, res); },
         err => { callback(err); }
       );
     }
+  }
+
+  isBroadcastOperation(method) {
+    return this.nonRetriableOperations.some(op => op === method);
   }
 
   get nonRetriableOperations() {
@@ -92,7 +121,7 @@ export default class HttpTransport extends Transport {
 
   // An object which can be used to track retries.
   retriable(api, data) {
-    if (this.nonRetriableOperations.some((o) => o === data.method)) {
+    if (this.isBroadcastOperation(data.method)) {
       // Do not retry if the operation is non-retriable.
       return null;
     } else if (Object(this.options.retry) === this.options.retry) {

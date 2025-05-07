@@ -1,6 +1,13 @@
 {
   "presets": [
-    "es2015",
-    "es2017"
+    ["@babel/preset-env", {
+      "targets": {
+        "node": "18"
+      },
+      "modules": "commonjs"
+    }]
+  ],
+  "plugins": [
+    "@babel/plugin-transform-modules-commonjs"
   ]
 }

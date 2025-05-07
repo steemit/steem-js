@@ -1,5 +1,5 @@
 var Convert = require('../src/auth/serializer/src/convert');
-var Long = require('@exodus/bytebuffer').Long;
+var Long = require('bytebuffer').Long;
 
 var assert = require('assert');
 var type = require('../src/auth/serializer/src/types');

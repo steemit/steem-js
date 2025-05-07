@@ -1,4 +1,4 @@
-var ByteBuffer = require('@exodus/bytebuffer');
+var ByteBuffer = require('bytebuffer');
 var EC = require('./error_with_cause');
 
 const HEX_DUMP = process.env.npm_config__graphene_serializer_hex_dump

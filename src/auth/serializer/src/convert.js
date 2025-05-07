@@ -1,4 +1,4 @@
-var ByteBuffer = require('@exodus/bytebuffer');
+var ByteBuffer = require('bytebuffer');
 
 module.exports=function(type){
 

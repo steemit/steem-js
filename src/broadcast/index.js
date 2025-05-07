@@ -18,8 +18,11 @@ const steemBroadcast = {};
 
 /**
  * Sign and broadcast transactions on the steem network
+ * @param {Object} tx - Transaction object
+ * @param {Object|String} privKeys - Private keys or key string
+ * @param {Function} [callback] - Optional callback function
+ * @return {Promise} - Returns a promise if no callback is provided
  */
-
 steemBroadcast.send = function steemBroadcast$send(tx, privKeys, callback) {
   const resultP = steemBroadcast._prepareTransaction(tx)
     .then((transaction) => {
@@ -44,7 +47,12 @@ steemBroadcast.send = function steemBroadcast$send(tx, privKeys, callback) {
       });
     });
 
-  resultP.nodeify(callback || noop);
+  if (callback) {
+    resultP.nodeify(callback);
+    return undefined;
+  } else {
+    return resultP;
+  }
 };
 
 steemBroadcast._prepareTransaction = function steemBroadcast$_prepareTransaction(tx) {
@@ -108,7 +116,11 @@ operations.forEach((operation) => {
         memo[param] = args[i]; // eslint-disable-line no-param-reassign
         return memo;
       }, {});
-      const callback = args[operationParams.length];
+      // Check if the last argument is a function (callback)
+      let callback = null;
+      if (args.length > operationParams.length && typeof args[operationParams.length] === 'function') {
+        callback = args[operationParams.length];
+      }
       return steemBroadcast[`${operationName}With`](wif, options, callback);
     };
 });
@@ -116,6 +128,7 @@ operations.forEach((operation) => {
 const toString = obj => typeof obj === 'object' ? JSON.stringify(obj) : obj;
 broadcastHelpers(steemBroadcast);
 
+// For backwards compatibility, maintain the Async versions
 Promise.promisifyAll(steemBroadcast);
 
 exports = module.exports = steemBroadcast;

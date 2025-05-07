@@ -1,4 +1,5 @@
-import { PublicKey } from "../../ecc"
+const ecc = require("../../ecc");
+const PublicKey = ecc.PublicKey;
 
 class FastParser {
 

@@ -1,19 +1,21 @@
-
-
 // Low-level types that make up operations
 
 const v = require('./validation');
-const ObjectId = require('./object_id')
+const ObjectId = require('./object_id');
 const fp = require('./fast_parser');
-const chain_types = require('./ChainTypes')
+const chain_types = require('./ChainTypes');
 //const BigInt = require('BigInt')
 
-import { PublicKey, Address, ecc_config } from "../../ecc"
-import { fromImpliedDecimal } from "./number_utils"
-import Config from "../../../config.js"
+const ecc = require("../../ecc");
+const PublicKey = ecc.PublicKey;
+const Address = ecc.Address;
+const ecc_config = ecc.ecc_config;
+const number_utils = require("./number_utils");
+const fromImpliedDecimal = number_utils.fromImpliedDecimal;
+const Config = require("../../../config.js");
 
-const Types = {}
-module.exports = Types
+const Types = {};
+module.exports = Types;
 
 const HEX_DUMP = process.env.npm_config__graphene_serializer_hex_dump
 

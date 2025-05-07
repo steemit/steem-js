@@ -1,6 +1,6 @@
 {
   "transport": "http",
-  "websocket": "wss://gtg.steem.house:8090",
+  "websocket": "wss://api.steemit.com",
   "uri": "https://api.steemit.com",
   "url": "",
   "dev_uri": "https://api.steemitdev.com",

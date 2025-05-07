@@ -1740,6 +1740,41 @@ steem.api.broadcastBlock(b, function(err, result) {
 - - - - - - - - - - - - - - - - - -
 # Broadcast
 The `steem.broadcast` methods cause permanent changes on the blockchain.
+
+### Promise Support
+All broadcast methods support both callback and Promise patterns. You can use either approach:
+
+#### Promise Pattern (Recommended)
+```js
+// Using Promises directly
+steem.broadcast.vote(wif, voter, author, permlink, weight)
+  .then(result => console.log(result))
+  .catch(error => console.error(error));
+
+// Using async/await
+async function castVote() {
+  try {
+    const result = await steem.broadcast.vote(wif, voter, author, permlink, weight);
+    console.log(result);
+  } catch (error) {
+    console.error(error);
+  }
+}
+```
+
+#### Callback Pattern (Legacy)
+```js
+steem.broadcast.vote(wif, voter, author, permlink, weight, function(err, result) {
+  if (err) {
+    console.error(err);
+  } else {
+    console.log(result);
+  }
+});
+```
+
+For backward compatibility, all broadcast methods also have an `Async` suffix version (e.g., `voteAsync`), but it's recommended to use the direct methods with Promises instead.
+
 - - - - - - - - - - - - - - - - - -
 ### Account Create
 ```js
