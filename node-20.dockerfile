@@ -1,10 +1,13 @@
-FROM node:18
+FROM node:20
 
 # Set working directory
 WORKDIR /steemjs
 
 # Copy package files first for better caching
 COPY package*.json ./
+
+# Remove node_modules and package-lock.json if they exist
+RUN rm -rf node_modules package-lock.json
 
 # Install dependencies
 RUN npm install --ignore-scripts || \

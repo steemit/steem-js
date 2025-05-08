@@ -19,7 +19,7 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "test": "vitest",
+    "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
@@ -60,8 +60,12 @@
     "bluebird": "^3.7.2",
     "bs58": "^6.0.0",
     "bytebuffer": "^5.0.1",
+    "create-hash": "^1.2.0",
+    "create-hmac": "^1.1.7",
     "crypto-js": "^4.2.0",
     "ecurve": "^1.0.6",
+    "lodash": "^4.17.21",
+    "retry": "^0.13.1",
     "ws": "^8.18.2"
   }
 }

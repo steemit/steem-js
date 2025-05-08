@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { toImpliedDecimal, fromImpliedDecimal } from '../src/auth/serializer/src/number_utils';
+import { toImpliedDecimal, fromImpliedDecimal } from '../src/serializer/number_utils';
 
 describe('Number Utils', () => {
   describe('toImpliedDecimal', () => {

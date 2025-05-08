@@ -40,3 +40,67 @@ jobs:
           no-cache: true
           build-args: |
             NODE_ENV=development
+
+  node20:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      -
+        name: Show Node and NPM version
+        run: |
+          node --version
+          npm --version
+      - 
+        name: Verify package.json
+        run: cat package.json
+      -
+        name: Build to run test unit
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: node-20.dockerfile
+          push: false
+          tags: test
+          no-cache: true
+          build-args: |
+            NODE_ENV=development
+
+  node22:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      -
+        name: Show Node and NPM version
+        run: |
+          node --version
+          npm --version
+      - 
+        name: Verify package.json
+        run: cat package.json
+      -
+        name: Build to run test unit
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: node-22.dockerfile
+          push: false
+          tags: test
+          no-cache: true
+          build-args: |
+            NODE_ENV=development
