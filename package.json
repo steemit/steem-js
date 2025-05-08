@@ -1,0 +1,67 @@
+{
+  "name": "steem-js",
+  "version": "0.0.8",
+  "description": "Steem blockchain JavaScript/TypeScript library",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "vitest",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "keywords": [
+    "steem",
+    "blockchain",
+    "cryptocurrency"
+  ],
+  "author": "hightouch",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/bigi": "^1.4.5",
+    "@types/bluebird": "^3.5.42",
+    "@types/bytebuffer": "^5.0.49",
+    "@types/debug": "^4.1.12",
+    "@types/ecurve": "^1.0.3",
+    "@types/node": "^20.11.24",
+    "@types/ws": "^8.18.1",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "@vitest/coverage-v8": "^1.2.2",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "rollup": "^4.12.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3",
+    "vitest": "^1.6.1"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "bluebird": "^3.7.2",
+    "bs58": "^6.0.0",
+    "bytebuffer": "^5.0.1",
+    "crypto-js": "^4.2.0",
+    "ecurve": "^1.0.6",
+    "ws": "^8.18.2"
+  }
+}

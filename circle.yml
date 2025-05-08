@@ -1,0 +1,15 @@
+machine:
+  node:
+    version: 18
+
+dependencies:
+  override:
+    - npm install
+
+compile:
+  override:
+    - npm run build
+
+test:
+  override:
+    - npm test 
