@@ -31,7 +31,7 @@ export class Api extends EventEmitter {
 
   // Patch for all API methods to support both callback and promise styles
   // This is a helper to wrap methods
-  private static _wrapWithPromise(fn: Function) {
+  private static _wrapWithPromise(fn: (...args: any[]) => void) {
     return function(this: any, ...args: any[]) {
       const lastArg = args[args.length - 1];
       if (typeof lastArg === 'function') {
@@ -150,7 +150,7 @@ export class Api extends EventEmitter {
   }
 
   private _setLogger(options: ApiOptions) {
-    if (options.hasOwnProperty('logger')) {
+    if (Object.prototype.hasOwnProperty.call(options, 'logger')) {
       switch (typeof options.logger) {
         case 'function':
           this.__logger = {
@@ -195,16 +195,15 @@ export class Api extends EventEmitter {
     let cb = callback;
     if (this.__logger) {
       const id = Math.random();
-      const self = this;
       this.log('xmit:' + id + ':', data);
-      cb = function(e: any, d: any) {
+      cb = (e: any, d: any) => {
         if (e) {
-          self.log('error', 'rsp:' + id + ':\n\n', e, d);
+          this.log('error', 'rsp:' + id + ':\n\n', e, d);
         } else {
-          self.log('rsp:' + id + ':', d);
+          this.log('rsp:' + id + ':', d);
         }
         if (callback) {
-          callback.apply(self, arguments);
+          callback(e, d);
         }
       };
     }
@@ -243,7 +242,7 @@ export class Api extends EventEmitter {
     this._setLogger(options);
     this._setTransport(options);
     this.transport.setOptions(options);
-    if (options.hasOwnProperty('useTestNet')) {
+    if (Object.prototype.hasOwnProperty.call(options, 'useTestNet')) {
       getConfig().set('address_prefix', options.useTestNet ? 'TST' : 'STM');
     }
   }
@@ -445,6 +444,7 @@ export class Api extends EventEmitter {
     // Use the signTransaction logic from auth if available
     // Fallback: just return the transaction for now
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { signTransaction } = require('../auth');
       return signTransaction(trx, keys);
     } catch (e) {

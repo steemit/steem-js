@@ -1,0 +1,35 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/ban-types": "warn",
+    "@typescript-eslint/ban-ts-comment": "warn",
+    "@typescript-eslint/no-var-requires": "warn",
+    "@typescript-eslint/no-this-alias": "warn",
+    "no-console": "off",
+    "no-prototype-builtins": "warn",
+    "prefer-rest-params": "warn",
+    "no-useless-catch": "warn",
+    "prefer-const": "warn",
+    "no-constant-condition": "warn",
+    "no-control-regex": "warn",
+    "no-empty": "warn"
+  },
+  "env": {
+    "node": true,
+    "es2020": true
+  },
+  "ignorePatterns": ["dist", "node_modules", "*.config.js", "*.config.ts"]
+}
+
