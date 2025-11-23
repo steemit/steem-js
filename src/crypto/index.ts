@@ -29,13 +29,13 @@ export const generateKeyPair = (): KeyPair => {
   };
 };
 
-export const sign = (message: string | Buffer, privateKey: string): string => {
+export const sign = (_message: string | Buffer, privateKey: string): string => {
   // Implementation of message signing
   // This is a placeholder - actual implementation would use proper cryptographic methods
   return `signature_${privateKey.slice(0, 10)}`;
 };
 
-export const verify = (message: string | Buffer, signature: string, publicKey: string): boolean => {
+export const verify = (_message: string | Buffer, signature: string, _publicKey: string): boolean => {
   // Implementation of signature verification
   // This is a placeholder - actual implementation would use proper cryptographic methods
   return signature.startsWith('signature_');

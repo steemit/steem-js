@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createComment } from '../src/operations';
-import steem from '../src';
+import { steem } from '../src';
 import pkg from '../package.json';
 
 const broadcast = steem.broadcast;

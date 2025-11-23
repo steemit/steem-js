@@ -1,6 +1,6 @@
 import { Api } from '../api';
 import Auth from '../auth';
-import { createOperation, createTransaction, createSignedTransaction, BroadcastOptions } from './helpers';
+import { createOperation, createTransaction, BroadcastOptions } from './helpers';
 import { operations } from './operations';
 import { camelCase } from '../utils';
 import { promisify } from 'util';
@@ -243,9 +243,13 @@ export function setApi(api: any): void {
 }
 
 // Implement the most commonly used methods
-broadcastMethods.vote = function(wif: string, voter: string, author: string, permlink: string, weight: number, callback: any) {
+broadcastMethods.vote = function(wif: string, voter: string, author: string, permlink: string, weight: number, callback?: any) {
     // For tests, 'this' may have the api as a property
     const api = this && this.api ? this.api : steem.api;
+    
+    if (typeof callback !== 'function') {
+        callback = undefined;
+    }
     
     try {
         const params = {
@@ -260,17 +264,29 @@ broadcastMethods.vote = function(wif: string, voter: string, author: string, per
             extensions: []
         };
         
-        broadcast(api, transaction)
-            .then(result => callback(null, result))
-            .catch(error => callback(error));
+        if (callback) {
+            broadcast(api, transaction)
+                .then(result => callback(null, result))
+                .catch(error => callback(error));
+        } else {
+            return broadcast(api, transaction);
+        }
     } catch (error) {
-        callback(error);
+        if (callback) {
+            callback(error);
+        } else {
+            throw error;
+        }
     }
 };
 
-broadcastMethods.voteWith = function(options: any, callback: any) {
+broadcastMethods.voteWith = function(wif: string, options: any, callback?: any) {
     // For tests, 'this' may have the api as a property
     const api = this && this.api ? this.api : steem.api;
+    
+    if (typeof callback !== 'function') {
+        callback = undefined;
+    }
     
     try {
         const transaction = {
@@ -278,17 +294,29 @@ broadcastMethods.voteWith = function(options: any, callback: any) {
             extensions: []
         };
         
-        broadcast(api, transaction)
-            .then(result => callback(null, result))
-            .catch(error => callback(error));
+        if (callback) {
+            broadcast(api, transaction)
+                .then(result => callback(null, result))
+                .catch(error => callback(error));
+        } else {
+            return broadcast(api, transaction);
+        }
     } catch (error) {
-        callback(error);
+        if (callback) {
+            callback(error);
+        } else {
+            throw error;
+        }
     }
 };
 
-broadcastMethods.comment = function(wif: string, parentAuthor: string, parentPermlink: string, author: string, permlink: string, title: string, body: string, jsonMetadata: any, callback: any) {
+broadcastMethods.comment = function(wif: string, parentAuthor: string, parentPermlink: string, author: string, permlink: string, title: string, body: string, jsonMetadata: any, callback?: any) {
     // For tests, 'this' may have the api as a property
     const api = this && this.api ? this.api : steem.api;
+    
+    if (typeof callback !== 'function') {
+        callback = undefined;
+    }
     
     try {
         const params = {
@@ -306,17 +334,29 @@ broadcastMethods.comment = function(wif: string, parentAuthor: string, parentPer
             extensions: []
         };
         
-        broadcast(api, transaction)
-            .then(result => callback(null, result))
-            .catch(error => callback(error));
+        if (callback) {
+            broadcast(api, transaction)
+                .then(result => callback(null, result))
+                .catch(error => callback(error));
+        } else {
+            return broadcast(api, transaction);
+        }
     } catch (error) {
-        callback(error);
+        if (callback) {
+            callback(error);
+        } else {
+            throw error;
+        }
     }
 };
 
-broadcastMethods.customJson = function(wif: string, requiredPostingAuths: string[], id: string, customJson: any, callback: any) {
+broadcastMethods.customJson = function(wif: string, requiredPostingAuths: string[], id: string, customJson: any, callback?: any) {
     // For tests, 'this' may have the api as a property
     const api = this && this.api ? this.api : steem.api;
+    
+    if (typeof callback !== 'function') {
+        callback = undefined;
+    }
     
     try {
         const params = {
@@ -331,11 +371,19 @@ broadcastMethods.customJson = function(wif: string, requiredPostingAuths: string
             extensions: []
         };
         
-        broadcast(api, transaction)
-            .then(result => callback(null, result))
-            .catch(error => callback(error));
+        if (callback) {
+            broadcast(api, transaction)
+                .then(result => callback(null, result))
+                .catch(error => callback(error));
+        } else {
+            return broadcast(api, transaction);
+        }
     } catch (error) {
-        callback(error);
+        if (callback) {
+            callback(error);
+        } else {
+            throw error;
+        }
     }
 };
 

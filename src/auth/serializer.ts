@@ -1,6 +1,6 @@
 import ByteBuffer from 'bytebuffer';
 import Long from 'long';
-import { PublicKey } from './key_public';
+import { PublicKey } from './ecc/src/key_public';
 
 export interface EncryptedMemo {
     from: PublicKey;

@@ -7,7 +7,6 @@ import * as memo from './memo';
 import * as operations from './operations';
 import * as serializer from './serializer';
 import * as utils from './utils';
-import * as types from './serializer/types';
 
 // Create the API instance
 const api = new Api();
@@ -40,5 +39,6 @@ if (typeof broadcast.setApi === 'function') {
   broadcast.setApi(api);
 }
 
-export default steem;
+// Export everything as named exports
+export { steem };
 export * from './crypto'; 

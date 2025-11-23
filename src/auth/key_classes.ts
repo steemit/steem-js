@@ -1,3 +1,3 @@
-export { PrivateKey } from './key_private';
-export { PublicKey } from './key_public';
-export { Address } from './address'; 
+export { PrivateKey } from './ecc/src/key_private';
+export { PublicKey } from './ecc/src/key_public';
+export { Address } from './ecc/src/address'; 

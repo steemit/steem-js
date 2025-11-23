@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import steem from '../src';
+import { steem } from '../src';
 const { auth, broadcast, api, config } = steem;
 
 const username = process.env.STEEM_USERNAME || 'guest123';

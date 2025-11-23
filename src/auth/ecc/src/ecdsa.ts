@@ -3,7 +3,10 @@ import * as crypto from './hash';
 import enforce from './enforce_types';
 import BigInteger from 'bigi';
 import ECSignature from './ecsignature';
-import { Point, Curve } from 'ecurve';
+
+// Use any type to avoid namespace issues
+type Curve = any;
+type Point = any;
 
 // https://tools.ietf.org/html/rfc6979#section-3.2
 function deterministicGenerateK(curve: Curve, hash: Buffer, d: BigInteger, checkSig: (k: BigInteger) => boolean, nonce?: number): BigInteger {

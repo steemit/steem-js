@@ -1,5 +1,5 @@
 import get from 'lodash/get';
-import { PrivateKey } from '../auth/ecc/key_private';
+import { PrivateKey } from '../auth/ecc/src/key_private';
 import { Api } from '../api';
 
 export interface Account {
@@ -106,10 +106,6 @@ export class Formatter {
 
     constructor(api: Api) {
         this.api = api;
-    }
-
-    private numberWithCommas(x: string): string {
-        return x.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
     private vestingSteem(account: Account, gprops: GlobalProperties): number {
@@ -298,15 +294,6 @@ export class Formatter {
         // alphanumeric characters plus dashes
         return permLink.toLowerCase().replace(/[^a-z0-9-]+/g, '');
     }
-}
-
-/**
- * Add commas as thousands separators to a number string.
- * @param x Number string
- * @returns String with commas
- */
-export function numberWithCommas(x: string): string {
-    return x.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 /**

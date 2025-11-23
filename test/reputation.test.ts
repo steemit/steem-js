@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import steem from '../src';
+import { steem } from '../src';
 
 describe('steem.format.reputation', () => {
   const reputation = steem.formatter.reputation;

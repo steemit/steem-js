@@ -1,15 +1,10 @@
-import { PrivateKey } from './key_private';
-import { PublicKey } from './key_public';
-import { sha256 } from './hash';
+import { PrivateKey } from './ecc/src/key_private';
+import { PublicKey } from './ecc/src/key_public';
+import { sha256 } from './ecc/src/hash';
 import { getConfig } from '../config';
 import bs58 from 'bs58';
-import { createHash } from 'crypto';
-import { Signature } from './signature';
-import bigi from 'bigi';
-import { Point, getCurveByName } from 'ecurve';
+import { Signature } from './ecc/src/signature';
 import { transaction, signed_transaction } from './serializer';
-
-const secp256k1 = getCurveByName('secp256k1');
 
 export interface KeyPair {
     privateKey: string;
@@ -22,16 +17,6 @@ export interface KeyPairs {
 
 export interface Authority {
     key_auths: [string, number][];
-}
-
-const BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-
-function toBase58(buffer: Buffer): string {
-    let result = '';
-    for (let i = 0; i < buffer.length; i++) {
-        result += BASE58[buffer[i] % 58];
-    }
-    return result;
 }
 
 export interface Auth {
@@ -162,21 +147,23 @@ export const wifToPublic = Auth.wifToPublic.bind(Auth);
 export const isPubkey = Auth.isPubkey.bind(Auth);
 
 // Export classes
-export { PrivateKey } from './key_private';
-export { PublicKey } from './key_public';
-export { Address } from './address';
+export { PrivateKey } from './ecc/src/key_private';
+export { PublicKey } from './ecc/src/key_public';
+export { Address } from './ecc/src/address';
 
 // Export crypto functions
 export const sign = (message: string, privateKey: string): string => {
     const priv = PrivateKey.fromWif(privateKey);
-    return priv.sign(Buffer.from(message)).toHex();
+    const sig = Signature.signBuffer(Buffer.from(message), priv);
+    return sig.toHex();
 };
 
 export const verifySignature = (message: string, signature: string, publicKey: string): boolean => {
     try {
         const pub = PublicKey.fromString(publicKey);
-        const sig = Signature.fromHex(signature);
-        return sig.verifyBuffer(Buffer.from(message), pub);
+        if (!pub) return false;
+        const sigObj = Signature.fromHex(signature);
+        return sigObj.verifyBuffer(Buffer.from(message), pub);
     } catch {
         return false;
     }
@@ -185,6 +172,7 @@ export const verifySignature = (message: string, signature: string, publicKey: s
 export const verifyTransaction = (transaction: any, publicKey: string): boolean => {
     try {
         const pub = PublicKey.fromString(publicKey);
+        if (!pub) return false;
         const serialized = Buffer.from(JSON.stringify(transaction));
         return transaction.signatures.some((sig: string) => {
             const signature = Signature.fromHex(sig);

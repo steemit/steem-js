@@ -1,7 +1,8 @@
-import { Point, getCurveByName } from 'ecurve';
+import { getCurveByName } from 'ecurve';
 import bigi from 'bigi';
 import { sha256 } from './hash';
-import { PrivateKey, PublicKey } from './key_classes';
+import { PrivateKey } from './key_private';
+import { PublicKey } from './key_public';
 
 const secp256k1 = getCurveByName('secp256k1');
 
@@ -57,7 +58,7 @@ export class Signature {
         const e = bigi.fromBuffer(buf_sha256);
         const n = secp256k1.n;
         const G = secp256k1.G;
-        const d = privKey.getPrivateKey();
+        const d = privKey.d;
 
         let r: bigi, s: bigi;
         let nonce = 0;

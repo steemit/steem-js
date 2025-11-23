@@ -36,7 +36,7 @@ export function random32ByteBuffer(entropy: string = browserEntropy()): Buffer {
     const start_t = Date.now();
 
     while (Date.now() - start_t < HASH_POWER_MILLS) {
-        entropy = hash.sha256(entropy) as string;
+        entropy = hash.sha256(entropy).toString('hex');
     }
 
     const hash_array: Buffer[] = [];
@@ -66,7 +66,7 @@ export function browserEntropy(): string {
         console.log("INFO\tbrowserEntropy gathered", entropyCount, 'events');
     } catch (error) {
         // nodejs: ReferenceError: window is not defined
-        entropyStr += hash.sha256((new Date()).toString()) as string;
+        entropyStr += hash.sha256((new Date()).toString()).toString('hex');
     }
 
     const b = Buffer.from(entropyStr);

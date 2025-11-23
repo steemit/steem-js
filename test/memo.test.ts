@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { encode, decode } from '../src/memo';
-import { PrivateKey } from '../src/auth/key_private';
+import { PrivateKey } from '../src/auth/ecc/src/key_private';
 
 describe('steem.auth: memo', () => {
     const private_key = PrivateKey.fromSeed("")

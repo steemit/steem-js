@@ -7,6 +7,11 @@ import Long from 'long';
 
 let uniqueNonceEntropy: number | null = null;
 
+function sha512Buffer(data: string | Buffer): Buffer {
+    const result = sha512(data);
+    return Buffer.isBuffer(result) ? result : Buffer.from(result, 'hex');
+}
+
 export class Aes {
     static uniqueNonce(): string {
         if (uniqueNonceEntropy === null) {
@@ -31,30 +36,37 @@ export class Aes {
             throw new TypeError('nonce is required');
         }
 
+        let messageBuffer: Buffer;
         if (!Buffer.isBuffer(message)) {
             if (typeof message !== 'string') {
                 throw new TypeError('message should be buffer or string');
             }
-            message = Buffer.from(message, 'binary');
+            messageBuffer = Buffer.from(message, 'binary');
+        } else {
+            messageBuffer = message;
         }
 
         const S = private_key.get_shared_secret(public_key);
         let ebuf = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
         ebuf.writeUint64(Long.fromString(nonce));
         ebuf.append(S.toString('binary'), 'binary');
-        ebuf = Buffer.from(ebuf.copy(0, ebuf.offset).toBinary(), 'binary');
-        const encryption_key = sha512(ebuf);
+        const ebufBuffer = Buffer.from(ebuf.copy(0, ebuf.offset).toBinary(), 'binary');
+        const encryption_key = sha512Buffer(ebufBuffer);
 
         const iv = encryption_key.slice(32, 48);
         const key = encryption_key.slice(0, 32);
 
         let check = sha256(encryption_key);
+        if (!Buffer.isBuffer(check)) {
+            check = Buffer.from(check, 'hex');
+        }
         check = check.slice(0, 4);
-        const cbuf = ByteBuffer.fromBinary(check.toString('binary'), ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
+        const checkBinary = check.toString('binary');
+        const cbuf = ByteBuffer.fromBinary(checkBinary, ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
         const checksum = cbuf.readUint32();
 
         const cipher = createCipheriv('aes-256-cbc', key, iv);
-        const encrypted = Buffer.concat([cipher.update(message), cipher.final()]);
+        const encrypted = Buffer.concat([cipher.update(messageBuffer), cipher.final()]);
 
         return {
             nonce,
@@ -88,15 +100,19 @@ export class Aes {
         let ebuf = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
         ebuf.writeUint64(Long.fromString(nonce));
         ebuf.append(S.toString('binary'), 'binary');
-        ebuf = Buffer.from(ebuf.copy(0, ebuf.offset).toBinary(), 'binary');
-        const encryption_key = sha512(ebuf);
+        const ebufBuffer = Buffer.from(ebuf.copy(0, ebuf.offset).toBinary(), 'binary');
+        const encryption_key = sha512Buffer(ebufBuffer);
 
         const iv = encryption_key.slice(32, 48);
         const key = encryption_key.slice(0, 32);
 
         let check = sha256(encryption_key);
+        if (!Buffer.isBuffer(check)) {
+            check = Buffer.from(check, 'hex');
+        }
         check = check.slice(0, 4);
-        const cbuf = ByteBuffer.fromBinary(check.toString('binary'), ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
+        const checkBinary = check.toString('binary');
+        const cbuf = ByteBuffer.fromBinary(checkBinary, ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
         const calculatedChecksum = cbuf.readUint32();
 
         if (calculatedChecksum !== checksum) {
@@ -106,5 +122,25 @@ export class Aes {
         const decipher = createDecipheriv('aes-256-cbc', key, iv);
         const messageBuffer = Buffer.from(message, 'hex');
         return Buffer.concat([decipher.update(messageBuffer), decipher.final()]);
+    }
+
+    static fromSeed(seed: string): Buffer {
+        return sha256(seed);
+    }
+
+    static fromBuffer(buffer: Buffer): Buffer {
+        return buffer;
+    }
+
+    static fromString(string: string): Buffer {
+        return Buffer.from(string, 'hex');
+    }
+
+    static toBuffer(aes: Buffer): Buffer {
+        return aes;
+    }
+
+    static toString(aes: Buffer): string {
+        return aes.toString('hex');
     }
 } 

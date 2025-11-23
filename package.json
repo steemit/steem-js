@@ -43,6 +43,7 @@
     "@types/bytebuffer": "^5.0.49",
     "@types/debug": "^4.1.12",
     "@types/ecurve": "^1.0.3",
+    "@types/lodash": "^4.17.18",
     "@types/node": "^20.11.24",
     "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^7.1.0",

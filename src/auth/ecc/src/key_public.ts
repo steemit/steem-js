@@ -3,9 +3,11 @@ import ecurve from 'ecurve';
 const secp256k1 = ecurve.getCurveByName('secp256k1');
 import base58 from 'bs58';
 import * as hash from './hash';
-import { Config } from '../../config';
+import { getConfig } from '../../../config';
 import assert from 'assert';
-import { Point } from 'ecurve';
+
+// Use any type to avoid namespace issues
+type Point = any;
 
 const G = secp256k1.G;
 const n = secp256k1.n;
@@ -57,7 +59,7 @@ export class PublicKey {
         return hash.ripemd160(pub_sha);
     }
 
-    toString(address_prefix = Config.getAddressPrefix()): string {
+    toString(address_prefix = getConfig().get('address_prefix')): string {
         return this.toPublicKeyString(address_prefix);
     }
 
@@ -65,7 +67,7 @@ export class PublicKey {
      * Full public key
      * {return} string
      */
-    toPublicKeyString(address_prefix = Config.getAddressPrefix()): string {
+    toPublicKeyString(address_prefix = getConfig().get('address_prefix')): string {
         if (this.pubdata) return address_prefix + this.pubdata;
         const pub_buf = this.toBuffer();
         const checksum = hash.ripemd160(pub_buf);
@@ -80,7 +82,7 @@ export class PublicKey {
      * @return PublicKey or `null` (if the public_key string is invalid)
      * @deprecated fromPublicKeyString (use fromString instead)
      */
-    static fromString(public_key: string, address_prefix = Config.getAddressPrefix()): PublicKey | null {
+    static fromString(public_key: string, address_prefix = getConfig().get('address_prefix')): PublicKey | null {
         try {
             return PublicKey.fromStringOrThrow(public_key, address_prefix);
         } catch (e) {
@@ -94,7 +96,7 @@ export class PublicKey {
      * @throws {Error} if public key is invalid
      * @return PublicKey
      */
-    static fromStringOrThrow(public_key: string, address_prefix = Config.getAddressPrefix()): PublicKey {
+    static fromStringOrThrow(public_key: string, address_prefix = getConfig().get('address_prefix')): PublicKey {
         const prefix = public_key.slice(0, address_prefix.length);
         assert.equal(
             address_prefix, prefix,
@@ -112,26 +114,25 @@ export class PublicKey {
         return PublicKey.fromBuffer(key);
     }
 
-    toAddressString(address_prefix = Config.getAddressPrefix()): string {
+    toAddressString(address_prefix = getConfig().get('address_prefix')): string {
         const pub_buf = this.toBuffer();
         const pub_sha = hash.sha512(pub_buf) as Buffer;
-        let addy = hash.ripemd160(pub_sha);
+        const addy = hash.ripemd160(pub_sha);
         const checksum = hash.ripemd160(addy);
-        addy = Buffer.concat([addy, checksum.slice(0, 4)]);
-        return address_prefix + base58.encode(addy);
+        const addr_checksum = Buffer.concat([addy, checksum.slice(0, 4)]);
+        return address_prefix + base58.encode(addr_checksum);
     }
 
     toPtsAddy(): string {
         const pub_buf = this.toBuffer();
-        const pub_sha = hash.sha256(pub_buf) as Buffer;
+        const pub_sha = hash.sha256(pub_buf);
         const addy = hash.ripemd160(pub_sha);
-        addy.writeUInt8(0x38, 0); //version 56(decimal)
-
-        let checksum = hash.sha256(addy) as Buffer;
-        checksum = hash.sha256(checksum) as Buffer;
-
-        const addy_checksum = Buffer.concat([addy, checksum.slice(0, 4)]);
-        return base58.encode(addy_checksum);
+        const versionBuffer = Buffer.from([0x38]); // version 56(decimal)
+        const addr = Buffer.concat([versionBuffer, addy]);
+        let checksum = hash.sha256(addr);
+        checksum = hash.sha256(checksum);
+        const addr_checksum = Buffer.concat([addr, checksum.slice(0, 4)]);
+        return base58.encode(addr_checksum);
     }
 
     child(offset: Buffer): PublicKey {
@@ -156,10 +157,18 @@ export class PublicKey {
     }
 
     static fromHex(hex: string): PublicKey {
-        return PublicKey.fromBuffer(Buffer.from(hex, 'hex'));
+        const buffer = Buffer.from(hex, 'hex');
+        if (buffer.length === 0) {
+            // Return null public key for zero hex
+            return new PublicKey(null);
+        }
+        return PublicKey.fromBuffer(buffer);
     }
 
     toHex(): string {
+        if (!this.Q) {
+            return '000000000000000000000000000000000000000000000000000000000000000000';
+        }
         return this.toBuffer().toString('hex');
     }
 

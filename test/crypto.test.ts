@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { getConfig } from '../src/config';
 import { PrivateKey, PublicKey } from '../src/auth';
-import { Signature } from '../src/auth/signature';
-import { sha256 } from '../src/auth/hash';
+import { Signature } from '../src/auth/ecc/src/signature';
+import { sha256 } from '../src/auth/ecc/src/hash';
 
 // Set up config prefix to match original
 getConfig().set('address_prefix', 'STM');

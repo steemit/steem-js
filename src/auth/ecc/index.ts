@@ -1,21 +1,9 @@
-import { Address } from './address';
-import { Aes } from './aes';
-import { PrivateKey } from './key_private';
-import { PublicKey } from './key_public';
-import { Signature } from './signature';
-import { normalize as brainKey } from './brain_key';
-import * as key_utils from './key_utils';
-import * as hash from './hash';
-import { Config as ecc_config } from '../../config';
-
-export {
-    Address,
-    Aes,
-    PrivateKey,
-    PublicKey,
-    Signature,
-    brainKey,
-    key_utils,
-    hash,
-    ecc_config
-}; 
+export { Address } from './src/address';
+export { Aes } from './src/aes';
+export { PrivateKey } from './src/key_private';
+export { PublicKey } from './src/key_public';
+export { Signature } from './src/signature';
+export { normalize as brainKey } from './src/brain_key';
+export * as key_utils from './src/key_utils';
+export * as hash from './src/hash';
+export { Config as ecc_config } from '../../config'; 

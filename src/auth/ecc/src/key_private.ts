@@ -1,5 +1,4 @@
 import ecurve from 'ecurve';
-import { Point } from 'ecurve';
 const secp256k1 = ecurve.getCurveByName('secp256k1');
 import BigInteger from 'bigi';
 import base58 from 'bs58';
@@ -7,9 +6,11 @@ import assert from 'assert';
 import * as hash from './hash';
 import { PublicKey } from './key_public';
 
+// Use any type to avoid namespace issues
+type Point = any;
+
 const G = secp256k1.G;
 const n = secp256k1.n;
-
 export class PrivateKey {
     d: BigInteger;
     public_key?: PublicKey;
@@ -110,9 +111,12 @@ export class PrivateKey {
 
     /** ECIES */
     get_shared_secret(public_key: PublicKey | string): Buffer {
-        public_key = toPublic(public_key);
-        const KB = public_key.toUncompressed().toBuffer();
-        const KBP = Point.fromAffine(
+        const pubKey = toPublic(public_key);
+        if (!pubKey) {
+            throw new Error('Invalid public key');
+        }
+        const KB = pubKey.toUncompressed().toBuffer();
+        const KBP = ecurve.Point.fromAffine(
             secp256k1,
             BigInteger.fromBuffer(KB.slice(1, 33)), // x
             BigInteger.fromBuffer(KB.slice(33, 65)) // y
@@ -156,8 +160,9 @@ export class PrivateKey {
     }
 }
 
-const toPublic = (data: PublicKey | string | null): PublicKey | null => {
-    if (data == null) return data;
-    if ('Q' in data) return data as PublicKey;
-    return PublicKey.fromStringOrThrow(data as string);
+const toPublic = (data: PublicKey | string): PublicKey => {
+    if (typeof data === 'string') {
+        return PublicKey.fromStringOrThrow(data);
+    }
+    return data;
 }; 

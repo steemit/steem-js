@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import steem from '../src';
+import { steem } from '../src';
 import { Api } from '../src/api';
 import testPost from './test-post.json';
 

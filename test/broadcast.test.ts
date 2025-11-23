@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, beforeEach, vi, afterAll } from 'vitest';
-import steem from '../src';
+import { steem } from '../src';
 import Promise from 'bluebird';
 
 const username = process.env.STEEM_USERNAME || 'guest123';

@@ -1,7 +1,8 @@
 import axios from 'axios';
 // @ts-ignore: No types for 'retry'
 import retry from 'retry';
-import { Transport, TransportOptions, JsonRpcRequest, JsonRpcResponse } from './types';
+import { TransportOptions, JsonRpcRequest, JsonRpcResponse } from './types';
+import { BaseTransport } from './base';
 
 export const jsonRpc = async (uri: string, request: Partial<JsonRpcRequest>): Promise<any> => {
   try {
@@ -15,23 +16,9 @@ export const jsonRpc = async (uri: string, request: Partial<JsonRpcRequest>): Pr
   }
 };
 
-export class HttpTransport implements Transport {
-  options: TransportOptions;
-
+export class HttpTransport extends BaseTransport {
   constructor(options: TransportOptions) {
-    this.options = options;
-  }
-
-  start(): Promise<void> {
-    return Promise.resolve();
-  }
-
-  stop(): Promise<void> {
-    return Promise.resolve();
-  }
-
-  setOptions(options: TransportOptions): void {
-    this.options = { ...this.options, ...options };
+    super(options);
   }
 
   get nonRetriableOperations(): string[] {

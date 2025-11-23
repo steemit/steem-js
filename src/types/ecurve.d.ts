@@ -46,7 +46,7 @@ declare module 'ecurve' {
 
         isInfinity(Q: any): boolean;
         isOnCurve(Q: any): boolean;
-        pointFromX(isOdd: boolean, x: Point): Point;
+        pointFromX(isOdd: boolean, x: BigInteger): Point;
         validate(Q: any): boolean;
 
         static getCurveByName(name: string): Curve;

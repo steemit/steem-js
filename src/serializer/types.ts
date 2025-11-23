@@ -75,7 +75,7 @@ export const vote_id = {
   }
 };
 
-export const set = (type: any) => ({
+export const set = (_type: any) => ({
   fromObject: (arr: any[]): any[] => {
     if (!Array.isArray(arr)) {
       throw new Error('Expected array for set type');
@@ -96,12 +96,14 @@ export const set = (type: any) => ({
     return [...arr].sort((a, b) => {
       if (typeof a === 'number' && typeof b === 'number') return a - b;
       if (Buffer.isBuffer(a) && Buffer.isBuffer(b)) return a.toString('hex').localeCompare(b.toString('hex'));
+      if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
       return a.toString().localeCompare(b.toString());
     });
   },
   toObject: (set: any[]): any[] => [...set].sort((a, b) => {
     if (typeof a === 'number' && typeof b === 'number') return a - b;
     if (Buffer.isBuffer(a) && Buffer.isBuffer(b)) return a.toString('hex').localeCompare(b.toString('hex'));
+    if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
     return a.toString().localeCompare(b.toString());
   }),
   toHex: (arr: any[]): string => {
@@ -120,7 +122,7 @@ export const set = (type: any) => ({
   }
 });
 
-export const map = (keyType: any, valueType: any) => ({
+export const map = (_keyType: any, _valueType: any) => ({
   fromObject: (arr: [any, any][]): [any, any][] => {
     if (!Array.isArray(arr)) {
       throw new Error('Expected array for map type');
@@ -142,6 +144,7 @@ export const map = (keyType: any, valueType: any) => ({
       const ka = a[0], kb = b[0];
       if (typeof ka === 'number' && typeof kb === 'number') return ka - kb;
       if (Buffer.isBuffer(ka) && Buffer.isBuffer(kb)) return ka.toString('hex').localeCompare(kb.toString('hex'));
+      if (typeof ka === 'string' && typeof kb === 'string') return ka.localeCompare(kb);
       return ka.toString().localeCompare(kb.toString());
     });
   },
@@ -149,6 +152,7 @@ export const map = (keyType: any, valueType: any) => ({
     const ka = a[0], kb = b[0];
     if (typeof ka === 'number' && typeof kb === 'number') return ka - kb;
     if (Buffer.isBuffer(ka) && Buffer.isBuffer(kb)) return ka.toString('hex').localeCompare(kb.toString('hex'));
+    if (typeof ka === 'string' && typeof kb === 'string') return ka.localeCompare(kb);
     return ka.toString().localeCompare(kb.toString());
   }),
   toHex: (arr: [any, any][]): string => {
@@ -256,7 +260,7 @@ export const type_id = {
   }
 };
 
-export const protocol_id_type = (name: string) => ({
+export const protocol_id_type = (_name: string) => ({
   toHex: (value: number): string => {
     const buffer = new ByteBuffer(8, ByteBuffer.LITTLE_ENDIAN);
     buffer.writeUint64(value);
