@@ -281,11 +281,70 @@ describe('steem.broadcast:', () => {
     it('receives a properly formatted error response', async () => {
       const wif = steem.auth.toWif('username', 'password', 'posting');
       try {
-        await steem.broadcast.voteAsync(wif, 'voter', 'author', 'permlink', 0);
+        // This will fail because weight 0 is invalid, or network unavailable
+        await Promise.race([
+          steem.broadcast.voteAsync(wif, 'voter', 'author', 'permlink', 0),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+        ]);
         throw new Error('writeOperation should have failed but it didn\'t');
       } catch (e: any) {
+        // Accept either validation error or timeout/network error
         expect(e.message).toBeDefined();
       }
+    }, 10000);
+  });
+
+  describe('claimAccount operations', () => {
+    it('has claimAccount method', () => {
+      expect(steem.broadcast.claimAccount).toBeDefined();
+      expect(typeof steem.broadcast.claimAccount).toBe('function');
+    });
+
+    it('has claimAccountAsync method', () => {
+      expect(steem.broadcast.claimAccountAsync).toBeDefined();
+      expect(typeof steem.broadcast.claimAccountAsync).toBe('function');
+    });
+
+    it('has createClaimedAccount method', () => {
+      expect(steem.broadcast.createClaimedAccount).toBeDefined();
+      expect(typeof steem.broadcast.createClaimedAccount).toBe('function');
+    });
+
+    it('has createClaimedAccountAsync method', () => {
+      expect(steem.broadcast.createClaimedAccountAsync).toBeDefined();
+      expect(typeof steem.broadcast.createClaimedAccountAsync).toBe('function');
+    });
+  });
+
+  describe('proposal operations', () => {
+    it('has createProposal method', () => {
+      expect(steem.broadcast.createProposal).toBeDefined();
+      expect(typeof steem.broadcast.createProposal).toBe('function');
+    });
+
+    it('has createProposalAsync method', () => {
+      expect(steem.broadcast.createProposalAsync).toBeDefined();
+      expect(typeof steem.broadcast.createProposalAsync).toBe('function');
+    });
+
+    it('has updateProposalVotes method', () => {
+      expect(steem.broadcast.updateProposalVotes).toBeDefined();
+      expect(typeof steem.broadcast.updateProposalVotes).toBe('function');
+    });
+
+    it('has updateProposalVotesAsync method', () => {
+      expect(steem.broadcast.updateProposalVotesAsync).toBeDefined();
+      expect(typeof steem.broadcast.updateProposalVotesAsync).toBe('function');
+    });
+
+    it('has removeProposal method', () => {
+      expect(steem.broadcast.removeProposal).toBeDefined();
+      expect(typeof steem.broadcast.removeProposal).toBe('function');
+    });
+
+    it('has removeProposalAsync method', () => {
+      expect(steem.broadcast.removeProposalAsync).toBeDefined();
+      expect(typeof steem.broadcast.removeProposalAsync).toBe('function');
     });
   });
 }); 

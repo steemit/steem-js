@@ -3,6 +3,7 @@ import { getConfig } from '../src/config';
 import { PrivateKey, PublicKey } from '../src/auth';
 import { Signature } from '../src/auth/ecc/src/signature';
 import { sha256 } from '../src/auth/ecc/src/hash';
+import { generateKeyPair, sign, verify } from '../src/crypto';
 
 // Set up config prefix to match original
 getConfig().set('address_prefix', 'STM');
@@ -15,6 +16,113 @@ describe('steem.auth: Crypto', () => {
       expect(sig).toBeDefined();
       expect(typeof sig.toHex()).toBe('string');
     }
+  });
+});
+
+describe('crypto module', () => {
+  describe('generateKeyPair', () => {
+    it('should generate a valid key pair', () => {
+      const keyPair = generateKeyPair();
+      expect(keyPair).toBeDefined();
+      expect(keyPair.privateKey).toBeDefined();
+      expect(keyPair.publicKey).toBeDefined();
+      expect(keyPair.privateKey).toMatch(/^5[A-Za-z0-9]{50}$/); // WIF format
+      expect(keyPair.publicKey).toMatch(/^STM[A-Za-z0-9]{50}$/); // Steem public key format
+    });
+
+    it('should generate different key pairs each time', () => {
+      const keyPair1 = generateKeyPair();
+      const keyPair2 = generateKeyPair();
+      expect(keyPair1.privateKey).not.toBe(keyPair2.privateKey);
+      expect(keyPair1.publicKey).not.toBe(keyPair2.publicKey);
+    });
+
+    it('should generate valid key pairs that can be used for signing', () => {
+      const keyPair = generateKeyPair();
+      const message = 'test message';
+      const signature = sign(message, keyPair.privateKey);
+      expect(signature).toBeDefined();
+      expect(typeof signature).toBe('string');
+      expect(signature.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('sign', () => {
+    it('should sign a message with a private key', () => {
+      const privateKey = PrivateKey.fromSeed('test-seed').toWif();
+      const message = 'Hello, Steem!';
+      const signature = sign(message, privateKey);
+      expect(signature).toBeDefined();
+      expect(typeof signature).toBe('string');
+      expect(signature.length).toBeGreaterThan(0); // Hex signature (typically 128-130 chars)
+    });
+
+    it('should sign a Buffer message', () => {
+      const privateKey = PrivateKey.fromSeed('test-seed').toWif();
+      const message = Buffer.from('Hello, Steem!');
+      const signature = sign(message, privateKey);
+      expect(signature).toBeDefined();
+      expect(typeof signature).toBe('string');
+    });
+
+    it('should produce different signatures for different messages', () => {
+      const privateKey = PrivateKey.fromSeed('test-seed').toWif();
+      const sig1 = sign('message 1', privateKey);
+      const sig2 = sign('message 2', privateKey);
+      expect(sig1).not.toBe(sig2);
+    });
+  });
+
+  describe('verify', () => {
+    it('should verify a valid signature', () => {
+      const keyPair = generateKeyPair();
+      const message = 'test message';
+      const signature = sign(message, keyPair.privateKey);
+      const isValid = verify(message, signature, keyPair.publicKey);
+      expect(isValid).toBe(true);
+    });
+
+    it('should reject an invalid signature', () => {
+      const keyPair = generateKeyPair();
+      const message = 'test message';
+      const invalidSignature = '0'.repeat(128); // Invalid signature
+      const isValid = verify(message, invalidSignature, keyPair.publicKey);
+      expect(isValid).toBe(false);
+    });
+
+    it('should reject signature for different message', () => {
+      const keyPair = generateKeyPair();
+      const message1 = 'message 1';
+      const message2 = 'message 2';
+      const signature = sign(message1, keyPair.privateKey);
+      const isValid = verify(message2, signature, keyPair.publicKey);
+      expect(isValid).toBe(false);
+    });
+
+    it('should reject signature with wrong public key', () => {
+      const keyPair1 = generateKeyPair();
+      const keyPair2 = generateKeyPair();
+      const message = 'test message';
+      const signature = sign(message, keyPair1.privateKey);
+      const isValid = verify(message, signature, keyPair2.publicKey);
+      expect(isValid).toBe(false);
+    });
+
+    it('should verify Buffer messages', () => {
+      const keyPair = generateKeyPair();
+      const message = Buffer.from('test message');
+      const signature = sign(message, keyPair.privateKey);
+      const isValid = verify(message, signature, keyPair.publicKey);
+      expect(isValid).toBe(true);
+    });
+
+    it('should handle invalid public key gracefully', () => {
+      const keyPair = generateKeyPair();
+      const message = 'test message';
+      const signature = sign(message, keyPair.privateKey);
+      const isValid = verify(message, signature, 'invalid-public-key');
+      expect(isValid).toBe(false);
+    });
   });
 });
 

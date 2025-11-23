@@ -275,6 +275,123 @@ describe('steem.api:', () => {
     });
   });
 
+  describe('API stub methods', () => {
+    let steemApi: any;
+    beforeEach(() => {
+      steemApi = new Api({ url: 'https://api.steemit.com', transport: 'http' });
+    });
+
+    describe('broadcastTransactionWithCallback', () => {
+      it('should exist and be callable', () => {
+        expect(steemApi.broadcastTransactionWithCallback).toBeDefined();
+        expect(typeof steemApi.broadcastTransactionWithCallback).toBe('function');
+      });
+
+      it('should require http transport', (done) => {
+        const wsApi = new Api({ url: 'wss://api.steemit.com', transport: 'ws' });
+        wsApi.broadcastTransactionWithCallback(() => {}, {}, (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.message).toContain('http transport');
+          done();
+        });
+      });
+    });
+
+    describe('broadcastBlock', () => {
+      it('should exist and be callable', () => {
+        expect(steemApi.broadcastBlock).toBeDefined();
+        expect(typeof steemApi.broadcastBlock).toBe('function');
+      });
+
+      it('should require http transport', (done) => {
+        const wsApi = new Api({ url: 'wss://api.steemit.com', transport: 'ws' });
+        wsApi.broadcastBlock({}, (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.message).toContain('http transport');
+          done();
+        });
+      });
+    });
+
+    describe('setMaxBlockAge', () => {
+      it('should exist and be callable', () => {
+        expect(steemApi.setMaxBlockAge).toBeDefined();
+        expect(typeof steemApi.setMaxBlockAge).toBe('function');
+      });
+
+      it('should require http transport', (done) => {
+        const wsApi = new Api({ url: 'wss://api.steemit.com', transport: 'ws' });
+        wsApi.setMaxBlockAge(60, (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.message).toContain('http transport');
+          done();
+        });
+      });
+    });
+
+    describe('verifyAuthority', () => {
+      it('should exist and be callable', () => {
+        expect(steemApi.verifyAuthority).toBeDefined();
+        expect(typeof steemApi.verifyAuthority).toBe('function');
+      });
+
+      it('should return a promise-like object when no callback provided', async () => {
+        const result = steemApi.verifyAuthority({});
+        // Bluebird returns a thenable object, not a native Promise
+        expect(result).toBeDefined();
+        expect(typeof result.then).toBe('function');
+        expect(typeof result.catch).toBe('function');
+        // The promise will reject due to network/transport, but that's expected
+        // Catch all errors to prevent unhandled rejections
+        result.catch(() => {
+          // Expected to fail - ignore all errors
+        });
+        // Wait a bit to ensure promise is handled
+        await new Promise(resolve => setTimeout(resolve, 100));
+      });
+
+      it('should require http transport', (done) => {
+        const wsApi = new Api({ url: 'wss://api.steemit.com', transport: 'ws' });
+        wsApi.verifyAuthority({}, (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.message).toContain('http transport');
+          done();
+        });
+      });
+    });
+
+    describe('verifyAccountAuthority', () => {
+      it('should exist and be callable', () => {
+        expect(steemApi.verifyAccountAuthority).toBeDefined();
+        expect(typeof steemApi.verifyAccountAuthority).toBe('function');
+      });
+
+      it('should return a promise-like object when no callback provided', async () => {
+        const result = steemApi.verifyAccountAuthority('testuser', []);
+        // Bluebird returns a thenable object, not a native Promise
+        expect(result).toBeDefined();
+        expect(typeof result.then).toBe('function');
+        expect(typeof result.catch).toBe('function');
+        // The promise will reject due to network/transport, but that's expected
+        // Catch all errors to prevent unhandled rejections
+        result.catch(() => {
+          // Expected to fail - ignore all errors
+        });
+        // Wait a bit to ensure promise is handled
+        await new Promise(resolve => setTimeout(resolve, 100));
+      });
+
+      it('should require http transport', (done) => {
+        const wsApi = new Api({ url: 'wss://api.steemit.com', transport: 'ws' });
+        wsApi.verifyAccountAuthority('testuser', [], (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.message).toContain('http transport');
+          done();
+        });
+      });
+    });
+  });
+
   describe('with retry', () => {
     let steemApi: any;
     beforeEach(() => {
