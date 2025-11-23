@@ -572,9 +572,10 @@ export const {
 } = broadcastMethods;
 
 // Export all generated methods at the top level
-Object.entries(generated).forEach(([name, fn]) => {
-    (exports as any)[name] = fn;
-});
+// Note: This is handled by Rollup's export mechanism, so we don't need to manually assign to exports
+// Object.entries(generated).forEach(([name, fn]) => {
+//     (exports as any)[name] = fn;
+// });
 
 // Explicitly export vote, voteAsync, voteWith, comment, transfer, etc. for compatibility
 export const vote = generated.vote;

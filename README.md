@@ -4,7 +4,7 @@ Steem.js is a JavaScript/TypeScript library for interacting with the Steem block
 
 ## Status
 
-This is a complete refactoring of the original steem-js library, migrating from JavaScript to TypeScript with modern tooling and improved code quality.
+This is a complete refactoring of the original steem-js library, migrating from JavaScript to TypeScript with modern tooling and improved code quality. Published as `@steemit/steem-js`.
 
 ### Refactoring Progress
 
@@ -28,12 +28,33 @@ pnpm install
 npm install
 ```
 
+## Installation
+
+### npm / pnpm / yarn
+
+```bash
+npm install @steemit/steem-js
+# or
+pnpm install @steemit/steem-js
+# or
+yarn add @steemit/steem-js
+```
+
+### Browser (CDN)
+
+```html
+<!-- Include @steemit/steem-js (all dependencies are bundled) -->
+<script src="https://cdn.jsdelivr.net/npm/@steemit/steem-js/dist/index.umd.js"></script>
+```
+
+**Note**: The UMD build includes all necessary polyfills (axios, events, buffer, util, stream, assert, crypto). No additional dependencies are required.
+
 ## Usage
 
-### Basic Example
+### Node.js / TypeScript / ES Modules
 
 ```typescript
-import { steem } from 'steem-js';
+import { steem } from '@steemit/steem-js';
 
 // Configure the API endpoint
 steem.config.set({
@@ -51,7 +72,7 @@ const keys = steem.auth.generateKeys('username', 'password', ['owner', 'active',
 console.log(keys);
 
 // Sign and verify messages
-import { generateKeyPair, sign, verify } from 'steem-js/crypto';
+import { generateKeyPair, sign, verify } from '@steemit/steem-js/crypto';
 const keyPair = generateKeyPair();
 const message = 'Hello, Steem!';
 const signature = sign(message, keyPair.privateKey);
@@ -59,10 +80,59 @@ const isValid = verify(message, signature, keyPair.publicKey);
 console.log('Signature valid:', isValid);
 ```
 
+### Node.js / CommonJS
+
+```javascript
+const { steem } = require('@steemit/steem-js');
+
+steem.config.set({
+  node: 'https://api.steemit.com',
+  address_prefix: 'STM'
+});
+
+const account = await steem.api.getAccountAsync('ned');
+console.log(account);
+```
+
+### Browser (Script Tag)
+
+The UMD build includes all necessary dependencies and polyfills, so you can use it directly without any additional setup.
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Steem.js Example</title>
+  <!-- Include @steemit/steem-js (all dependencies bundled) -->
+  <script src="https://cdn.jsdelivr.net/npm/@steemit/steem-js/dist/index.umd.js"></script>
+</head>
+<body>
+  <script>
+    // Use the global 'steem' object
+    steem.config.set({
+      node: 'https://api.steemit.com',
+      address_prefix: 'STM'
+    });
+
+    // Get account information
+    steem.api.getAccountAsync('ned')
+      .then(account => {
+        console.log('Account:', account);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  </script>
+</body>
+</html>
+```
+
+**Note**: The UMD build (1.7MB) includes all polyfills, making it ready to use in browsers without additional dependencies. For production use with bundlers (Webpack, Vite, Rollup), use the ES Module or CommonJS builds instead.
+
 ### Broadcast Operations
 
 ```typescript
-import { steem } from 'steem-js';
+import { steem } from '@steemit/steem-js';
 
 // Vote on a post
 const postingWif = steem.auth.toWif('username', 'password', 'posting');
