@@ -492,43 +492,123 @@ export class Api extends EventEmitter {
   }
 
   /**
-   * Broadcast a transaction with a callback (stub).
+   * Broadcast a transaction with a confirmation callback.
+   * @param confirmationCallback Callback function for transaction confirmation
+   * @param trx Transaction object to broadcast
+   * @param callback Callback function
    */
-  broadcastTransactionWithCallback(_confirmationCallback: any, _trx: any, callback: any) {
-    // Implementation would go here
-    callback(new Error('Not implemented'));
+  broadcastTransactionWithCallback(confirmationCallback: any, trx: any, callback: any) {
+    if (this._transportType !== 'http') {
+      callback(new Error('broadcastTransactionWithCallback can only be called when using http transport'));
+      return;
+    }
+    this.send('network_broadcast_api', {
+      method: 'broadcast_transaction_with_callback',
+      params: [confirmationCallback, trx]
+    }, callback);
   }
 
   /**
-   * Broadcast a block (stub).
+   * Broadcast a block to the network.
+   * @param block Block object to broadcast
+   * @param callback Callback function
    */
-  broadcastBlock(_b: any, callback: any) {
-    // Implementation would go here
-    callback(new Error('Not implemented'));
+  broadcastBlock(block: any, callback: any) {
+    if (this._transportType !== 'http') {
+      callback(new Error('broadcastBlock can only be called when using http transport'));
+      return;
+    }
+    this.send('network_broadcast_api', {
+      method: 'broadcast_block',
+      params: [block]
+    }, callback);
   }
 
   /**
-   * Set max block age (stub).
+   * Set the maximum block age for transaction acceptance.
+   * @param maxBlockAge Maximum block age in seconds
+   * @param callback Callback function
    */
-  setMaxBlockAge(_maxBlockAge: any, callback: any) {
-    // Implementation would go here
-    callback(new Error('Not implemented'));
+  setMaxBlockAge(maxBlockAge: number, callback: any) {
+    if (this._transportType !== 'http') {
+      callback(new Error('setMaxBlockAge can only be called when using http transport'));
+      return;
+    }
+    this.send('network_broadcast_api', {
+      method: 'set_max_block_age',
+      params: [maxBlockAge]
+    }, callback);
   }
 
   /**
-   * Verify authority (stub).
+   * Verify transaction authority.
+   * @param trx Transaction object to verify
+   * @param callback Optional callback function
+   * @returns Promise with verification result if no callback provided
    */
-  verifyAuthority(..._args: any[]) {
-    // Implementation would go here
-    return false;
+  verifyAuthority(trx: any, callback?: (err: any, result?: boolean) => void): Bluebird<boolean> | void {
+    if (this._transportType !== 'http') {
+      const err = new Error('verifyAuthority can only be called when using http transport');
+      if (callback) {
+        callback(err);
+        return;
+      }
+      return Bluebird.reject(err);
+    }
+    if (callback) {
+      this.send('database_api', {
+        method: 'verify_authority',
+        params: [trx]
+      }, (err: any, result: any) => {
+        callback(err, result || false);
+      });
+      return;
+    }
+    return new Bluebird((resolve: any, reject: any) => {
+      this.send('database_api', {
+        method: 'verify_authority',
+        params: [trx]
+      }, (err: any, result: any) => {
+        if (err) return reject(err);
+        resolve(result || false);
+      });
+    });
   }
 
   /**
-   * Verify account authority (stub).
+   * Verify account authority.
+   * @param nameOrId Account name or ID
+   * @param signers Array of signer public keys
+   * @param callback Optional callback function
+   * @returns Promise with verification result if no callback provided
    */
-  verifyAccountAuthority(..._args: any[]) {
-    // Implementation would go here
-    return false;
+  verifyAccountAuthority(nameOrId: string, signers: string[], callback?: (err: any, result?: boolean) => void): Bluebird<boolean> | void {
+    if (this._transportType !== 'http') {
+      const err = new Error('verifyAccountAuthority can only be called when using http transport');
+      if (callback) {
+        callback(err);
+        return;
+      }
+      return Bluebird.reject(err);
+    }
+    if (callback) {
+      this.send('database_api', {
+        method: 'verify_account_authority',
+        params: [nameOrId, signers]
+      }, (err: any, result: any) => {
+        callback(err, result || false);
+      });
+      return;
+    }
+    return new Bluebird((resolve: any, reject: any) => {
+      this.send('database_api', {
+        method: 'verify_account_authority',
+        params: [nameOrId, signers]
+      }, (err: any, result: any) => {
+        if (err) return reject(err);
+        resolve(result || false);
+      });
+    });
   }
 }
 

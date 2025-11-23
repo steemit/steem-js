@@ -44,8 +44,27 @@ export class Serializer {
         bb.append(memo.from.toBuffer());
         bb.append(memo.to.toBuffer());
         
-        // Write nonce (uint64)
-        bb.writeUint64(Long.fromString(memo.nonce));
+        // Write nonce (uint64) - handle both string and number
+        let nonceLong: Long;
+        if (typeof memo.nonce === 'string') {
+            // Use Long.fromString with unsigned flag for large numbers
+            try {
+                nonceLong = Long.fromString(memo.nonce, true, 10); // unsigned, base 10
+            } catch (e) {
+                // Fallback: try as number if string parsing fails
+                const num = Number(memo.nonce);
+                if (!isNaN(num) && isFinite(num)) {
+                    nonceLong = Long.fromNumber(num, true); // unsigned
+                } else {
+                    throw new Error(`Invalid nonce format: ${memo.nonce}`);
+                }
+            }
+        } else {
+            nonceLong = Long.fromNumber(memo.nonce, true); // unsigned
+        }
+        // ByteBuffer.writeUint64 may not accept Long objects directly, so write manually
+        const nonceBuf = Buffer.from(nonceLong.toBytesLE());
+        bb.append(nonceBuf);
         
         // Write checksum (uint32)
         bb.writeUint32(memo.check);

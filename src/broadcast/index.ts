@@ -387,15 +387,144 @@ broadcastMethods.customJson = function(wif: string, requiredPostingAuths: string
     }
 };
 
-broadcastMethods.claimAccount = function() { throw new Error('Not implemented'); };
+// Claim account operation
+broadcastMethods.claimAccount = function(wif: string, options: any, callback?: any) {
+    const api = this && this.api ? this.api : steem.api;
+    if (typeof callback !== 'function') {
+        callback = undefined;
+    }
+    try {
+        const transaction = {
+            operations: [['claim_account', options]],
+            extensions: []
+        };
+        if (callback) {
+            broadcast(api, transaction)
+                .then(result => callback(null, result))
+                .catch(error => callback(error));
+        } else {
+            return broadcast(api, transaction);
+        }
+    } catch (error) {
+        if (callback) {
+            callback(error);
+        } else {
+            throw error;
+        }
+    }
+};
 broadcastMethods.claimAccountAsync = promisify(broadcastMethods.claimAccount);
-broadcastMethods.createClaimedAccount = function() { throw new Error('Not implemented'); };
+
+// Create claimed account operation
+broadcastMethods.createClaimedAccount = function(wif: string, options: any, callback?: any) {
+    const api = this && this.api ? this.api : steem.api;
+    if (typeof callback !== 'function') {
+        callback = undefined;
+    }
+    try {
+        const transaction = {
+            operations: [['create_claimed_account', options]],
+            extensions: []
+        };
+        if (callback) {
+            broadcast(api, transaction)
+                .then(result => callback(null, result))
+                .catch(error => callback(error));
+        } else {
+            return broadcast(api, transaction);
+        }
+    } catch (error) {
+        if (callback) {
+            callback(error);
+        } else {
+            throw error;
+        }
+    }
+};
 broadcastMethods.createClaimedAccountAsync = promisify(broadcastMethods.createClaimedAccount);
-broadcastMethods.createProposal = function() { throw new Error('Not implemented'); };
+
+// Create proposal operation
+broadcastMethods.createProposal = function(wif: string, options: any, callback?: any) {
+    const api = this && this.api ? this.api : steem.api;
+    if (typeof callback !== 'function') {
+        callback = undefined;
+    }
+    try {
+        const transaction = {
+            operations: [['create_proposal', options]],
+            extensions: []
+        };
+        if (callback) {
+            broadcast(api, transaction)
+                .then(result => callback(null, result))
+                .catch(error => callback(error));
+        } else {
+            return broadcast(api, transaction);
+        }
+    } catch (error) {
+        if (callback) {
+            callback(error);
+        } else {
+            throw error;
+        }
+    }
+};
 broadcastMethods.createProposalAsync = promisify(broadcastMethods.createProposal);
-broadcastMethods.updateProposalVotes = function() { throw new Error('Not implemented'); };
+
+// Update proposal votes operation
+broadcastMethods.updateProposalVotes = function(wif: string, options: any, callback?: any) {
+    const api = this && this.api ? this.api : steem.api;
+    if (typeof callback !== 'function') {
+        callback = undefined;
+    }
+    try {
+        const transaction = {
+            operations: [['update_proposal_votes', options]],
+            extensions: []
+        };
+        if (callback) {
+            broadcast(api, transaction)
+                .then(result => callback(null, result))
+                .catch(error => callback(error));
+        } else {
+            return broadcast(api, transaction);
+        }
+    } catch (error) {
+        if (callback) {
+            callback(error);
+        } else {
+            throw error;
+        }
+    }
+};
 broadcastMethods.updateProposalVotesAsync = promisify(broadcastMethods.updateProposalVotes);
-broadcastMethods.removeProposal = function() { throw new Error('Not implemented'); };
+
+// Remove proposal operation
+broadcastMethods.removeProposal = function(wif: string, options: any, callback?: any) {
+    const api = this && this.api ? this.api : steem.api;
+    if (typeof callback !== 'function') {
+        callback = undefined;
+    }
+    try {
+        const transaction = {
+            operations: [['remove_proposal', options]],
+            extensions: []
+        };
+        if (callback) {
+            broadcast(api, transaction)
+                .then(result => callback(null, result))
+                .catch(error => callback(error));
+        } else {
+            return broadcast(api, transaction);
+        }
+    } catch (error) {
+        if (callback) {
+            callback(error);
+        } else {
+            throw error;
+        }
+    }
+};
 broadcastMethods.removeProposalAsync = promisify(broadcastMethods.removeProposal);
 
 // Export all generated methods

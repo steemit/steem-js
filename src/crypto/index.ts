@@ -1,5 +1,7 @@
-import { createHash, createHmac } from 'crypto';
+import { createHash, createHmac, randomBytes } from 'crypto';
 import type { KeyPair } from '../auth';
+import { PrivateKey, PublicKey } from '../auth';
+import { Signature } from '../auth/ecc/src/signature';
 
 export const sha256 = (data: string | Buffer): Buffer => {
   return createHash('sha256').update(data).digest();
@@ -17,26 +19,52 @@ export const hmacSha256 = (key: string | Buffer, data: string | Buffer): Buffer 
   return createHmac('sha256', key).update(data).digest();
 };
 
+/**
+ * Generate a cryptographically secure key pair using ECC secp256k1
+ * @returns A key pair with private key in WIF format and public key in Steem format
+ */
 export const generateKeyPair = (): KeyPair => {
-  // Implementation of key pair generation
-  // This is a placeholder - actual implementation would use proper cryptographic methods
-  const privateKey = Buffer.from(createHash('sha256').update(Math.random().toString()).digest()).toString('hex');
-  const publicKey = `STM${privateKey.slice(0, 50)}`;
+  // Generate 32 random bytes for private key
+  const privateKeyBytes = randomBytes(32);
+  const privateKey = PrivateKey.fromBuffer(privateKeyBytes);
+  const publicKey = privateKey.toPublic();
   
   return {
-    privateKey,
-    publicKey
+    privateKey: privateKey.toWif(),
+    publicKey: publicKey.toString()
   };
 };
 
-export const sign = (_message: string | Buffer, privateKey: string): string => {
-  // Implementation of message signing
-  // This is a placeholder - actual implementation would use proper cryptographic methods
-  return `signature_${privateKey.slice(0, 10)}`;
+/**
+ * Sign a message with a private key using ECC secp256k1
+ * @param message - The message to sign (string or Buffer)
+ * @param privateKey - Private key in WIF format
+ * @returns Hexadecimal signature string
+ */
+export const sign = (message: string | Buffer, privateKey: string): string => {
+  const privKey = PrivateKey.fromWif(privateKey);
+  const messageBuffer = Buffer.isBuffer(message) ? message : Buffer.from(message);
+  const sig = Signature.signBuffer(messageBuffer, privKey);
+  return sig.toHex();
 };
 
-export const verify = (_message: string | Buffer, signature: string, _publicKey: string): boolean => {
-  // Implementation of signature verification
-  // This is a placeholder - actual implementation would use proper cryptographic methods
-  return signature.startsWith('signature_');
+/**
+ * Verify a message signature with a public key
+ * @param message - The message that was signed (string or Buffer)
+ * @param signature - Hexadecimal signature string
+ * @param publicKey - Public key in Steem format (e.g., "STM...")
+ * @returns True if signature is valid, false otherwise
+ */
+export const verify = (message: string | Buffer, signature: string, publicKey: string): boolean => {
+  try {
+    const pub = PublicKey.fromString(publicKey);
+    if (!pub || !pub.Q) {
+      return false;
+    }
+    const sigObj = Signature.fromHex(signature);
+    const messageBuffer = Buffer.isBuffer(message) ? message : Buffer.from(message);
+    return sigObj.verifyBuffer(messageBuffer, pub);
+  } catch {
+    return false;
+  }
 }; 
