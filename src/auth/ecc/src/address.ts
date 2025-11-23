@@ -11,9 +11,9 @@ export class Address {
     }
 
     static fromBuffer(buffer: Buffer): string {
-        const checksum = buffer.slice(-4);
-        const addr = buffer.slice(0, -4);
-        const new_checksum = ripemd160(addr).slice(0, 4);
+        const checksum = buffer.subarray(-4);
+        const addr = buffer.subarray(0, -4);
+        const new_checksum = ripemd160(addr).subarray(0, 4);
         if (!checksum.equals(new_checksum as Buffer)) {
             throw new Error('Invalid address checksum');
         }
@@ -27,9 +27,9 @@ export class Address {
         }
         const addr = address.slice(prefix.length);
         const buffer = bs58.decode(addr);
-        const checksum = buffer.slice(-4);
-        const addr_part = buffer.slice(0, -4);
-        const new_checksum = ripemd160(addr_part).slice(0, 4);
+        const checksum = buffer.subarray(-4);
+        const addr_part = buffer.subarray(0, -4);
+        const new_checksum = ripemd160(addr_part).subarray(0, 4);
         if (!checksum.equals(new_checksum as Buffer)) {
             throw new Error('Invalid address checksum');
         }
@@ -38,7 +38,7 @@ export class Address {
 
     static fromPublicKey(public_key: PublicKey, compressed: boolean = true): string {
         const pub_buffer = public_key.toBuffer(compressed);
-        const checksum = ripemd160(pub_buffer).slice(0, 4);
+        const checksum = ripemd160(pub_buffer).subarray(0, 4);
         const addr = Buffer.concat([pub_buffer, checksum as Buffer]);
         return getConfig().get('address_prefix') + bs58.encode(addr);
     }
@@ -51,7 +51,7 @@ export class Address {
         const addr = Buffer.concat([versionBuffer, rep]);
         let check = sha256(addr);
         check = sha256(check);
-        const buffer = Buffer.concat([addr, check.slice(0, 4)]);
+        const buffer = Buffer.concat([addr, check.subarray(0, 4)]);
         return new Address(ripemd160(buffer));
     }
 
@@ -69,7 +69,7 @@ export class Address {
 
     toString(address_prefix: string = String(getConfig().get('address_prefix')) || 'STM'): string {
         // Always use ripemd160 checksum and STM prefix, as in original Steem-js
-        const checksum = ripemd160(this.addy).slice(0, 4);
+        const checksum = ripemd160(this.addy).subarray(0, 4);
         const addy = Buffer.concat([this.addy, checksum]);
         return address_prefix + bs58.encode(addy);
     }
