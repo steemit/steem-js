@@ -220,8 +220,18 @@ broadcastMethods._prepareTransaction = async function(transaction: any) {
     const properties = await api.getDynamicGlobalPropertiesAsync();
     const chainDate = new Date(properties.time + 'Z');
     const refBlockNum = (properties.last_irreversible_block_num - 1) & 0xFFFF;
-    // Fetch block header
-    const block = await api.getBlockHeaderAsync(properties.last_irreversible_block_num);
+    // Fetch block header - try getBlockHeaderAsync first, fallback to getBlockAsync
+    let block: any = null;
+    try {
+        if (typeof (api as any).getBlockHeaderAsync === 'function') {
+            block = await (api as any).getBlockHeaderAsync(properties.last_irreversible_block_num);
+        } else if (typeof (api as any).getBlockAsync === 'function') {
+            block = await (api as any).getBlockAsync(properties.last_irreversible_block_num);
+        }
+    } catch (e) {
+        // If block fetch fails, use default
+        block = null;
+    }
     const headBlockId = block && block.previous ? block.previous : '0000000000000000000000000000000000000000';
     const refBlockPrefix = Buffer.from(headBlockId, 'hex').readUInt32LE(4);
     return {

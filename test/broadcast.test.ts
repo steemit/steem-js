@@ -32,19 +32,32 @@ describe('steem.broadcast:', () => {
 
   describe('patching transaction with default global properties', () => {
     it('works', async () => {
-      const tx = await steem.broadcast._prepareTransaction({
-        extensions: [],
-        operations: [['vote', {
-          voter: 'yamadapc',
-          author: 'yamadapc',
-          permlink: 'test-1-2-3-4-5-6-7-9',
-        }]],
+      const getDynamicGlobalPropertiesSpy = vi.spyOn((steem.api as any), 'getDynamicGlobalPropertiesAsync').mockResolvedValue({
+        time: '2019-04-14T21:30:56',
+        last_irreversible_block_num: 32047459,
       });
-      expect(tx).toHaveProperty('expiration');
-      expect(tx).toHaveProperty('ref_block_num');
-      expect(tx).toHaveProperty('ref_block_prefix');
-      expect(tx).toHaveProperty('extensions');
-      expect(tx).toHaveProperty('operations');
+      const getBlockHeaderAsyncSpy = vi.spyOn((steem.api as any), 'getBlockHeaderAsync').mockResolvedValue({
+        previous: '0000000000000000000000000000000000000000'
+      });
+
+      try {
+        const tx = await steem.broadcast._prepareTransaction({
+          extensions: [],
+          operations: [['vote', {
+            voter: 'yamadapc',
+            author: 'yamadapc',
+            permlink: 'test-1-2-3-4-5-6-7-9',
+          }]],
+        });
+        expect(tx).toHaveProperty('expiration');
+        expect(tx).toHaveProperty('ref_block_num');
+        expect(tx).toHaveProperty('ref_block_prefix');
+        expect(tx).toHaveProperty('extensions');
+        expect(tx).toHaveProperty('operations');
+      } finally {
+        getDynamicGlobalPropertiesSpy.mockRestore();
+        getBlockHeaderAsyncSpy.mockRestore();
+      }
     });
   });
 
@@ -58,7 +71,7 @@ describe('steem.broadcast:', () => {
         time: '2019-04-14T21:30:56',
         last_irreversible_block_num: 32047459,
       });
-      const getBlockAsyncSpy = vi.spyOn((steem.api as any), 'getBlockAsync').mockResolvedValue(null);
+      const getBlockHeaderAsyncSpy = vi.spyOn((steem.api as any), 'getBlockHeaderAsync').mockResolvedValue(null);
 
       try {
         const tx = await steem.broadcast._prepareTransaction({
@@ -97,7 +110,7 @@ describe('steem.broadcast:', () => {
         expect(tx).toHaveProperty('operations');
       } finally {
         getDynamicGlobalPropertiesSpy.mockRestore();
-        getBlockAsyncSpy.mockRestore();
+        getBlockHeaderAsyncSpy.mockRestore();
       }
     });
   });
