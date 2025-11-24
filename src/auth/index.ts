@@ -117,9 +117,11 @@ export const Auth: Auth = {
             throw new Error('Keys must be an array');
         }
         
-        const signatures: Buffer[] = [];
+        const signatures: string[] = [];
         if (trx.signatures) {
-            signatures.push(...trx.signatures.map((sig: any) => Buffer.from(sig)));
+            signatures.push(...trx.signatures.map((sig: any) => 
+                Buffer.isBuffer(sig) ? sig.toString('hex') : sig
+            ));
         }
 
         const cid = Buffer.from(getConfig().get('chain_id') || '', 'hex');
@@ -127,7 +129,7 @@ export const Auth: Auth = {
 
         for (const key of keys) {
             const sig = Signature.signBuffer(Buffer.concat([cid, buf]), key);
-            signatures.push(sig.toBuffer());
+            signatures.push(sig.toHex());  // 使用 toHex() 而不是 toBuffer()
         }
 
         return signed_transaction.toObject(Object.assign(trx, { signatures }));
