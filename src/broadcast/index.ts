@@ -157,38 +157,65 @@ const broadcastMethods: Record<string, any> = {};
 
 operations.forEach((operation) => {
     const operationName = camelCase(operation.operation);
+    const operationParams = operation.params || [];
     
     // Implement synchronous version with proper parameters
-    broadcastMethods[operationName] = function(...args: any[]) {
-        // The last argument is expected to be the callback
-        const callback = args[args.length - 1];
-        if (typeof callback !== 'function') {
-            throw new Error('API callback is required');
+    // First parameter is WIF, then operation params, last is callback
+    broadcastMethods[operationName] = function(wif: string, ...args: any[]) {
+        // The last argument might be the callback
+        let callback: any = undefined;
+        if (args.length > 0 && typeof args[args.length - 1] === 'function') {
+            callback = args.pop();
         }
         
         // For tests, 'this' may have the api as a property
         const api = this && this.api ? this.api : steem.api;
+        // @ts-ignore
+        const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+        
+        // Build options object from args
+        const options: any = {};
+        operationParams.forEach((param: string, i: number) => {
+            if (i < args.length) {
+                options[param] = args[i];
+            }
+        });
         
         // Common implementation for all operations
         try {
             const transaction = {
-                operations: [[operation.operation, args[0]]], 
+                operations: [[operation.operation, options]], 
                 extensions: []
             };
             
-            // Use this.api.send or broadcast function based on what's available
-            broadcast(api, transaction)
-                .then(result => callback(null, result))
-                .catch(error => callback(error));
+            // Use send method to sign and broadcast with WIF
+            const broadcastInstance = new Broadcast({ api, auth });
+            if (callback) {
+                broadcastInstance.send(transaction, wif, callback);
+                return;
+            } else {
+                return broadcastInstance.send(transaction, wif);
+            }
         } catch (error) {
-            callback(error);
+            if (callback) {
+                callback(error);
+                return;
+            } else {
+                throw error;
+            }
         }
     };
     
     // Implement "With" methods for each operation
-    broadcastMethods[operationName + 'With'] = function(options: any, callback: any) {
+    broadcastMethods[operationName + 'With'] = function(wif: string, options: any, callback?: any) {
         // For tests, 'this' may have the api as a property
         const api = this && this.api ? this.api : steem.api;
+        // @ts-ignore
+        const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+        
+        if (typeof callback !== 'function') {
+            callback = undefined;
+        }
         
         try {
             const transaction = {
@@ -196,12 +223,21 @@ operations.forEach((operation) => {
                 extensions: []
             };
             
-            // Use this.api.send or broadcast function based on what's available
-            broadcast(api, transaction)
-                .then(result => callback(null, result))
-                .catch(error => callback(error));
+            // Use send method to sign and broadcast with WIF
+            const broadcastInstance = new Broadcast({ api, auth });
+            if (callback) {
+                broadcastInstance.send(transaction, wif, callback);
+                return;
+            } else {
+                return broadcastInstance.send(transaction, wif);
+            }
         } catch (error) {
-            callback(error);
+            if (callback) {
+                callback(error);
+                return;
+            } else {
+                throw error;
+            }
         }
     };
     
@@ -253,9 +289,11 @@ export function setApi(api: any): void {
 }
 
 // Implement the most commonly used methods
-broadcastMethods.vote = function(_wif: string, voter: string, author: string, permlink: string, weight: number, callback?: any): any {
+broadcastMethods.vote = function(wif: string, voter: string, author: string, permlink: string, weight: number, callback?: any): any {
     // For tests, 'this' may have the api as a property
     const api = this && this.api ? this.api : steem.api;
+    // @ts-ignore
+    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
     
     if (typeof callback !== 'function') {
         callback = undefined;
@@ -274,13 +312,13 @@ broadcastMethods.vote = function(_wif: string, voter: string, author: string, pe
             extensions: []
         };
         
+        // Use send method to sign and broadcast with WIF
+        const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
-            broadcast(api, transaction)
-                .then(result => callback(null, result))
-                .catch(error => callback(error));
+            broadcastInstance.send(transaction, wif, callback);
             return;
         } else {
-            return broadcast(api, transaction);
+            return broadcastInstance.send(transaction, wif);
         }
     } catch (error) {
         if (callback) {
@@ -292,9 +330,11 @@ broadcastMethods.vote = function(_wif: string, voter: string, author: string, pe
     }
 };
 
-broadcastMethods.voteWith = function(_wif: string, options: any, callback?: any): any {
+broadcastMethods.voteWith = function(wif: string, options: any, callback?: any): any {
     // For tests, 'this' may have the api as a property
     const api = this && this.api ? this.api : steem.api;
+    // @ts-ignore
+    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
     
     if (typeof callback !== 'function') {
         callback = undefined;
@@ -306,13 +346,13 @@ broadcastMethods.voteWith = function(_wif: string, options: any, callback?: any)
             extensions: []
         };
         
+        // Use send method to sign and broadcast with WIF
+        const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
-            broadcast(api, transaction)
-                .then(result => callback(null, result))
-                .catch(error => callback(error));
+            broadcastInstance.send(transaction, wif, callback);
             return;
         } else {
-            return broadcast(api, transaction);
+            return broadcastInstance.send(transaction, wif);
         }
     } catch (error) {
         if (callback) {
@@ -324,9 +364,11 @@ broadcastMethods.voteWith = function(_wif: string, options: any, callback?: any)
     }
 };
 
-broadcastMethods.comment = function(_wif: string, parentAuthor: string, parentPermlink: string, author: string, permlink: string, title: string, body: string, jsonMetadata: any, callback?: any): any {
+broadcastMethods.comment = function(wif: string, parentAuthor: string, parentPermlink: string, author: string, permlink: string, title: string, body: string, jsonMetadata: any, callback?: any): any {
     // For tests, 'this' may have the api as a property
     const api = this && this.api ? this.api : steem.api;
+    // @ts-ignore
+    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
     
     if (typeof callback !== 'function') {
         callback = undefined;
@@ -348,13 +390,13 @@ broadcastMethods.comment = function(_wif: string, parentAuthor: string, parentPe
             extensions: []
         };
         
+        // Use send method to sign and broadcast with WIF
+        const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
-            broadcast(api, transaction)
-                .then(result => callback(null, result))
-                .catch(error => callback(error));
+            broadcastInstance.send(transaction, wif, callback);
             return;
         } else {
-            return broadcast(api, transaction);
+            return broadcastInstance.send(transaction, wif);
         }
     } catch (error) {
         if (callback) {
@@ -366,9 +408,11 @@ broadcastMethods.comment = function(_wif: string, parentAuthor: string, parentPe
     }
 };
 
-broadcastMethods.customJson = function(_wif: string, requiredPostingAuths: string[], id: string, customJson: any, callback?: any): any {
+broadcastMethods.customJson = function(wif: string, requiredPostingAuths: string[], id: string, customJson: any, callback?: any): any {
     // For tests, 'this' may have the api as a property
     const api = this && this.api ? this.api : steem.api;
+    // @ts-ignore
+    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
     
     if (typeof callback !== 'function') {
         callback = undefined;
@@ -387,13 +431,13 @@ broadcastMethods.customJson = function(_wif: string, requiredPostingAuths: strin
             extensions: []
         };
         
+        // Use send method to sign and broadcast with WIF
+        const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
-            broadcast(api, transaction)
-                .then(result => callback(null, result))
-                .catch(error => callback(error));
+            broadcastInstance.send(transaction, wif, callback);
             return;
         } else {
-            return broadcast(api, transaction);
+            return broadcastInstance.send(transaction, wif);
         }
     } catch (error) {
         if (callback) {
@@ -406,8 +450,10 @@ broadcastMethods.customJson = function(_wif: string, requiredPostingAuths: strin
 };
 
 // Claim account operation
-broadcastMethods.claimAccount = function(_wif: string, options: any, callback?: any): any {
+broadcastMethods.claimAccount = function(wif: string, options: any, callback?: any): any {
     const api = this && this.api ? this.api : steem.api;
+    // @ts-ignore
+    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
     if (typeof callback !== 'function') {
         callback = undefined;
     }
@@ -416,13 +462,13 @@ broadcastMethods.claimAccount = function(_wif: string, options: any, callback?: 
             operations: [['claim_account', options]],
             extensions: []
         };
+        // Use send method to sign and broadcast with WIF
+        const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
-            broadcast(api, transaction)
-                .then(result => callback(null, result))
-                .catch(error => callback(error));
+            broadcastInstance.send(transaction, wif, callback);
             return;
         } else {
-            return broadcast(api, transaction);
+            return broadcastInstance.send(transaction, wif);
         }
     } catch (error) {
         if (callback) {
@@ -436,8 +482,10 @@ broadcastMethods.claimAccount = function(_wif: string, options: any, callback?: 
 broadcastMethods.claimAccountAsync = promisify(broadcastMethods.claimAccount);
 
 // Create claimed account operation
-broadcastMethods.createClaimedAccount = function(_wif: string, options: any, callback?: any): any {
+broadcastMethods.createClaimedAccount = function(wif: string, options: any, callback?: any): any {
     const api = this && this.api ? this.api : steem.api;
+    // @ts-ignore
+    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
     if (typeof callback !== 'function') {
         callback = undefined;
     }
@@ -446,13 +494,13 @@ broadcastMethods.createClaimedAccount = function(_wif: string, options: any, cal
             operations: [['create_claimed_account', options]],
             extensions: []
         };
+        // Use send method to sign and broadcast with WIF
+        const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
-            broadcast(api, transaction)
-                .then(result => callback(null, result))
-                .catch(error => callback(error));
+            broadcastInstance.send(transaction, wif, callback);
             return;
         } else {
-            return broadcast(api, transaction);
+            return broadcastInstance.send(transaction, wif);
         }
     } catch (error) {
         if (callback) {
@@ -466,8 +514,10 @@ broadcastMethods.createClaimedAccount = function(_wif: string, options: any, cal
 broadcastMethods.createClaimedAccountAsync = promisify(broadcastMethods.createClaimedAccount);
 
 // Create proposal operation
-broadcastMethods.createProposal = function(_wif: string, options: any, callback?: any): any {
+broadcastMethods.createProposal = function(wif: string, options: any, callback?: any): any {
     const api = this && this.api ? this.api : steem.api;
+    // @ts-ignore
+    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
     if (typeof callback !== 'function') {
         callback = undefined;
     }
@@ -476,13 +526,13 @@ broadcastMethods.createProposal = function(_wif: string, options: any, callback?
             operations: [['create_proposal', options]],
             extensions: []
         };
+        // Use send method to sign and broadcast with WIF
+        const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
-            broadcast(api, transaction)
-                .then(result => callback(null, result))
-                .catch(error => callback(error));
+            broadcastInstance.send(transaction, wif, callback);
             return;
         } else {
-            return broadcast(api, transaction);
+            return broadcastInstance.send(transaction, wif);
         }
     } catch (error) {
         if (callback) {
@@ -496,8 +546,10 @@ broadcastMethods.createProposal = function(_wif: string, options: any, callback?
 broadcastMethods.createProposalAsync = promisify(broadcastMethods.createProposal);
 
 // Update proposal votes operation
-broadcastMethods.updateProposalVotes = function(_wif: string, options: any, callback?: any): any {
+broadcastMethods.updateProposalVotes = function(wif: string, options: any, callback?: any): any {
     const api = this && this.api ? this.api : steem.api;
+    // @ts-ignore
+    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
     if (typeof callback !== 'function') {
         callback = undefined;
     }
@@ -506,13 +558,13 @@ broadcastMethods.updateProposalVotes = function(_wif: string, options: any, call
             operations: [['update_proposal_votes', options]],
             extensions: []
         };
+        // Use send method to sign and broadcast with WIF
+        const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
-            broadcast(api, transaction)
-                .then(result => callback(null, result))
-                .catch(error => callback(error));
+            broadcastInstance.send(transaction, wif, callback);
             return;
         } else {
-            return broadcast(api, transaction);
+            return broadcastInstance.send(transaction, wif);
         }
     } catch (error) {
         if (callback) {
@@ -526,8 +578,10 @@ broadcastMethods.updateProposalVotes = function(_wif: string, options: any, call
 broadcastMethods.updateProposalVotesAsync = promisify(broadcastMethods.updateProposalVotes);
 
 // Remove proposal operation
-broadcastMethods.removeProposal = function(_wif: string, options: any, callback?: any): any {
+broadcastMethods.removeProposal = function(wif: string, options: any, callback?: any): any {
     const api = this && this.api ? this.api : steem.api;
+    // @ts-ignore
+    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
     if (typeof callback !== 'function') {
         callback = undefined;
     }
@@ -536,13 +590,13 @@ broadcastMethods.removeProposal = function(_wif: string, options: any, callback?
             operations: [['remove_proposal', options]],
             extensions: []
         };
+        // Use send method to sign and broadcast with WIF
+        const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
-            broadcast(api, transaction)
-                .then(result => callback(null, result))
-                .catch(error => callback(error));
+            broadcastInstance.send(transaction, wif, callback);
             return;
         } else {
-            return broadcast(api, transaction);
+            return broadcastInstance.send(transaction, wif);
         }
     } catch (error) {
         if (callback) {
