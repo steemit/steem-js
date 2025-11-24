@@ -10,6 +10,12 @@ import { transports } from './transports/index';
 interface ApiOptions {
   url?: string;
   uri?: string;
+  /**
+   * WebSocket URL
+   * NOTE: WebSocket functionality is currently not supported.
+   * This field is kept for backward compatibility only.
+   * Please use HTTP transport (via url or uri field) for API calls.
+   */
   websocket?: string;
   transport?: string | any;
   logger?: any;
@@ -107,6 +113,9 @@ export class Api extends EventEmitter {
       this.options = options;
       this.transport = new transports.http(options);
     } else if (options.url && options.url.match(/^((ws|wss)?:\/\/)/)) {
+      // NOTE: WebSocket functionality is currently not supported.
+      // This code path is kept for backward compatibility only.
+      // Please use HTTP transport (https://api.steemit.com) for API calls.
       options.websocket = options.url;
       options.transport = 'ws';
       this._transportType = options.transport;
@@ -137,13 +146,18 @@ export class Api extends EventEmitter {
         this.options = options;
         this.transport = new transports.http(options);
       } else if (defaultNode.match(/^((ws|wss)?:\/\/)/)) {
+        // NOTE: WebSocket functionality is currently not supported.
+        // This code path is kept for backward compatibility only.
+        // Please use HTTP transport (https://api.steemit.com) for API calls.
         options.websocket = defaultNode;
         options.transport = 'ws';
         this._transportType = options.transport;
         this.options = options;
         this.transport = new transports.ws(options);
       } else {
-        // Fallback to WebSocket
+        // NOTE: WebSocket functionality is currently not supported.
+        // This fallback path is kept for backward compatibility only.
+        // Please use HTTP transport (https://api.steemit.com) for API calls.
         this.transport = new transports.ws(options);
       }
     }
@@ -247,6 +261,13 @@ export class Api extends EventEmitter {
     }
   }
 
+  /**
+   * Set WebSocket URL
+   * 
+   * NOTE: WebSocket functionality is currently not supported.
+   * This method is kept for backward compatibility only.
+   * Please use HTTP transport (via setOptions({ url: 'https://api.steemit.com' })) for API calls.
+   */
   setWebSocket(url: string) {
     this.setOptions({
       websocket: url

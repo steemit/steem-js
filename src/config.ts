@@ -41,11 +41,15 @@ export class Config {
 const DEFAULT_CONFIG: SteemConfig = {
   address_prefix: 'STM',
   chain_id: '0000000000000000000000000000000000000000000000000000000000000000',
+  // Default API endpoint: api.steemit.com
   node: 'https://api.steemit.com',
   nodes: [
     'https://api.steemit.com'
   ],
   uri: 'https://api.steemit.com',
+  // NOTE: WebSocket functionality is currently not supported.
+  // This configuration is kept for backward compatibility only.
+  // Please use HTTP transport (https://api.steemit.com) for API calls.
   websocket: 'wss://api.steemit.com'
 };
 

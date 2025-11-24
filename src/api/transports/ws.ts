@@ -3,6 +3,13 @@ import WebSocket from 'ws';
 import { TransportOptions, JsonRpcRequest, JsonRpcResponse } from './types';
 import { BaseTransport } from './base';
 
+/**
+ * WebSocket transport implementation
+ * 
+ * NOTE: WebSocket functionality is currently not supported.
+ * This implementation is kept for backward compatibility only.
+ * Please use HTTP transport (via https://api.steemit.com) for API calls.
+ */
 export class WsTransport extends BaseTransport {
   private ws: WebSocket | null;
   private _requests: Map<number, (error: any, result?: any) => void>;

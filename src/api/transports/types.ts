@@ -1,6 +1,12 @@
 export interface TransportOptions {
   url?: string;
   uri?: string;
+  /**
+   * WebSocket URL
+   * NOTE: WebSocket functionality is currently not supported.
+   * This field is kept for backward compatibility only.
+   * Please use HTTP transport (via url or uri field) for API calls.
+   */
   websocket?: string;
   transport?: string | any;
   [key: string]: any;
