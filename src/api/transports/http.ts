@@ -64,7 +64,17 @@ export class HttpTransport extends BaseTransport {
         })
           .then((res: any) => res.json())
           .then(
-            (result: any) => callback!(null, result.result, currentAttempt),
+            (result: any) => {
+              // Check for JSON-RPC errors
+              if (result.error) {
+                const error = new Error(result.error.message || 'JSON-RPC error');
+                (error as any).code = result.error.code;
+                (error as any).data = result.error.data;
+                callback!(error, undefined, currentAttempt);
+              } else {
+                callback!(null, result.result, currentAttempt);
+              }
+            },
             (error: any) => {
               if (operation.retry(error)) {
                 return;
@@ -87,7 +97,17 @@ export class HttpTransport extends BaseTransport {
       })
         .then((res: any) => res.json())
         .then(
-          (result: any) => callback!(null, result.result, 1),
+          (result: any) => {
+            // Check for JSON-RPC errors
+            if (result.error) {
+              const error = new Error(result.error.message || 'JSON-RPC error');
+              (error as any).code = result.error.code;
+              (error as any).data = result.error.data;
+              callback!(error, undefined, 1);
+            } else {
+              callback!(null, result.result, 1);
+            }
+          },
           (error: any) => callback!(error, undefined, 1)
         );
     }
