@@ -1,0 +1,22 @@
+---
+alwaysApply: true
+---
+
+## Code Documentation and Comments
+
+- All code comments, documentation, and rules must be written in English.
+- This includes:
+  - Inline code comments
+  - Function/class documentation (JSDoc comments)
+  - README files and other documentation
+  - Code review comments
+  - Error messages visible to developers
+  - Configuration file comments
+
+## Rationale
+
+Using English for all technical documentation ensures:
+- Consistency across the codebase
+- Better collaboration with international developers
+- Easier maintenance and onboarding
+- Standard practice in open-source projects
