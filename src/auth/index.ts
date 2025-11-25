@@ -129,7 +129,9 @@ export const Auth: Auth = {
 
         for (const key of keys) {
             const sig = Signature.signBuffer(Buffer.concat([cid, buf]), key);
-            signatures.push(sig.toHex());  // 使用 toHex() 而不是 toBuffer()
+            // Use toBuffer() to match old-steem-js behavior
+            // The serializer will convert Buffer to hex string when needed
+            signatures.push(sig.toBuffer().toString('hex'));
         }
 
         return signed_transaction.toObject(Object.assign(trx, { signatures }));

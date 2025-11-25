@@ -79,9 +79,12 @@ export class Serializer {
     }
 }
 
+import { serializeTransaction as serializeTransactionBinary } from './serializer/transaction';
+
 export const transaction = {
     toBuffer(trx: any): Buffer {
-        return Buffer.from(JSON.stringify(trx));
+        // Use binary serialization for proper signature generation
+        return serializeTransactionBinary(trx);
     }
 };
 

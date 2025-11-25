@@ -3,6 +3,9 @@ import bigi from 'bigi';
 import { sha256 } from './hash';
 import { PrivateKey } from './key_private';
 import { PublicKey } from './key_public';
+import { sign as ecdsaSign, calcPubKeyRecoveryParam } from './ecdsa';
+import ECSignature from './ecsignature';
+import { debug } from '../../../utils/debug';
 
 const secp256k1 = getCurveByName('secp256k1');
 
@@ -56,30 +59,31 @@ export class Signature {
         }
 
         const e = bigi.fromBuffer(buf_sha256);
-        const n = secp256k1.n;
-        const G = secp256k1.G;
-        const d = privKey.d;
-
-        let r: bigi, s: bigi;
+        let ecsignature: ECSignature;
+        let i: number | null = null;
         let nonce = 0;
 
+        // Match old-steem-js behavior: find canonical signature (lenR === 32 && lenS === 32)
         while (true) {
-            const k = bigi.fromBuffer(sha256(Buffer.concat([buf_sha256, Buffer.from([nonce++])])));
-            const Q = G.multiply(k);
-            r = Q.affineX.mod(n);
-            if (r.signum() === 0) continue;
-            s = k.modInverse(n).multiply(e.add(d.multiply(r))).mod(n);
-            if (s.signum() === 0) continue;
-            break;
+            ecsignature = ecdsaSign(secp256k1, buf_sha256, privKey.d, nonce++);
+            const der = ecsignature.toDER();
+            const lenR = der[3];
+            const lenS = der[5 + lenR];
+            
+            if (lenR === 32 && lenS === 32) {
+                // Calculate recovery parameter to match old-steem-js
+                i = calcPubKeyRecoveryParam(secp256k1, e, ecsignature, privKey.toPublic().Q);
+                i += 4;  // compressed
+                i += 27; // compact
+                break;
+            }
+            
+            if (nonce % 10 === 0) {
+                debug.warn("WARN: " + nonce + " attempts to find canonical signature");
+            }
         }
 
-        const N_OVER_TWO = n.shiftRight(1);
-        if (s.compareTo(N_OVER_TWO) > 0) {
-            s = n.subtract(s);
-        }
-
-        const i = 27 + 4; // compressed + compact
-        return new Signature(r, s, i);
+        return new Signature(ecsignature.r, ecsignature.s, i!);
     }
 
     static sign(string: string, private_key: PrivateKey | string): Signature {

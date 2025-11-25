@@ -5,6 +5,7 @@ import base58 from 'bs58';
 import assert from 'assert';
 import * as hash from './hash';
 import { PublicKey } from './key_public';
+import { debug } from '../../../utils/debug';
 
 // Use any type to avoid namespace issues
 type Point = any;
@@ -28,7 +29,7 @@ export class PrivateKey {
             throw new Error("Expecting parameter to be a Buffer type");
         }
         if (32 !== buf.length) {
-            console.log(`WARN: Expecting 32 bytes, instead got ${buf.length}, stack trace:`, new Error().stack);
+            debug.warn(`WARN: Expecting 32 bytes, instead got ${buf.length}, stack trace:`, new Error().stack);
         }
         if (buf.length === 0) {
             throw new Error("Empty buffer");

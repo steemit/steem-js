@@ -5,6 +5,8 @@ interface SteemConfig {
   websocket?: string;
   address_prefix?: string;
   chain_id?: string;
+  debug?: boolean;
+  debug_warnings?: boolean;
 }
 
 export class Config {

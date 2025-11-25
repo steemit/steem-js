@@ -32,6 +32,24 @@ export class Broadcast {
             // Prepare the transaction (fetch global props, block header, etc.)
             const transaction = await broadcastMethods._prepareTransaction.call(this, tx);
 
+            // Debug: Print transaction, digest, and hex before signing (if debug enabled)
+            const { debug } = await import('../utils/debug');
+            if (debug.isEnabled('transaction')) {
+                const { transaction: transactionSerializer } = await import('../auth/serializer');
+                const { getConfig } = await import('../config');
+                const { createHash } = await import('crypto');
+                
+                const buf = transactionSerializer.toBuffer(transaction);
+                const chainId = Buffer.from(getConfig().get('chain_id') || '', 'hex');
+                const digest = createHash('sha256').update(Buffer.concat([chainId, buf])).digest();
+                
+                debug.transaction('\n=== Transaction Debug Info (before signing) ===');
+                debug.transaction('Transaction:', JSON.stringify(transaction, null, 2));
+                debug.transaction('Transaction.toHex():', buf.toString('hex'));
+                debug.transaction('Digest (sha256(chain_id + transaction)):', digest.toString('hex'));
+                debug.transaction('===============================================\n');
+            }
+
             // Ensure privKeys is always an array for signTransaction
             const keysArray = Array.isArray(privKeys)
                 ? privKeys
