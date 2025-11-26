@@ -41,7 +41,4 @@ if (typeof broadcast.setApi === 'function') {
 
 // Export everything as named exports
 export { steem };
-export * from './crypto';
-
-// For UMD builds, export steem as default to avoid nesting
-export default steem; 
+export * from './crypto'; 
