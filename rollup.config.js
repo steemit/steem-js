@@ -58,13 +58,7 @@ export default [
       name: 'steem',
       sourcemap: true,
       globals: {
-        'crypto-js': 'CryptoJS',
-        'url': 'url',
-        'http': 'http',
-        'https': 'https',
-        'net': 'net',
-        'tls': 'tls',
-        'zlib': 'zlib'
+        'crypto-js': 'CryptoJS'
       }
     },
     plugins: [
@@ -90,13 +84,7 @@ export default [
       })
     ],
     external: [
-      'crypto-js',
-      'url',
-      'http',
-      'https',
-      'net',
-      'tls',
-      'zlib'
+      'crypto-js'
     ],
     onwarn(warning, warn) {
       if (warning.code === 'EVAL' && warning.id?.includes('bluebird')) {
