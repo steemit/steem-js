@@ -42,7 +42,7 @@ export default [
         sourceMap: true
       })
     ],
-    external: ['axios', 'crypto-js'],
+    external: ['axios'],
     onwarn(warning, warn) {
       if (warning.code === 'EVAL' && warning.id?.includes('bluebird')) {
         return;
@@ -202,9 +202,7 @@ export default [
     }
   }
 })();`,
-      globals: {
-        'crypto-js': 'CryptoJS'
-      }
+      globals: {}
     },
     plugins: [
       alias({
@@ -229,9 +227,7 @@ export default [
         sourceMap: true
       })
     ],
-    external: [
-      'crypto-js'
-    ],
+    external: [],
     onwarn(warning, warn) {
       if (warning.code === 'EVAL' && warning.id?.includes('bluebird')) {
         return;

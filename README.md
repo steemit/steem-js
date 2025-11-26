@@ -53,7 +53,7 @@ yarn add @steemit/steem-js
 <script src="https://cdn.jsdelivr.net/npm/@steemit/steem-js/dist/index.umd.js"></script>
 ```
 
-**Note**: The UMD build includes all necessary polyfills (axios, events, buffer, util, stream, assert, crypto). No additional dependencies are required.
+**Note**: The UMD build includes all necessary polyfills (events, buffer, util, stream, assert, crypto-browserify). No additional dependencies are required.
 
 ## Usage
 

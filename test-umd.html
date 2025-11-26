@@ -63,8 +63,7 @@
         
     </div>
 
-    <!-- Only includes crypto-js and steem.js, testing if it's truly a single file -->
-    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.js"></script>
+    <!-- Only includes steem.js, testing if it's truly a single file -->
     <script src="./dist/index.umd.js"></script>
     
     <script>
@@ -79,11 +78,11 @@
         function testDependencies() {
             addResult('dependencies-result', '🔍 Checking global dependencies...', 'info');
             
-            // Check crypto-js
-            if (typeof CryptoJS !== 'undefined') {
-                addResult('dependencies-result', '✅ CryptoJS loaded', 'success');
+            // Check if crypto functionality is available through steem
+            if (steem && steem.sha256) {
+                addResult('dependencies-result', '✅ Crypto functionality available', 'success');
             } else {
-                addResult('dependencies-result', '❌ CryptoJS not found', 'error');
+                addResult('dependencies-result', '❌ Crypto functionality not found', 'error');
             }
             
             // Check steem
