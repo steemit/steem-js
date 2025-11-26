@@ -147,7 +147,7 @@ export class PublicKey {
         if (c.cmp(n) >= 0)
             throw new Error("Child offset went out of bounds, try again");
 
-        const cG = G.multiply(c);
+        const cG = G.mul(c);
         const Qprime = this.Q!.add(cG);
 
         if (Qprime.isInfinity())

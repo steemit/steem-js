@@ -58,20 +58,35 @@ export class Signature {
             throw new Error('private_key required');
         }
 
-        const e = new BN(buf_sha256);
+        const d = privKey.d;
         let ecsignature: ECSignature;
-        let i: number | null = null;
         let nonce = 0;
 
-        // Generate signature (temporarily skip canonical check for debugging)
-        ecsignature = ecdsaSign(secp256k1, buf_sha256, privKey.d, nonce);
-        
-        // Calculate recovery parameter to match old-steem-js
-        i = calcPubKeyRecoveryParam(secp256k1, e, ecsignature, privKey.toPublic().Q);
-        i += 4;  // compressed
-        i += 27; // compact
+        // Match old-steem-js behavior: find canonical signature (lenR === 32 && lenS === 32)
+        // Based on C++ is_fc_canonical logic
+        while (true) {
+            ecsignature = ecdsaSign(secp256k1, buf_sha256, d, nonce++);
+            const rBa = ecsignature.r.toArrayLike(Buffer, 'be', 32);
+            const sBa = ecsignature.s.toArrayLike(Buffer, 'be', 32);
 
-        return new Signature(ecsignature.r, ecsignature.s, i!);
+            // Check for canonical signature based on Steem C++ implementation
+            // libraries/fc/src/crypto/elliptic_common.cpp is_fc_canonical
+            const isCanonical = !(rBa[0] & 0x80)
+                && !(rBa[0] === 0 && !(rBa[1] & 0x80))
+                && !(sBa[0] & 0x80)
+                && !(sBa[0] === 0 && !(sBa[1] & 0x80));
+
+            if (isCanonical) {
+                break;
+            }
+
+            if (nonce % 10 === 0) {
+                console.debug("WARN: " + nonce + " attempts to find canonical signature");
+            }
+        }
+
+        const i = calcPubKeyRecoveryParam(secp256k1, new BN(buf_sha256), ecsignature, privKey.toPublic().Q!);
+        return new Signature(ecsignature.r, ecsignature.s, i + 27);
     }
     
     static isCanonical(r: Buffer, s: Buffer): boolean {
@@ -120,9 +135,15 @@ export class Signature {
         const c = this.s.invm(n);
         const u1 = e.mul(c).mod(n);
         const u2 = this.r.mul(c).mod(n);
-        const xy = G.multiplyTwo(u1, Q, u2);
-        const v = xy.affineX.mod(n);
-
+        
+        // Use elliptic.js API: R = u1*G + u2*Q
+        const R = G.mul(u1).add(Q.mul(u2));
+        
+        if (R.isInfinity()) {
+            return false;
+        }
+        
+        const v = R.getX().mod(n);
         return v.eq(this.r);
     }
 

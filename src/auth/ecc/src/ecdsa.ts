@@ -205,16 +205,29 @@ export function recoverPubKey(curve: ECInstance, e: BN, signature: ECSignature, 
 export function calcPubKeyRecoveryParam(curve: ECInstance, e: BN, signature: ECSignature, Q: ECPoint): number {
     for (let i = 0; i < 4; i++) {
         try {
-            const Qprime = recoverPubKey(curve, e, signature, i);
+            // Use elliptic's built-in recovery method
+            const Qprime = curve.recoverPubKey(e, signature, i);
 
             // 1.6.2 Verify Q = Q'
+            // Compare points by checking if they are the same point
             if (Qprime.eq(Q)) {
                 return i;
             }
         } catch (error) {
             // try next value
+            console.debug(`Recovery attempt ${i} failed:`, error.message);
         }
     }
+
+    // Additional debugging
+    console.debug('All recovery attempts failed. Signature:', {
+        r: signature.r.toString(16),
+        s: signature.s.toString(16)
+    });
+    console.debug('Expected public key:', {
+        x: Q.getX().toString(16),
+        y: Q.getY().toString(16)
+    });
 
     throw new Error('Unable to find valid recovery factor');
 } 

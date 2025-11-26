@@ -112,18 +112,18 @@ export class PrivateKey {
 
     /** ECIES */
     get_shared_secret(public_key: PublicKey | string): Buffer {
-        const pubKey = toPublic(public_key);
-        if (!pubKey) {
+        const pubKey = typeof public_key === 'string' 
+            ? PublicKey.fromStringOrThrow(public_key)
+            : public_key;
+        
+        if (!pubKey || !pubKey.Q) {
             throw new Error('Invalid public key');
         }
-        const KB = pubKey.toUncompressed().toBuffer();
-        const KBP = secp256k1.curve.point(
-            new BN(KB.slice(1, 33)), // x
-            new BN(KB.slice(33, 65)) // y
-        );
-        const r = this.toBuffer();
-        const P = KBP.mul(new BN(r));
-        const S = new BN(P.getX().toString()).toArrayLike(Buffer, 'be', 32);
+        
+        // ECDH: shared_secret = private_key * public_key_point
+        const P = pubKey.Q.mul(this.d);
+        const S = P.getX().toArrayLike(Buffer, 'be', 32);
+        
         // SHA512 used in ECIES
         return hash.sha512(S);
     }
