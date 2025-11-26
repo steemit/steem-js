@@ -1,6 +1,6 @@
 {
   "name": "@steemit/steem-js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Steem blockchain JavaScript/TypeScript library",
   "type": "module",
   "main": "dist/index.cjs",
@@ -43,6 +43,7 @@
     "@rollup/plugin-inject": "^5.0.5",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/bluebird": "^3.5.42",
     "@types/bn.js": "^5.2.0",

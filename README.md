@@ -11,7 +11,7 @@ This is a complete refactoring of the original steem-js library, migrating from 
 - ✅ **TypeScript Migration**: Complete migration from JavaScript to TypeScript
 - ✅ **Build System**: Migrated from Webpack to Rollup
 - ✅ **Testing**: Migrated from Mocha to Vitest
-- ✅ **Modern Dependencies (2024)**: Replaced outdated cryptographic libraries
+- ✅ **Modern Dependencies (2025)**: Replaced outdated cryptographic libraries
   - `bigi` → `bn.js` (modern big integer library)
   - `ecurve` → `elliptic` (modern elliptic curve cryptography)
   - Removed all shim layers for direct modern library usage
@@ -50,10 +50,14 @@ yarn add @steemit/steem-js
 
 ```html
 <!-- Include @steemit/steem-js (all dependencies are bundled) -->
+<!-- For production: use minified version (692KB) -->
+<script src="https://cdn.jsdelivr.net/npm/@steemit/steem-js/dist/index.umd.min.js"></script>
+
+<!-- For development: use regular version (1.7MB) with better debugging -->
 <script src="https://cdn.jsdelivr.net/npm/@steemit/steem-js/dist/index.umd.js"></script>
 ```
 
-**Note**: The UMD build includes all necessary polyfills (events, buffer, util, stream, assert, crypto-browserify). No additional dependencies are required.
+**Note**: The UMD build includes all necessary polyfills (events, buffer, util, stream, assert, crypto-browserify). No additional dependencies are required. The minified version is recommended for production use.
 
 ## Usage
 
@@ -109,8 +113,8 @@ The UMD build includes all necessary dependencies and polyfills, so you can use 
 <html>
 <head>
   <title>Steem.js Example</title>
-  <!-- Include @steemit/steem-js (all dependencies bundled) -->
-  <script src="https://cdn.jsdelivr.net/npm/@steemit/steem-js/dist/index.umd.js"></script>
+  <!-- Include @steemit/steem-js (minified for production) -->
+  <script src="https://cdn.jsdelivr.net/npm/@steemit/steem-js/dist/index.umd.min.js"></script>
 </head>
 <body>
   <script>
@@ -133,7 +137,11 @@ The UMD build includes all necessary dependencies and polyfills, so you can use 
 </html>
 ```
 
-**Note**: The UMD build (1.7MB) includes all polyfills, making it ready to use in browsers without additional dependencies. For production use with bundlers (Webpack, Vite, Rollup), use the ES Module or CommonJS builds instead.
+**Note**: The UMD build comes in two versions:
+- **Minified** (`index.umd.min.js` - 692KB): Recommended for production
+- **Regular** (`index.umd.js` - 1.7MB): Better for development and debugging
+
+Both include all polyfills, making them ready to use in browsers without additional dependencies. For production use with bundlers (Webpack, Vite, Rollup), use the ES Module or CommonJS builds instead.
 
 ### Broadcast Operations
 

@@ -4,64 +4,56 @@ import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import alias from '@rollup/plugin-alias';
 import inject from '@rollup/plugin-inject';
+import terser from '@rollup/plugin-terser';
 
-export default [
-  // Server-side builds (Node.js)
-  {
-    input: 'src/index.ts',
-    output: [
-      // ES Module for modern bundlers and Node.js
-      {
-        file: 'dist/index.js',
-        format: 'es',
-        sourcemap: true,
-        generatedCode: {
-          constBindings: true
-        }
+// Helper function to create UMD build configuration
+function createUmdConfig(minified = false) {
+  const filename = minified ? 'dist/index.umd.min.js' : 'dist/index.umd.js';
+  const plugins = [
+    alias({
+      entries: [
+        { find: 'crypto', replacement: 'crypto-browserify' },
+        { find: 'events', replacement: 'events' },
+        { find: 'assert', replacement: 'assert' },
+        { find: 'buffer', replacement: 'buffer' },
+        { find: 'util', replacement: 'util' },
+        { find: 'stream', replacement: 'stream-browserify' },
+        { find: 'process', replacement: 'process/browser' }
+      ]
+    }),
+    resolve({
+      preferBuiltins: false,
+      browser: true
+    }),
+    commonjs(),
+    json(),
+    typescript({
+      tsconfig: './tsconfig.json',
+      sourceMap: true
+    })
+  ];
+
+  // Add terser for minified version
+  if (minified) {
+    plugins.push(terser({
+      compress: {
+        drop_console: false, // Keep console.log for debugging
+        drop_debugger: true,
+        pure_funcs: ['console.debug'] // Remove console.debug calls
       },
-      // CommonJS for Node.js require()
-      {
-        file: 'dist/index.cjs',
-        format: 'cjs',
-        sourcemap: true
+      mangle: {
+        reserved: ['steem'] // Don't mangle the global name
+      },
+      format: {
+        comments: false // Remove comments
       }
-    ],
-    plugins: [
-      resolve({
-        preferBuiltins: true,
-        browser: false
-      }),
-      commonjs({
-        transformMixedEsModules: true,
-        strictRequires: true,
-        esmExternals: true
-      }),
-      json(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        sourceMap: true
-      })
-    ],
-    external: ['axios'],
-    onwarn(warning, warn) {
-      if (warning.code === 'EVAL' && warning.id?.includes('bluebird')) {
-        return;
-      }
-      // Filter out circular dependency warnings from third-party libraries (not our code issues)
-      if (warning.code === 'CIRCULAR_DEPENDENCY') {
-        const thirdPartyLibs = ['readable-stream', 'brorand', 'crypto-browserify', 'elliptic', 'asn1.js', 'diffie-hellman', 'miller-rabin', 'browserify-sign', 'assert'];
-        if (thirdPartyLibs.some(lib => warning.message?.includes(lib))) {
-          return;
-        }
-      }
-      warn(warning);
-    }
-  },
-  // Browser build (UMD)
-  {
+    }));
+  }
+
+  return {
     input: 'src/umd.ts',
     output: {
-      file: 'dist/index.umd.js',
+      file: filename,
       format: 'umd',
       name: 'steem',
       sourcemap: true,
@@ -163,77 +155,9 @@ export default [
     }
   }
 })();`,
-      outro: `(function() {
-  // Ensure Buffer is globally available after bundle loads
-  if (typeof globalThis !== 'undefined' && typeof globalThis.Buffer === 'undefined') {
-    // Try to find Buffer in the bundle
-    if (typeof require !== 'undefined') {
-      try {
-        globalThis.Buffer = require('buffer').Buffer;
-      } catch (e) {
-        // Fallback: create minimal Buffer polyfill
-        globalThis.Buffer = {
-          from: function(data, encoding) {
-            if (typeof data === 'string') {
-              if (encoding === 'hex') {
-                const bytes = new Uint8Array(data.length / 2);
-                for (let i = 0; i < data.length; i += 2) {
-                  bytes[i / 2] = parseInt(data.substr(i, 2), 16);
-                }
-                return bytes;
-              }
-              return new TextEncoder().encode(data);
-            }
-            return new Uint8Array(data);
-          },
-          alloc: function(size, fill) {
-            const buf = new Uint8Array(size);
-            if (fill !== undefined) buf.fill(fill);
-            return buf;
-          },
-          concat: function(buffers) {
-            const totalLength = buffers.reduce((sum, buf) => sum + buf.length, 0);
-            const result = new Uint8Array(totalLength);
-            let offset = 0;
-            for (const buf of buffers) {
-              result.set(buf, offset);
-              offset += buf.length;
-            }
-            return result;
-          },
-          isBuffer: function(obj) {
-            return obj instanceof Uint8Array;
-          }
-        };
-      }
-    }
-  }
-})();`,
       globals: {}
     },
-    plugins: [
-      alias({
-        entries: [
-          { find: 'crypto', replacement: 'crypto-browserify' },
-          { find: 'events', replacement: 'events' },
-          { find: 'assert', replacement: 'assert' },
-          { find: 'buffer', replacement: 'buffer' },
-          { find: 'util', replacement: 'util' },
-          { find: 'stream', replacement: 'stream-browserify' },
-          { find: 'process', replacement: 'process/browser' }
-        ]
-      }),
-      resolve({
-        preferBuiltins: false,
-        browser: true
-      }),
-      commonjs(),
-      json(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        sourceMap: true
-      })
-    ],
+    plugins,
     external: [],
     onwarn(warning, warn) {
       if (warning.code === 'EVAL' && warning.id?.includes('bluebird')) {
@@ -248,5 +172,62 @@ export default [
       }
       warn(warning);
     }
-  }
+  };
+}
+
+export default [
+  // Server-side builds (Node.js)
+  {
+    input: 'src/index.ts',
+    output: [
+      // ES Module for modern bundlers and Node.js
+      {
+        file: 'dist/index.js',
+        format: 'es',
+        sourcemap: true,
+        generatedCode: {
+          constBindings: true
+        }
+      },
+      // CommonJS for Node.js require()
+      {
+        file: 'dist/index.cjs',
+        format: 'cjs',
+        sourcemap: true
+      }
+    ],
+    plugins: [
+      resolve({
+        preferBuiltins: true,
+        browser: false
+      }),
+      commonjs({
+        transformMixedEsModules: true,
+        strictRequires: true,
+        esmExternals: true
+      }),
+      json(),
+      typescript({
+        tsconfig: './tsconfig.json',
+        sourceMap: true
+      })
+    ],
+    external: ['axios'],
+    onwarn(warning, warn) {
+      if (warning.code === 'EVAL' && warning.id?.includes('bluebird')) {
+        return;
+      }
+      // Filter out circular dependency warnings from third-party libraries (not our code issues)
+      if (warning.code === 'CIRCULAR_DEPENDENCY') {
+        const thirdPartyLibs = ['readable-stream', 'brorand', 'crypto-browserify', 'elliptic', 'asn1.js', 'diffie-hellman', 'miller-rabin', 'browserify-sign', 'assert'];
+        if (thirdPartyLibs.some(lib => warning.message?.includes(lib))) {
+          return;
+        }
+      }
+      warn(warning);
+    }
+  },
+  // Browser builds (UMD)
+  createUmdConfig(false), // Regular UMD build
+  createUmdConfig(true)   // Minified UMD build
 ]; 
