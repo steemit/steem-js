@@ -20,3 +20,11 @@ Using English for all technical documentation ensures:
 - Better collaboration with international developers
 - Easier maintenance and onboarding
 - Standard practice in open-source projects
+
+## Package Management
+
+- Always use pnpm as the package manager for this project
+- Use `pnpm install` instead of `npm install` or `yarn install`
+- Use `pnpm add` instead of `npm install` for adding dependencies
+- Use `pnpm run` for running scripts
+- This ensures consistent dependency resolution and faster installation times
