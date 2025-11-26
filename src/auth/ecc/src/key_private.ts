@@ -11,7 +11,7 @@ import { debug } from '../../../utils/debug';
 type ECPoint = any;
 
 const G = secp256k1.g;
-const n = new BN(secp256k1.n.toString());
+const n = new BN(secp256k1.n!.toString());
 export class PrivateKey {
     d: BN;
     public_key?: PublicKey;

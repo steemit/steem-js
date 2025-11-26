@@ -1,5 +1,5 @@
 import ByteBuffer from 'bytebuffer';
-import Long from 'long';
+// import Long from 'long'; // Unused import - Long is used via ByteBuffer
 import { PublicKey } from '../ecc/src/key_public';
 
 /**

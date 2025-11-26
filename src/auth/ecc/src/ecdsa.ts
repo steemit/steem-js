@@ -51,7 +51,7 @@ function deterministicGenerateK(curve: ECInstance, hash: Buffer, d: BN, checkSig
     let T = new BN(v);
 
     // Step H3, repeat until T is within the interval [1, n - 1] and passes the supplied check
-    while ((T.isNeg() || T.isZero()) || (T.gte(new BN(curve.n.toString()))) || !checkSig(T)) {
+    while ((T.isNeg() || T.isZero()) || (T.gte(new BN(curve.n!.toString()))) || !checkSig(T)) {
         k = crypto.HmacSHA256(Buffer.concat([v, Buffer.from([0])]), k);
         v = crypto.HmacSHA256(v, k);
 
@@ -67,7 +67,7 @@ function deterministicGenerateK(curve: ECInstance, hash: Buffer, d: BN, checkSig
 
 export function sign(curve: ECInstance, hash: Buffer, d: BN, nonce?: number): ECSignature {
     const e = new BN(hash);
-    const n = new BN(curve.n.toString());
+    const n = new BN(curve.n!.toString());
     const G = curve.g;
 
     let r: BN | undefined;
@@ -106,7 +106,7 @@ export function verify(curve: ECInstance, hash: Buffer, signature: ECSignature, 
 }
 
 function verifyRaw(curve: ECInstance, e: BN, signature: ECSignature, Q: ECPoint): boolean {
-    const n = new BN(curve.n.toString());
+    const n = new BN(curve.n!.toString());
     const G = curve.g;
 
     const r = signature.r;
@@ -151,7 +151,7 @@ function verifyRaw(curve: ECInstance, e: BN, signature: ECSignature, Q: ECPoint)
 export function recoverPubKey(curve: ECInstance, e: BN, signature: ECSignature, i: number): ECPoint {
     assert.strictEqual(i & 3, i, 'Recovery param is more than two bits');
 
-    const n = new BN(curve.n.toString());
+    const n = new BN(curve.n!.toString());
     const G = curve.g;
 
     const r = signature.r;

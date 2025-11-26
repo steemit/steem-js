@@ -5,7 +5,7 @@ import { PrivateKey } from './key_private';
 import { PublicKey } from './key_public';
 import { sign as ecdsaSign, calcPubKeyRecoveryParam } from './ecdsa';
 import ECSignature from './ecsignature';
-import { debug } from '../../../utils/debug';
+// import { debug } from '../../../utils/debug'; // Unused import
 
 const secp256k1 = new EC('secp256k1');
 
@@ -103,8 +103,8 @@ export class Signature {
         }
 
         const e = new BN(hash);
-        const n = secp256k1.n;
-        const G = secp256k1.G;
+        const n = new BN(secp256k1.n!.toString());
+        const G = secp256k1.g;
         const Q = public_key.Q;
         if (!Q) {
             throw new Error('Invalid public key');

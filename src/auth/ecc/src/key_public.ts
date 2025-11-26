@@ -10,7 +10,7 @@ import assert from 'assert';
 type ECPoint = any;
 
 const G = secp256k1.g;
-const n = new BN(secp256k1.n.toString());
+const n = new BN(secp256k1.n!.toString());
 
 export class PublicKey {
     Q: ECPoint | null;
@@ -144,13 +144,13 @@ export class PublicKey {
 
         const c = new BN(offset);
 
-        if (c.compareTo(n) >= 0)
+        if (c.cmp(n) >= 0)
             throw new Error("Child offset went out of bounds, try again");
 
         const cG = G.multiply(c);
         const Qprime = this.Q!.add(cG);
 
-        if (secp256k1.isInfinity(Qprime))
+        if (Qprime.isInfinity())
             throw new Error("Child offset derived to an invalid key, try again");
 
         return PublicKey.fromPoint(Qprime);
