@@ -7,11 +7,12 @@ import * as memo from './memo';
 import * as operations from './operations';
 import * as serializer from './serializer';
 import * as utils from './utils';
+import * as crypto from './crypto';
 
 // Create the API instance
 const api = new Api();
 
-// Create the main steem object with all modules
+// Create the main steem object with all modules - this will be the default export for UMD
 const steem = {
   api,
   auth,
@@ -21,6 +22,7 @@ const steem = {
   operations,
   serializer,
   utils,
+  ...crypto,
   config: {
     set: (options: any) => {
       setApiOptions(options);
@@ -39,9 +41,5 @@ if (typeof broadcast.setApi === 'function') {
   broadcast.setApi(api);
 }
 
-// Export everything as named exports
-export { steem };
-export * from './crypto';
-
-// For UMD builds, export steem as default to avoid nesting
-export default steem; 
+// Export as default for UMD builds to avoid nesting
+export default steem;

@@ -52,12 +52,13 @@ export default [
   },
   // Browser build (UMD)
   {
-    input: 'src/index.ts',
+    input: 'src/umd.ts',
     output: {
       file: 'dist/index.umd.js',
       format: 'umd',
       name: 'steem',
       sourcemap: true,
+      exports: 'default',
       banner: `(function() {
   // Provide minimal polyfills for browser
   if (typeof globalThis !== 'undefined') {

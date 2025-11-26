@@ -61,8 +61,6 @@
         <h2>🚀 Steem.js Functionality Test</h2>
         <div id="steem-result"></div>
         
-        <h2>📊 File Information</h2>
-        <div id="file-info"></div>
     </div>
 
     <!-- Only includes crypto-js and steem.js, testing if it's truly a single file -->
@@ -146,10 +144,31 @@
                     addResult('steem-result', `📋 Generated public key: ${keys.posting}`, 'info');
                 }
                 
+                // Test export structure
+                addResult('steem-result', `📋 Export structure test:`, 'info');
+                addResult('steem-result', `   - steem.api: ${typeof steem.api}`, 'info');
+                addResult('steem-result', `   - steem.steem: ${typeof steem.steem}`, 'info');
+                addResult('steem-result', `   - steem.auth: ${typeof steem.auth}`, 'info');
+                
                 // Test API object
                 if (steem.api) {
-                    addResult('steem-result', '✅ API object available', 'success');
+                    addResult('steem-result', '✅ API object available directly', 'success');
                     addResult('steem-result', `📋 API methods: ${Object.keys(steem.api).slice(0, 5).join(', ')}...`, 'info');
+                    
+                    // Test API methods
+                    if (typeof steem.api.setOptions === 'function') {
+                        addResult('steem-result', '✅ steem.api.setOptions available', 'success');
+                    }
+                    if (typeof steem.api.getAccount === 'function') {
+                        addResult('steem-result', '✅ steem.api.getAccount available', 'success');
+                    }
+                } else {
+                    addResult('steem-result', '❌ API object not found at steem.api', 'error');
+                }
+                
+                // Check if nested structure exists
+                if (steem.steem && steem.steem.api) {
+                    addResult('steem-result', '⚠️ Nested structure detected: steem.steem.api exists', 'warning');
                 }
                 
             } catch (error) {
@@ -158,13 +177,6 @@
             }
         }
 
-        function showFileInfo() {
-            // Display file size information (needs manual update)
-            const fileSize = '1.7 MB'; // From build output
-            addResult('file-info', `📦 UMD file size: ${fileSize}`, 'info');
-            addResult('file-info', '🎯 This is a true single-file build containing all necessary polyfills', 'success');
-            addResult('file-info', '📋 Included polyfills: crypto, buffer, util, stream, events, assert, path, url, http, https, zlib, net, tls', 'info');
-        }
 
         // Run all tests
         document.addEventListener('DOMContentLoaded', function() {
@@ -172,7 +184,6 @@
                 testDependencies();
                 testPolyfills();
                 testSteemFunctions();
-                showFileInfo();
             }, 100);
         });
     </script>
