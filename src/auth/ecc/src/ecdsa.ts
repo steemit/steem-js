@@ -215,7 +215,7 @@ export function calcPubKeyRecoveryParam(curve: ECInstance, e: BN, signature: ECS
             }
         } catch (error) {
             // try next value
-            console.debug(`Recovery attempt ${i} failed:`, error.message);
+            console.debug(`Recovery attempt ${i} failed:`, (error as Error).message);
         }
     }
 

@@ -159,10 +159,3 @@ export class PrivateKey {
         return this.toPublic();
     }
 }
-
-const toPublic = (data: PublicKey | string): PublicKey => {
-    if (typeof data === 'string') {
-        return PublicKey.fromStringOrThrow(data);
-    }
-    return data;
-}; 
