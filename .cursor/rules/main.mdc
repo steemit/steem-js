@@ -28,3 +28,13 @@ Using English for all technical documentation ensures:
 - Use `pnpm add` instead of `npm install` for adding dependencies
 - Use `pnpm run` for running scripts
 - This ensures consistent dependency resolution and faster installation times
+
+## Git Commit Policy
+
+- **Never automatically commit changes without explicit user confirmation**
+- Before creating any commit:
+  1. Show the user what files will be committed (`git status`)
+  2. Present the proposed commit message
+  3. Wait for explicit user approval before executing `git commit`
+- Only use `git add` and prepare commits, but always ask for confirmation before committing
+- This ensures the user maintains full control over the git history and commit timing
