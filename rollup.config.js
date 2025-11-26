@@ -47,6 +47,13 @@ export default [
       if (warning.code === 'EVAL' && warning.id?.includes('bluebird')) {
         return;
       }
+      // Filter out circular dependency warnings from third-party libraries (not our code issues)
+      if (warning.code === 'CIRCULAR_DEPENDENCY') {
+        const thirdPartyLibs = ['readable-stream', 'brorand', 'crypto-browserify', 'elliptic', 'asn1.js', 'diffie-hellman', 'miller-rabin', 'browserify-sign', 'assert'];
+        if (thirdPartyLibs.some(lib => warning.message?.includes(lib))) {
+          return;
+        }
+      }
       warn(warning);
     }
   },
@@ -231,6 +238,13 @@ export default [
     onwarn(warning, warn) {
       if (warning.code === 'EVAL' && warning.id?.includes('bluebird')) {
         return;
+      }
+      // Filter out circular dependency warnings from third-party libraries (not our code issues)
+      if (warning.code === 'CIRCULAR_DEPENDENCY') {
+        const thirdPartyLibs = ['readable-stream', 'brorand', 'crypto-browserify', 'elliptic', 'asn1.js', 'diffie-hellman', 'miller-rabin', 'browserify-sign', 'assert'];
+        if (thirdPartyLibs.some(lib => warning.message?.includes(lib))) {
+          return;
+        }
       }
       warn(warning);
     }
