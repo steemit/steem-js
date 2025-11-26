@@ -1,26 +1,26 @@
-import ecurve from 'ecurve';
-const secp256k1 = ecurve.getCurveByName('secp256k1');
-import BigInteger from 'bigi';
+import { ec as EC } from 'elliptic';
+const secp256k1 = new EC('secp256k1');
+import BN from 'bn.js';
 import base58 from 'bs58';
 import assert from 'assert';
 import * as hash from './hash';
 import { PublicKey } from './key_public';
 import { debug } from '../../../utils/debug';
 
-// Use any type to avoid namespace issues
-type Point = any;
+// Use elliptic types directly
+type ECPoint = any;
 
-const G = secp256k1.G;
-const n = secp256k1.n;
+const G = secp256k1.g;
+const n = new BN(secp256k1.n.toString());
 export class PrivateKey {
-    d: BigInteger;
+    d: BN;
     public_key?: PublicKey;
 
     /**
      * @private see static functions
-     * @param {BigInteger} d
+     * @param {BN} d
      */
-    constructor(d: BigInteger) {
+    constructor(d: BN) {
         this.d = d;
     }
 
@@ -34,7 +34,7 @@ export class PrivateKey {
         if (buf.length === 0) {
             throw new Error("Empty buffer");
         }
-        return new PrivateKey(BigInteger.fromBuffer(buf));
+        return new PrivateKey(new BN(buf));
     }
 
     /** @arg {string} seed - any length string. This is private, the same seed produces the same private key every time. */
@@ -95,8 +95,8 @@ export class PrivateKey {
     /**
      * @return {Point}
      */
-    toPublicKeyPoint(): Point {
-        return G.multiply(this.d);
+    toPublicKeyPoint(): ECPoint {
+        return G.mul(this.d);
     }
 
     toPublic(): PublicKey {
@@ -107,7 +107,7 @@ export class PrivateKey {
     }
 
     toBuffer(): Buffer {
-        return this.d.toBuffer(32);
+        return this.d.toArrayLike(Buffer, 'be', 32);
     }
 
     /** ECIES */
@@ -117,14 +117,13 @@ export class PrivateKey {
             throw new Error('Invalid public key');
         }
         const KB = pubKey.toUncompressed().toBuffer();
-        const KBP = ecurve.Point.fromAffine(
-            secp256k1,
-            BigInteger.fromBuffer(KB.slice(1, 33)), // x
-            BigInteger.fromBuffer(KB.slice(33, 65)) // y
+        const KBP = secp256k1.curve.point(
+            new BN(KB.slice(1, 33)), // x
+            new BN(KB.slice(33, 65)) // y
         );
         const r = this.toBuffer();
-        const P = KBP.multiply(BigInteger.fromBuffer(r));
-        const S = P.affineX.toBuffer({ size: 32 });
+        const P = KBP.mul(new BN(r));
+        const S = new BN(P.getX().toString()).toArrayLike(Buffer, 'be', 32);
         // SHA512 used in ECIES
         return hash.sha512(S);
     }
@@ -133,15 +132,15 @@ export class PrivateKey {
     child(offset: Buffer): PrivateKey {
         offset = Buffer.concat([this.toPublicKey().toBuffer(), offset]);
         offset = hash.sha256(offset) as Buffer;
-        const c = BigInteger.fromBuffer(offset);
+        const c = new BN(offset);
 
-        if (c.compareTo(n) >= 0) {
+        if (c.gte(n)) {
             throw new Error("Child offset went out of bounds, try again");
         }
 
         const derived = this.d.add(c);
 
-        if (derived.signum() === 0) {
+        if (derived.isZero()) {
             throw new Error("Child offset derived to an invalid key, try again");
         }
 

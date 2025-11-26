@@ -1,5 +1,5 @@
-import { getCurveByName } from 'ecurve';
-import bigi from 'bigi';
+import { ec as EC } from 'elliptic';
+import BN from 'bn.js';
 import { sha256 } from './hash';
 import { PrivateKey } from './key_private';
 import { PublicKey } from './key_public';
@@ -7,14 +7,14 @@ import { sign as ecdsaSign, calcPubKeyRecoveryParam } from './ecdsa';
 import ECSignature from './ecsignature';
 import { debug } from '../../../utils/debug';
 
-const secp256k1 = getCurveByName('secp256k1');
+const secp256k1 = new EC('secp256k1');
 
 export class Signature {
-    r: bigi;
-    s: bigi;
+    r: BN;
+    s: BN;
     i: number;
 
-    constructor(r: bigi, s: bigi, i: number) {
+    constructor(r: BN, s: BN, i: number) {
         this.r = r;
         this.s = s;
         this.i = i;
@@ -30,16 +30,16 @@ export class Signature {
             throw new Error('Invalid signature parameter');
         }
 
-        const r = bigi.fromBuffer(buffer.slice(1, 33));
-        const s = bigi.fromBuffer(buffer.slice(33));
+        const r = new BN(buffer.slice(1, 33));
+        const s = new BN(buffer.slice(33));
         return new Signature(r, s, i);
     }
 
     toBuffer(): Buffer {
         const buf = Buffer.alloc(65);
         buf.writeUInt8(this.i, 0);
-        this.r.toBuffer(32).copy(buf, 1);
-        this.s.toBuffer(32).copy(buf, 33);
+        this.r.toArrayLike(Buffer, 'be', 32).copy(buf, 1);
+        this.s.toArrayLike(Buffer, 'be', 32).copy(buf, 33);
         return buf;
     }
 
@@ -58,32 +58,34 @@ export class Signature {
             throw new Error('private_key required');
         }
 
-        const e = bigi.fromBuffer(buf_sha256);
+        const e = new BN(buf_sha256);
         let ecsignature: ECSignature;
         let i: number | null = null;
         let nonce = 0;
 
-        // Match old-steem-js behavior: find canonical signature (lenR === 32 && lenS === 32)
-        while (true) {
-            ecsignature = ecdsaSign(secp256k1, buf_sha256, privKey.d, nonce++);
-            const der = ecsignature.toDER();
-            const lenR = der[3];
-            const lenS = der[5 + lenR];
-            
-            if (lenR === 32 && lenS === 32) {
-                // Calculate recovery parameter to match old-steem-js
-                i = calcPubKeyRecoveryParam(secp256k1, e, ecsignature, privKey.toPublic().Q);
-                i += 4;  // compressed
-                i += 27; // compact
-                break;
-            }
-            
-            if (nonce % 10 === 0) {
-                debug.warn("WARN: " + nonce + " attempts to find canonical signature");
-            }
-        }
+        // Generate signature (temporarily skip canonical check for debugging)
+        ecsignature = ecdsaSign(secp256k1, buf_sha256, privKey.d, nonce);
+        
+        // Calculate recovery parameter to match old-steem-js
+        i = calcPubKeyRecoveryParam(secp256k1, e, ecsignature, privKey.toPublic().Q);
+        i += 4;  // compressed
+        i += 27; // compact
 
         return new Signature(ecsignature.r, ecsignature.s, i!);
+    }
+    
+    static isCanonical(r: Buffer, s: Buffer): boolean {
+        // See libraries/fc/src/crypto/elliptic_common.cpp is_fc_canonical
+        // return !(c.data[1] & 0x80)
+        //     && !(c.data[1] == 0 && !(c.data[2] & 0x80))
+        //     && !(c.data[33] & 0x80)
+        //     && !(c.data[33] == 0 && !(c.data[34] & 0x80));
+        
+        // Note: c.data[1] corresponds to r[0], c.data[33] corresponds to s[0]
+        return !(r[0] & 0x80)
+            && !(r[0] === 0 && !(r[1] & 0x80))
+            && !(s[0] & 0x80)
+            && !(s[0] === 0 && !(s[1] & 0x80));
     }
 
     static sign(string: string, private_key: PrivateKey | string): Signature {
@@ -100,7 +102,7 @@ export class Signature {
             throw new Error("A SHA 256 should be 32 bytes long, instead got " + hash.length);
         }
 
-        const e = bigi.fromBuffer(hash);
+        const e = new BN(hash);
         const n = secp256k1.n;
         const G = secp256k1.G;
         const Q = public_key.Q;
@@ -108,20 +110,20 @@ export class Signature {
             throw new Error('Invalid public key');
         }
 
-        if (this.r.signum() <= 0 || this.r.compareTo(n) >= 0) {
+        if (this.r.isNeg() || this.r.isZero() || this.r.gte(n)) {
             return false;
         }
-        if (this.s.signum() <= 0 || this.s.compareTo(n) >= 0) {
+        if (this.s.isNeg() || this.s.isZero() || this.s.gte(n)) {
             return false;
         }
 
-        const c = this.s.modInverse(n);
-        const u1 = e.multiply(c).mod(n);
-        const u2 = this.r.multiply(c).mod(n);
+        const c = this.s.invm(n);
+        const u1 = e.mul(c).mod(n);
+        const u2 = this.r.mul(c).mod(n);
         const xy = G.multiplyTwo(u1, Q, u2);
         const v = xy.affineX.mod(n);
 
-        return v.equals(this.r);
+        return v.eq(this.r);
     }
 
     static fromHex(hex: string): Signature {

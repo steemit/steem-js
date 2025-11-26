@@ -1,13 +1,13 @@
 import enforce from './enforce_types';
-import BigInteger from 'bigi';
+import BN from 'bn.js';
 
 export default class ECSignature {
-    r: BigInteger;
-    s: BigInteger;
+    r: BN;
+    s: BN;
 
-    constructor(r: BigInteger, s: BigInteger) {
-        enforce(BigInteger, r);
-        enforce(BigInteger, s);
+    constructor(r: BN, s: BN) {
+        enforce(BN, r);
+        enforce(BN, s);
 
         this.r = r;
         this.s = s;
@@ -22,8 +22,8 @@ export default class ECSignature {
         const compressed = !!(i & 4);
         i = i & 3;
 
-        const r = BigInteger.fromBuffer(buffer.slice(1, 33));
-        const s = BigInteger.fromBuffer(buffer.slice(33));
+        const r = new BN(buffer.slice(1, 33));
+        const s = new BN(buffer.slice(33));
 
         return {
             compressed,
@@ -60,11 +60,11 @@ export default class ECSignature {
 
         if (offset !== buffer.length) throw new Error('Invalid DER encoding');
 
-        const r = BigInteger.fromBuffer(rB);
-        const s = BigInteger.fromBuffer(sB);
+        const r = new BN(rB);
+        const s = new BN(sB);
 
-        if (r.signum() < 0) throw new Error('R value is negative');
-        if (s.signum() < 0) throw new Error('S value is negative');
+        if (r.isNeg()) throw new Error('R value is negative');
+        if (s.isNeg()) throw new Error('S value is negative');
 
         return new ECSignature(r, s);
     }
@@ -88,15 +88,15 @@ export default class ECSignature {
         const buffer = Buffer.alloc(65);
         buffer.writeUInt8(i, 0);
 
-        this.r.toBuffer(32).copy(buffer, 1);
-        this.s.toBuffer(32).copy(buffer, 33);
+        this.r.toArrayLike(Buffer, 'be', 32).copy(buffer, 1);
+        this.s.toArrayLike(Buffer, 'be', 32).copy(buffer, 33);
 
         return buffer;
     }
 
     toDER(): Buffer {
-        const rBa = this.r.toBuffer();
-        const sBa = this.s.toBuffer();
+        const rBa = this.r.toArrayLike(Buffer, 'be');
+        const sBa = this.s.toArrayLike(Buffer, 'be');
 
         const sequence: number[] = [];
 

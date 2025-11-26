@@ -1,5 +1,6 @@
 import ByteBuffer from 'bytebuffer';
 import Long from 'long';
+import { PublicKey } from '../ecc/src/key_public';
 
 /**
  * Serialize a transaction to binary format for Steem blockchain
@@ -43,6 +44,24 @@ export function serializeTransaction(trx: any): Buffer {
     // Write extensions (set of future_extensions, which is void/empty)
     bb.writeVarint32(0); // Empty set
     
+    // Write signatures array ONLY if explicitly present (for signed_transaction serialization)
+    // Note: signatures are NOT included in digest calculation for signing
+    if (trx.hasOwnProperty('signatures')) {
+        const signatures = trx.signatures || [];
+        bb.writeVarint32(signatures.length);
+        for (const sig of signatures) {
+            // Each signature should be a Buffer or hex string
+            if (typeof sig === 'string') {
+                const sigBuffer = Buffer.from(sig, 'hex');
+                bb.append(sigBuffer);
+            } else if (Buffer.isBuffer(sig)) {
+                bb.append(sig);
+            } else {
+                throw new Error('Invalid signature format');
+            }
+        }
+    }
+    
     bb.flip();
     return Buffer.from(bb.toBuffer());
 }
@@ -58,8 +77,6 @@ function serializeOperation(bb: ByteBuffer, op: any): void {
     const [opType, opData] = op;
     
     // Write operation type index (varint32)
-    // For now, we'll use a simple mapping. In a full implementation,
-    // this would use the static_variant index
     const opTypeIndex = getOperationTypeIndex(opType);
     bb.writeVarint32(opTypeIndex);
     
@@ -69,10 +86,8 @@ function serializeOperation(bb: ByteBuffer, op: any): void {
 
 /**
  * Get operation type index based on Steem blockchain operation order
- * This matches the operation.st_operations array from the blockchain
  */
 function getOperationTypeIndex(opType: string): number {
-    // Operation type indices based on Steem blockchain operation.st_operations
     const opMap: Record<string, number> = {
         'vote': 0,
         'comment': 1,
@@ -116,9 +131,10 @@ function serializeOperationData(bb: ByteBuffer, opType: string, opData: any): vo
         case 'transfer':
             serializeTransfer(bb, opData);
             break;
+        case 'account_create':
+            serializeAccountCreate(bb, opData);
+            break;
         default:
-            // For other operations, try to serialize common fields
-            // This is a fallback and may not work for all operations
             throw new Error(`Operation type ${opType} serialization not fully implemented`);
     }
 }
@@ -147,40 +163,92 @@ function serializeVote(bb: ByteBuffer, data: any): void {
 }
 
 /**
- * Serialize transfer operation (simplified - asset serialization is complex)
+ * Serialize transfer operation
  */
 function serializeTransfer(bb: ByteBuffer, data: any): void {
     writeString(bb, data.from || '');
     writeString(bb, data.to || '');
-    // Asset serialization is complex and requires parsing amount string
-    // For now, this is a placeholder
     serializeAsset(bb, data.amount || '0.000 STEEM');
     writeString(bb, data.memo || '');
 }
 
 /**
- * Serialize asset (simplified - full implementation is complex)
+ * Serialize account_create operation
+ */
+function serializeAccountCreate(bb: ByteBuffer, data: any): void {
+    serializeAsset(bb, data.fee || '0.000 STEEM');
+    writeString(bb, data.creator || '');
+    writeString(bb, data.new_account_name || '');
+    serializeAuthority(bb, data.owner);
+    serializeAuthority(bb, data.active);
+    serializeAuthority(bb, data.posting);
+    
+    // Serialize memo_key (public_key)
+    // PublicKey.fromStringOrThrow returns a PublicKey object which has toBuffer
+    // Or we can manually parse the string
+    if (typeof data.memo_key === 'string') {
+        const pubKey = PublicKey.fromStringOrThrow(data.memo_key);
+        bb.append(pubKey.toBuffer());
+    } else if (Buffer.isBuffer(data.memo_key)) {
+        bb.append(data.memo_key);
+    } else if (data.memo_key && typeof data.memo_key.toBuffer === 'function') {
+        bb.append(data.memo_key.toBuffer());
+    } else {
+        throw new Error('Invalid memo_key format');
+    }
+    
+    writeString(bb, data.json_metadata || '');
+}
+
+/**
+ * Serialize Authority
+ */
+function serializeAuthority(bb: ByteBuffer, auth: any): void {
+    bb.writeUint32(auth.weight_threshold || 1);
+    
+    // Account auths (map<string, uint16>)
+    const accountAuths = auth.account_auths || [];
+    // Maps in Steem serialization are sorted by key
+    accountAuths.sort((a: any[], b: any[]) => a[0].localeCompare(b[0]));
+    
+    bb.writeVarint32(accountAuths.length);
+    for (const [name, weight] of accountAuths) {
+        writeString(bb, name);
+        bb.writeUint16(weight);
+    }
+    
+    // Key auths (map<public_key, uint16>)
+    const keyAuths = auth.key_auths || [];
+    // Maps in Steem serialization are sorted by key (public key string)
+    // But serialized as bytes. Usually sorting by string representation of public key works.
+    keyAuths.sort((a: any[], b: any[]) => a[0].localeCompare(b[0]));
+    
+    bb.writeVarint32(keyAuths.length);
+    for (const [keyStr, weight] of keyAuths) {
+        const pubKey = PublicKey.fromStringOrThrow(keyStr);
+        bb.append(pubKey.toBuffer());
+        bb.writeUint16(weight);
+    }
+}
+
+/**
+ * Serialize asset (simplified)
  */
 function serializeAsset(bb: ByteBuffer, amount: string): void {
-    // Parse amount string like "1.000 STEEM"
     const parts = amount.split(' ');
     const valueStr = parts[0] || '0.000';
     const symbol = parts[1] || 'STEEM';
     
-    // Parse decimal value
     const [intPart, decPart = ''] = valueStr.split('.');
     const precision = decPart.length;
-    const amountValue = parseInt(intPart + decPart.padEnd(precision, '0'), 10);
+    const amountValue = parseInt(intPart + decPart.padEnd(precision, '0'), 10) || 0;
     
-    // Write amount as int64
-    const amountLong = Long.fromNumber(amountValue, false);
-    bb.writeInt64(amountLong);
+    // ByteBuffer can accept number directly for small values
+    bb.writeInt64(amountValue);
     
-    // Write precision and symbol (uint8 + 7 bytes)
     bb.writeUint8(precision);
     const symbolBytes = Buffer.from(symbol, 'utf8');
     bb.append(symbolBytes);
-    // Pad to 7 bytes
     for (let i = symbolBytes.length; i < 7; i++) {
         bb.writeUint8(0);
     }
@@ -188,9 +256,7 @@ function serializeAsset(bb: ByteBuffer, amount: string): void {
 
 /**
  * Write a string using ByteBuffer's writeVString method
- * This matches the old implementation exactly
  */
 function writeString(bb: ByteBuffer, str: string): void {
     bb.writeVString(str);
 }
-

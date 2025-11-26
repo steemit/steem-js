@@ -1,23 +1,23 @@
-import BigInteger from 'bigi';
-import ecurve from 'ecurve';
-const secp256k1 = ecurve.getCurveByName('secp256k1');
+import BN from 'bn.js';
+import { ec as EC } from 'elliptic';
+const secp256k1 = new EC('secp256k1');
 import base58 from 'bs58';
 import * as hash from './hash';
 import { getConfig } from '../../../config';
 import assert from 'assert';
 
-// Use any type to avoid namespace issues
-type Point = any;
+// Use elliptic types directly
+type ECPoint = any;
 
-const G = secp256k1.G;
-const n = secp256k1.n;
+const G = secp256k1.g;
+const n = new BN(secp256k1.n.toString());
 
 export class PublicKey {
-    Q: Point | null;
+    Q: ECPoint | null;
     pubdata?: string;
 
     /** @param {Point} public key */
-    constructor(Q: Point | null) {
+    constructor(Q: ECPoint | null) {
         this.Q = Q;
     }
 
@@ -29,26 +29,26 @@ export class PublicKey {
         if (buffer.toString("hex") === "000000000000000000000000000000000000000000000000000000000000000000") {
             return new PublicKey(null);
         }
-        return new PublicKey(ecurve.Point.decodeFrom(secp256k1, buffer));
+        return new PublicKey(secp256k1.curve.decodePoint(buffer));
     }
 
-    toBuffer(compressed = this.Q ? this.Q.compressed : undefined): Buffer {
+    toBuffer(compressed: boolean = true): Buffer {
         if (this.Q === null) {
             return Buffer.from(
                 "000000000000000000000000000000000000000000000000000000000000000000",
                 "hex"
             );
         }
-        return this.Q.getEncoded(compressed);
+        return Buffer.from(this.Q.encode('array', compressed));
     }
 
-    static fromPoint(point: Point): PublicKey {
+    static fromPoint(point: ECPoint): PublicKey {
         return new PublicKey(point);
     }
 
     toUncompressed(): PublicKey {
-        const buf = this.Q!.getEncoded(false);
-        const point = ecurve.Point.decodeFrom(secp256k1, buf);
+        const buf = Buffer.from(this.Q!.encode('array', false));
+        const point = secp256k1.curve.decodePoint(buf);
         return PublicKey.fromPoint(point);
     }
 
@@ -109,8 +109,8 @@ export class PublicKey {
         const checksum = buffer.slice(-4);
         const key = buffer.slice(0, -4);
         const new_checksum = hash.ripemd160(key);
-        new_checksum.copy(Buffer.alloc(4), 0, 0, 4);
-        assert.deepEqual(checksum, new_checksum.slice(0, 4), 'Checksum did not match');
+        const new_checksum_slice = new_checksum.slice(0, 4);
+        assert.deepEqual(checksum, new_checksum_slice, 'Checksum did not match');
         return PublicKey.fromBuffer(key);
     }
 
@@ -142,7 +142,7 @@ export class PublicKey {
         offset = Buffer.concat([this.toBuffer(), offset]);
         offset = hash.sha256(offset) as Buffer;
 
-        const c = BigInteger.fromBuffer(offset);
+        const c = new BN(offset);
 
         if (c.compareTo(n) >= 0)
             throw new Error("Child offset went out of bounds, try again");

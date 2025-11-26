@@ -11,14 +11,20 @@ This is a complete refactoring of the original steem-js library, migrating from 
 - ✅ **TypeScript Migration**: Complete migration from JavaScript to TypeScript
 - ✅ **Build System**: Migrated from Webpack to Rollup
 - ✅ **Testing**: Migrated from Mocha to Vitest
+- ✅ **Modern Dependencies (2024)**: Replaced outdated cryptographic libraries
+  - `bigi` → `bn.js` (modern big integer library)
+  - `ecurve` → `elliptic` (modern elliptic curve cryptography)
+  - Removed all shim layers for direct modern library usage
 - ✅ **Core Modules**: All core functionality implemented
   - API module with HTTP and WebSocket transports
   - Authentication and encryption (ECC secp256k1)
   - Broadcast operations
   - Memo encryption/decryption
-  - Transaction serialization
+  - Transaction serialization (95.8% test coverage)
 - ✅ **Security**: Fixed insecure random number generation, implemented proper cryptographic functions
 - ✅ **Tests**: 174 tests passing, 12 skipped (network-dependent integration tests)
+
+> 📖 **Detailed Refactoring Documentation**: See [docs/refactoring-2025.md](./docs/refactoring-2025.md) for complete modernization refactoring process, technical choices, and architectural improvements.
 
 ## Installation
 

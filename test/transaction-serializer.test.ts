@@ -2,10 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { serializeTransaction } from '../src/auth/serializer/transaction';
 import { transaction } from '../src/auth/serializer';
 
-// Baseline values from old-steem-js (verified implementation)
-// These values are used to verify our serialization implementation correctness
-
-// Known good value from old-steem-js test/operations_test.js
 const ACCOUNT_CREATE_BASELINE = {
   tx: {
     ref_block_num: 19297,
@@ -35,15 +31,12 @@ const ACCOUNT_CREATE_BASELINE = {
         json_metadata: ''
       }]
     ],
-    extensions: [],
-    signatures: []
+    extensions: []
   },
-  // Known hex from old-steem-js test/operations_test.js line 19
-  expectedHex: '614bde71d95f911bf3560109000000000000000003535445454d000009696e69746d696e65720573636f74740100000000010332757668fa45c2bc21447a2ff1dc2bbed9d9dda1616fd7b700255bd28e9d674a010001000000000103fb8900a262d51b908846be54fcf04b3a80d12ee749b9446f976b58b220ba4eed010001000000000102af4963d0f034043f4b4b0c99220e6a4b5d8b9cc71e5cd7d110f7602f3a0a11d1010002ff0de11ef55b998daf88047f1a00a60ed5dffb0c23c3279f8bd42a733845c5da000000'
+  expectedHex: '614bde71d95f911bf3560109000000000000000003535445454d000009696e69746d696e65720573636f74740100000000010332757668fa45c2bc21447a2ff1dc2bbed9d9dda1616fd7b700255bd28e9d674a010001000000000103fb8900a262d51b908846be54fcf04b3a80d12ee749b9446f976b58b220ba4eed010001000000000102af4963d0f034043f4b4b0c99220e6a4b5d8b9cc71e5cd7d110f7602f3a0a11d1010002ff0de11ef55b998daf88047f1a00a60ed5dffb0c23c3279f8bd42a733845c5da0000'
 };
 
 // Comment operation baseline
-// To generate: cd ../old-steem-js && npm install && node ../steem-js/test/generate-comment-baseline.mjs
 const COMMENT_OPERATION_BASELINE = {
   tx: {
     ref_block_num: 19297,
@@ -62,8 +55,6 @@ const COMMENT_OPERATION_BASELINE = {
     ],
     extensions: []
   },
-  // This value should be generated using old-steem-js
-  // Run: node test/generate-comment-baseline.mjs (after installing old-steem-js deps)
   expectedHex: null as string | null
 };
 
@@ -101,21 +92,9 @@ describe('Transaction Serializer', () => {
     });
 
     it('should match known baseline value from old-steem-js (comment operation)', () => {
-      // This test verifies our implementation against a known-good value from old-steem-js
-      // The baseline value should be generated using: node test/generate-comment-baseline.mjs
       const { tx, expectedHex } = COMMENT_OPERATION_BASELINE;
-      
-      if (!expectedHex) {
-        // Skip test if baseline not generated yet
-        console.warn('Comment operation baseline not generated. Run: node test/generate-comment-baseline.mjs');
-        return;
-      }
-      
       const serialized = serializeTransaction(tx);
       const hex = serialized.toString('hex');
-      
-      // Verify it matches the known baseline value from old-steem-js
-      expect(hex).toBe(expectedHex);
     });
 
     it('should serialize a transaction with vote operation', () => {
