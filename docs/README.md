@@ -8,6 +8,8 @@ Steem.js is a JavaScript/TypeScript library for interacting with the Steem block
 - [Browser Usage](#browser-usage)
 - [Configuration](#configuration)
 - [JSON-RPC](#json-rpc)
+    - [Signed RPC Calls](#signed-rpc-calls)
+    - [Signature Verification](#signature-verification)
 - [Database API](#database-api)
     - [Subscriptions](#subscriptions)
     - [Tags](#tags)
@@ -102,6 +104,135 @@ Activate JSON-RPC transport:
 ```javascript
 steem.config.set({ node: 'https://api.steemit.com' });
 ```
+
+### Signed RPC Calls
+
+For secure RPC calls that require authentication, use `signedCall`. This method signs the request with your private key to prove ownership of the account.
+
+#### signedCall
+
+Makes a signed JSON-RPC call to the Steem blockchain. The request is cryptographically signed to authenticate the caller.
+
+```javascript
+steem.api.signedCall(method, params, account, privateKey, callback);
+```
+
+**Parameter Description:**
+
+| Parameter | Data Type | Description |
+|---------|--------|-----------|
+| method | string | The RPC method name to call |
+| params | array | Parameters for the RPC method |
+| account | string | The account name making the request |
+| privateKey | string | Private key (WIF format) for signing |
+| callback | function | Callback function(err, result) |
+
+**Requirements:**
+- Only works with HTTP transport (not WebSocket)
+- Requires a valid private key in WIF format
+- The account must match the private key
+
+**Call Example:**
+
+```javascript
+// Configure for HTTP transport
+steem.config.set({ 
+  node: 'https://api.steemit.com',
+  transport: 'http' 
+});
+
+// Make a signed call
+const privateKey = '5JLw5dgQAx6rhZEgNN5C2ds1V47RweGshynFSWFbaMohsYsBvE8';
+const account = 'username';
+
+steem.api.signedCall(
+  'condenser_api.get_account_history',
+  [account, -1, 10],
+  account,
+  privateKey,
+  function(err, result) {
+    if (err) {
+      console.error('Signed call failed:', err);
+    } else {
+      console.log('Account history:', result);
+    }
+  }
+);
+```
+
+**Promise Example:**
+
+```javascript
+// Using Promise wrapper
+function signedCallAsync(method, params, account, privateKey) {
+  return new Promise((resolve, reject) => {
+    steem.api.signedCall(method, params, account, privateKey, (err, result) => {
+      if (err) reject(err);
+      else resolve(result);
+    });
+  });
+}
+
+// Usage with async/await
+try {
+  const result = await signedCallAsync(
+    'condenser_api.get_account_history',
+    ['username', -1, 10],
+    'username',
+    privateKey
+  );
+  console.log('Result:', result);
+} catch (error) {
+  console.error('Error:', error);
+}
+```
+
+**Security Notes:**
+- The request includes a timestamp and nonce to prevent replay attacks
+- Signatures expire after 60 seconds
+- Private keys are never transmitted, only the signature
+- Each request is uniquely signed with cryptographic proof
+
+**Use Cases:**
+- Accessing private account data
+- Making authenticated API calls
+- Proving account ownership
+- Secure communication with Steem nodes
+
+### Signature Verification
+
+For verifying signed requests and messages, Steem.js provides comprehensive verification utilities:
+
+```javascript
+import { signatureVerification } from '@steemit/steem-js/api';
+
+// Verify a signed RPC request
+const getAccountKeys = signatureVerification.createApiVerificationFunction(steem.api);
+const result = await signatureVerification.verifySignedRequest(signedRequest, getAccountKeys);
+
+if (result.valid) {
+  console.log('✅ Signature verified for account:', result.account);
+  console.log('Decoded parameters:', result.params);
+} else {
+  console.log('❌ Verification failed:', result.error);
+}
+
+// Verify a simple message signature
+const message = 'Hello, Steem!';
+const signature = steem.auth.sign(message, privateKey);
+const publicKey = steem.auth.wifToPublic(privateKey);
+const isValid = signatureVerification.verifyMessageSignature(message, signature, publicKey);
+```
+
+**Verification Features:**
+- **Signed Request Validation**: Verify complete signed RPC requests
+- **Message Signature Verification**: Verify individual message signatures
+- **Batch Verification**: Verify multiple requests simultaneously
+- **Expiration Checking**: Automatic signature expiration validation
+- **Format Validation**: Validate signature and key formats
+- **Account Key Extraction**: Extract public keys from account data
+
+**See [Signature Verification Examples](./signature-verification-examples.md) for comprehensive usage guide.**
 
 ---
 
@@ -691,6 +822,27 @@ steem.api.getConversionRequestsAsync(accountName).then(function(result) {
 steem.api.getAccountHistoryAsync(account, from, limit).then(function(result) {
   console.log(result);
 });
+```
+
+**Signed Version (for private account data):**
+
+```javascript
+// For accessing private or authenticated account data
+const privateKey = steem.auth.toWif('username', 'password', 'active');
+
+steem.api.signedCall(
+  'condenser_api.get_account_history',
+  ['username', -1, 100],
+  'username',
+  privateKey,
+  function(err, result) {
+    if (err) {
+      console.error('Error:', err);
+    } else {
+      console.log('Private account history:', result);
+    }
+  }
+);
 ```
 
 #### Get Owner History
@@ -1813,10 +1965,16 @@ MIT
 
 ---
 
+## Additional Resources
+
+- **[SignedCall Examples](./signedCall-examples.md)** - Comprehensive guide for authenticated API calls
+- **[Signature Verification Examples](./signature-verification-examples.md)** - Complete guide for verifying signatures
+- **[Refactoring History](./refactoring-2025.md)** - Technical details about the 2025 modernization
+
 ## Contributing
 
 Contributions are welcome! Please check the project's GitHub repository for more information.
 
 ---
 
-*This documentation is based on Steem.js v1.0.3. For updates, please refer to the latest version documentation.*
+*This documentation is based on Steem.js v1.0.4. For updates, please refer to the latest version documentation.*

@@ -251,6 +251,74 @@ export class Api extends EventEmitter {
       .then(res => { callback(null, res); }, err => { callback(err); });
   }
 
+  /**
+   * Verify a signed RPC request
+   * @param signedRequest The signed request to verify
+   * @param callback Callback function
+   */
+  verifySignedRequest(signedRequest: any, callback: any) {
+    import('./rpc-auth').then(({ validate }) => {
+      // Create verification function that checks signatures against account's public keys
+      const verifyFunction = async (message: Buffer, signatures: string[], account: string) => {
+        try {
+          // Get account's public keys
+          const accounts = await new Promise<any[]>((resolve, reject) => {
+            this.call('condenser_api.get_accounts', [[account]], (err: any, result: any) => {
+              if (err) reject(err);
+              else resolve(result);
+            });
+          });
+
+          if (!accounts || accounts.length === 0) {
+            throw new Error(`Account ${account} not found`);
+          }
+
+          const accountData = accounts[0];
+          const publicKeys = [
+            accountData.owner.key_auths[0]?.[0],
+            accountData.active.key_auths[0]?.[0],
+            accountData.posting.key_auths[0]?.[0],
+            accountData.memo_key
+          ].filter(Boolean);
+
+          // Import verification functions
+          const { verifySignature } = await import('../auth');
+          const { Signature } = await import('../auth/ecc');
+
+          // Verify at least one signature matches one of the account's keys
+          let verified = false;
+          for (const signature of signatures) {
+            for (const publicKey of publicKeys) {
+              try {
+                const sig = Signature.fromHex(signature);
+                const { PublicKey } = await import('../auth/ecc');
+                const pubKey = PublicKey.fromString(publicKey);
+                if (sig.verifyBuffer(message, pubKey)) {
+                  verified = true;
+                  break;
+                }
+              } catch {
+                // Continue to next key/signature combination
+              }
+            }
+            if (verified) break;
+          }
+
+          if (!verified) {
+            throw new Error('No valid signature found for account');
+          }
+        } catch (error) {
+          throw error;
+        }
+      };
+
+      // Validate the signed request
+      validate(signedRequest, verifyFunction)
+        .then(params => callback(null, { valid: true, params }))
+        .catch(error => callback(error));
+    }).catch(callback);
+  }
+
   setOptions(options: ApiOptions) {
     Object.assign(this.options, options);
     this._setLogger(options);
@@ -664,4 +732,8 @@ export const listeners = (...args: any[]) => (api as any).listeners(...args);
 export const streamBlockNumber = (...args: any[]) => (api as any).streamBlockNumber(...args);
 export const streamBlock = (...args: any[]) => (api as any).streamBlock(...args);
 export const streamTransactions = (...args: any[]) => (api as any).streamTransactions(...args);
-export const streamOperations = (...args: any[]) => (api as any).streamOperations(...args); 
+export const streamOperations = (...args: any[]) => (api as any).streamOperations(...args);
+
+// Export signature verification utilities
+export { sign as signRequest, validate as validateRequest } from './rpc-auth';
+export * as signatureVerification from './signature-verification'; 
