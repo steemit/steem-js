@@ -6,6 +6,17 @@ Steem.js is a JavaScript/TypeScript library for interacting with the Steem block
 
 This is a complete refactoring of the original steem-js library, migrating from JavaScript to TypeScript with modern tooling and improved code quality. Published as `@steemit/steem-js`.
 
+## 📚 Complete API Documentation
+
+**[👉 View Complete API Documentation and Usage Guide](./docs/README.md)**
+
+The comprehensive API documentation includes:
+- Detailed installation and configuration instructions
+- Complete reference for all API methods
+- Practical usage examples and code snippets
+- TypeScript type support documentation
+- Error handling and security considerations
+
 ### Refactoring Progress
 
 - ✅ **TypeScript Migration**: Complete migration from JavaScript to TypeScript
@@ -58,6 +69,10 @@ yarn add @steemit/steem-js
 ```
 
 **Note**: The UMD build includes all necessary polyfills (events, buffer, util, stream, assert, crypto-browserify). No additional dependencies are required. The minified version is recommended for production use.
+
+## Quick Start
+
+> 💡 **Need detailed documentation?** [View the complete API documentation](./docs/README.md) for detailed descriptions, parameters, and examples of all methods.
 
 ## Usage
 
@@ -223,6 +238,7 @@ src/
 - **Secure Cryptography**: Proper implementation using Node.js crypto module
 - **Multiple Transports**: Supports both HTTP and WebSocket connections
 - **Promise and Callback Support**: Compatible with both async/await and callback patterns
+- **📖 Complete Documentation**: [Comprehensive API documentation](./docs/README.md) with examples
 
 ## Breaking Changes from Original
 
