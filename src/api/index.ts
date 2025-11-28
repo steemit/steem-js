@@ -282,8 +282,7 @@ export class Api extends EventEmitter {
           ].filter(Boolean);
 
           // Import verification functions
-          const { verifySignature } = await import('../auth');
-          const { Signature } = await import('../auth/ecc');
+          const { Signature, PublicKey } = await import('../auth/ecc/index');
 
           // Verify at least one signature matches one of the account's keys
           let verified = false;
@@ -291,8 +290,8 @@ export class Api extends EventEmitter {
             for (const publicKey of publicKeys) {
               try {
                 const sig = Signature.fromHex(signature);
-                const { PublicKey } = await import('../auth/ecc');
                 const pubKey = PublicKey.fromString(publicKey);
+                if (!pubKey) continue;
                 if (sig.verifyBuffer(message, pubKey)) {
                   verified = true;
                   break;

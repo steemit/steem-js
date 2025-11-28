@@ -6,6 +6,60 @@ import alias from '@rollup/plugin-alias';
 import inject from '@rollup/plugin-inject';
 import terser from '@rollup/plugin-terser';
 
+// Helper function to create browser ESM build configuration
+function createBrowserEsmConfig() {
+  const plugins = [
+    alias({
+      entries: [
+        { find: 'crypto', replacement: 'crypto-browserify' },
+        { find: 'events', replacement: 'events' },
+        { find: 'assert', replacement: 'assert' },
+        { find: 'buffer', replacement: 'buffer' },
+        { find: 'util', replacement: 'util' },
+        { find: 'stream', replacement: 'stream-browserify' },
+        { find: 'process', replacement: 'process/browser' },
+        { find: 'async_hooks', replacement: './src/polyfills/async-hooks-browser.ts' }
+      ]
+    }),
+    resolve({
+      preferBuiltins: false,
+      browser: true
+    }),
+    commonjs(),
+    json(),
+    typescript({
+      tsconfig: './tsconfig.json',
+      sourceMap: true
+    })
+  ];
+
+  return {
+    input: 'src/umd.ts',
+    output: {
+      file: 'dist/index.browser.js',
+      format: 'es',
+      sourcemap: true,
+      exports: 'default',
+      inlineDynamicImports: true
+    },
+    plugins,
+    external: [],
+    onwarn(warning, warn) {
+      if (warning.code === 'EVAL' && warning.id?.includes('bluebird')) {
+        return;
+      }
+      // Filter out circular dependency warnings from third-party libraries (not our code issues)
+      if (warning.code === 'CIRCULAR_DEPENDENCY') {
+        const thirdPartyLibs = ['readable-stream', 'brorand', 'crypto-browserify', 'elliptic', 'asn1.js', 'diffie-hellman', 'miller-rabin', 'browserify-sign', 'assert'];
+        if (thirdPartyLibs.some(lib => warning.message?.includes(lib))) {
+          return;
+        }
+      }
+      warn(warning);
+    }
+  };
+}
+
 // Helper function to create UMD build configuration
 function createUmdConfig(minified = false) {
   const filename = minified ? 'dist/index.umd.min.js' : 'dist/index.umd.js';
@@ -18,7 +72,8 @@ function createUmdConfig(minified = false) {
         { find: 'buffer', replacement: 'buffer' },
         { find: 'util', replacement: 'util' },
         { find: 'stream', replacement: 'stream-browserify' },
-        { find: 'process', replacement: 'process/browser' }
+        { find: 'process', replacement: 'process/browser' },
+        { find: 'async_hooks', replacement: './src/polyfills/async-hooks-browser.ts' }
       ]
     }),
     resolve({
@@ -58,6 +113,7 @@ function createUmdConfig(minified = false) {
       name: 'steem',
       sourcemap: true,
       exports: 'default',
+      inlineDynamicImports: true,
       banner: `(function() {
   // Provide minimal polyfills for browser
   if (typeof globalThis !== 'undefined') {
@@ -187,13 +243,15 @@ export default [
         sourcemap: true,
         generatedCode: {
           constBindings: true
-        }
+        },
+        inlineDynamicImports: true
       },
       // CommonJS for Node.js require()
       {
         file: 'dist/index.cjs',
         format: 'cjs',
-        sourcemap: true
+        sourcemap: true,
+        inlineDynamicImports: true
       }
     ],
     plugins: [
@@ -212,7 +270,25 @@ export default [
         sourceMap: true
       })
     ],
-    external: ['axios'],
+    external: [
+      'axios',
+      'secure-random',
+      // Node.js built-in modules - should not be bundled
+      'events',
+      'crypto',
+      'assert',
+      'buffer',
+      'util',
+      'stream',
+      'http',
+      'https',
+      'net',
+      'tls',
+      'url',
+      'zlib',
+      'async_hooks',
+      'ws'
+    ],
     onwarn(warning, warn) {
       if (warning.code === 'EVAL' && warning.id?.includes('bluebird')) {
         return;
@@ -227,6 +303,8 @@ export default [
       warn(warning);
     }
   },
+  // Browser ESM build (for modern bundlers in browser environment)
+  createBrowserEsmConfig(),
   // Browser builds (UMD)
   createUmdConfig(false), // Regular UMD build
   createUmdConfig(true)   // Minified UMD build

@@ -6,7 +6,7 @@
  */
 
 import { validate } from './rpc-auth';
-import { Signature, PublicKey } from '../auth/ecc';
+import { Signature, PublicKey } from '../auth/ecc/index';
 import { verifySignature } from '../auth';
 
 export interface SignedRequest {
@@ -67,6 +67,7 @@ export async function verifySignedRequest(
           try {
             const sig = Signature.fromHex(signature);
             const pubKey = PublicKey.fromString(publicKey);
+            if (!pubKey) continue;
             if (sig.verifyBuffer(message, pubKey)) {
               verified = true;
               break;
@@ -204,7 +205,7 @@ export async function batchVerifySignedRequests(
     signedRequests.map(request => verifySignedRequest(request, getAccountKeys))
   );
 
-  return results.map((result, index) => {
+  return results.map((result) => {
     if (result.status === 'fulfilled') {
       return result.value;
     } else {

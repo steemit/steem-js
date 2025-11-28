@@ -1,6 +1,6 @@
 {
   "name": "@steemit/steem-js",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Steem blockchain JavaScript/TypeScript library",
   "type": "module",
   "main": "dist/index.cjs",
@@ -10,9 +10,14 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "browser": {
+        "import": "./dist/index.browser.js",
+        "require": "./dist/index.umd.js",
+        "default": "./dist/index.umd.js"
+      },
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
-      "browser": "./dist/index.umd.js"
+      "default": "./dist/index.cjs"
     }
   },
   "files": [
@@ -82,6 +87,7 @@
     "lodash": "^4.17.21",
     "long": "^5.2.3",
     "retry": "^0.13.1",
+    "secure-random": "^1.1.2",
     "ws": "^8.18.2"
   }
 }
