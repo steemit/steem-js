@@ -53,3 +53,14 @@ See `project.mdc` for detailed package management rules and guidelines.
   4. Update version numbers, examples, and feature lists if applicable
 - This ensures documentation stays synchronized with code changes and project progress
 - Documentation updates should be part of the same workflow as completing the actual tasks
+
+## Plan Execution Confirmation Policy
+
+- **Never automatically switch to agent mode to execute plans without explicit user confirmation**
+- When a plan has been created using the planning tool:
+  1. Present the complete plan to the user for review
+  2. Wait for explicit user confirmation before switching to agent mode
+  3. Only begin executing the plan after receiving user approval
+  4. If the user requests modifications to the plan, update the plan first and wait for confirmation again
+- This ensures the user maintains full control over when and how plans are executed
+- The agent must remain in plan mode until the user explicitly approves plan execution
