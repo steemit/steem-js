@@ -6,8 +6,7 @@
  */
 
 import { validate } from './rpc-auth';
-import { Signature, PublicKey } from '../auth/ecc/index';
-import { verifySignature } from '../auth';
+import { Signature, PublicKey, verifySignature } from '../auth';
 
 export interface SignedRequest {
   jsonrpc: string;
@@ -67,8 +66,7 @@ export async function verifySignedRequest(
           try {
             const sig = Signature.fromHex(signature);
             const pubKey = PublicKey.fromString(publicKey);
-            if (!pubKey) continue;
-            if (sig.verifyBuffer(message, pubKey)) {
+            if (pubKey && sig.verifyBuffer(message, pubKey)) {
               verified = true;
               break;
             }

@@ -153,6 +153,7 @@ export const isPubkey = Auth.isPubkey.bind(Auth);
 // Export classes
 export { PrivateKey } from './ecc/src/key_private';
 export { PublicKey } from './ecc/src/key_public';
+export { Signature } from './ecc/src/signature';
 export { Address } from './ecc/src/address';
 
 // Export crypto functions
