@@ -88,6 +88,7 @@ This is a complete modernization of the original steem-js library:
 
 - ✅ **TypeScript Migration** - Full type safety and better developer experience
 - ✅ **Modern Dependencies** - Replaced outdated crypto libraries (`bigi` → `bn.js`, `ecurve` → `elliptic`)
+- ✅ **Modern Crypto** - Using @noble/hashes and @noble/ciphers for universal browser/Node.js compatibility
 - ✅ **Build System** - Migrated from Webpack to Rollup for better output
 - ✅ **Testing** - Migrated from Mocha to Vitest with 95.8% test coverage
 - ✅ **Security** - Fixed insecure random number generation and crypto implementations
@@ -96,7 +97,7 @@ This is a complete modernization of the original steem-js library:
 
 ```
 src/
-├── api/          # Blockchain API client (HTTP/WebSocket)
+├── api/          # Blockchain API client (HTTP)
 ├── auth/         # Authentication and key management
 ├── broadcast/    # Transaction broadcasting
 ├── crypto/       # Cryptographic utilities

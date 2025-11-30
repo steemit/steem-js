@@ -128,7 +128,7 @@ steem.api.signedCall(method, params, account, privateKey, callback);
 | callback | function | Callback function(err, result) |
 
 **Requirements:**
-- Only works with HTTP transport (not WebSocket)
+- Uses HTTP transport for all API calls
 - Requires a valid private key in WIF format
 - The account must match the private key
 
