@@ -8,24 +8,24 @@ export interface TransportOptions {
    * Please use HTTP transport (via url or uri field) for API calls.
    */
   websocket?: string;
-  transport?: string | any;
-  [key: string]: any;
+  transport?: string | unknown;
+  [key: string]: unknown;
 }
 
 export interface JsonRpcRequest {
   id: number;
   method: string;
-  params: any[];
+  params: unknown[];
   jsonrpc?: string;
 }
 
 export interface JsonRpcResponse {
   id: number;
-  result: any;
+  result: unknown;
   error?: {
     code: number;
     message: string;
-    data?: any;
+    data?: unknown;
   };
 }
 
@@ -34,5 +34,5 @@ export interface Transport {
   start(): Promise<void>;
   stop(): Promise<void>;
   setOptions(options: TransportOptions): void;
-  send(api: string, data: any, callback: (error: any, result?: any) => void): void | Promise<void>;
+  send(api: string, data: unknown, callback: (error: Error | null, result?: unknown) => void): void | Promise<void>;
 } 
