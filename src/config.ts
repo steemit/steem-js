@@ -2,7 +2,6 @@ interface SteemConfig {
   node?: string;
   nodes?: string[];
   uri?: string;
-  websocket?: string;
   address_prefix?: string;
   chain_id?: string;
   debug?: boolean;
@@ -10,9 +9,9 @@ interface SteemConfig {
 }
 
 export class Config {
-  private config: { [key: string]: any } = {};
+  private config: { [key: string]: unknown } = {};
 
-  get(key: string): any {
+  get(key: string): unknown {
     return this.config[key];
   }
 
@@ -23,7 +22,7 @@ export class Config {
 
   getNumber(key: string): number {
     const value = this.get(key);
-    return typeof value === 'number' ? value : parseFloat(value);
+    return typeof value === 'number' ? value : parseFloat(String(value));
   }
 
   getString(key: string): string {
@@ -31,11 +30,11 @@ export class Config {
     return typeof value === 'string' ? value : String(value);
   }
 
-  set(key: string, value: any): void {
+  set(key: string, value: unknown): void {
     this.config[key] = value;
   }
 
-  all(): { [key: string]: any } {
+  all(): { [key: string]: unknown } {
     return { ...this.config };
   }
 }
@@ -48,11 +47,7 @@ const DEFAULT_CONFIG: SteemConfig = {
   nodes: [
     'https://api.steemit.com'
   ],
-  uri: 'https://api.steemit.com',
-  // NOTE: WebSocket functionality is currently not supported.
-  // This configuration is kept for backward compatibility only.
-  // Please use HTTP transport (https://api.steemit.com) for API calls.
-  websocket: 'wss://api.steemit.com'
+  uri: 'https://api.steemit.com'
 };
 
 // Singleton config instance
@@ -72,6 +67,6 @@ export const resetConfig = (): void => {
 // Alias for setConfig to match the API's setOptions
 export const setOptions = setConfig;
 
-export function get(key: string): any {
+export function get(key: string): unknown {
   return config.get(key);
 } 

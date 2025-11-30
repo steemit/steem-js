@@ -1,37 +1,35 @@
 import { EventEmitter } from 'events';
-import Bluebird from 'bluebird';
 import { getConfig } from '../config';
 import { camelCase } from '../utils';
+import { promisify } from '../utils/promisify';
 import { sign as signRequest } from './rpc-auth';
 import methods from './methods';
 import { jsonRpc } from './transports/http';
 import { transports } from './transports/index';
+import type { Transport } from './transports/types';
+import type { TransportOptions } from './transports/types';
+import type { SignedRequest } from './signature-verification';
 
 interface ApiOptions {
   url?: string;
   uri?: string;
-  /**
-   * WebSocket URL
-   * NOTE: WebSocket functionality is currently not supported.
-   * This field is kept for backward compatibility only.
-   * Please use HTTP transport (via url or uri field) for API calls.
-   */
-  websocket?: string;
-  transport?: string | any;
-  logger?: any;
+  transport?: string | (new (options: TransportOptions) => Transport); // Transport type string or Transport class constructor
+  logger?: Logger; // Logger instance
   useTestNet?: boolean;
   useAppbaseApi?: boolean;
+  fetchMethod?: typeof fetch; // Optional fetch implementation for HTTP requests
+  [key: string]: unknown; // Index signature for compatibility with TransportOptions
 }
 
 interface Logger {
-  log: (...args: any[]) => void;
-  [key: string]: (...args: any[]) => void;
+  log: (...args: unknown[]) => void;
+  [key: string]: (...args: unknown[]) => void;
 }
 
 export class Api extends EventEmitter {
   private seqNo: number = 0;
-  private _transportType: string = 'ws';
-  private transport: any;
+  private _transportType: string = 'http';
+  private transport: Transport | null = null;
   private options: ApiOptions;
   private __logger: Logger | false = false;
 
@@ -43,7 +41,7 @@ export class Api extends EventEmitter {
       if (typeof lastArg === 'function') {
         return fn.apply(this, args);
       }
-      return new Bluebird((resolve: any, reject: any) => {
+      return new Promise<boolean>((resolve, reject) => {
         fn.apply(this, [...args, (err: any, result: any) => {
           if (err) return reject(err);
           resolve(result);
@@ -73,16 +71,17 @@ export class Api extends EventEmitter {
         return this.send(method.api, {
           method: method.method,
           params: params
-        }, (err: any, result: any) => {
+        }, (err: Error | null, result?: unknown) => {
           // Patch for getConfig: ensure strict backward compatibility
           if (methodName === 'getConfig' && result && typeof result === 'object') {
-            if (!('STEEMIT_ADDRESS_PREFIX' in result)) {
+            const resultObj = result as Record<string, unknown>;
+            if (!('STEEMIT_ADDRESS_PREFIX' in resultObj)) {
               const config = getConfig().all();
-              result.STEEMIT_ADDRESS_PREFIX = config.address_prefix || 'STM';
+              resultObj.STEEMIT_ADDRESS_PREFIX = (config.address_prefix as string) || 'STM';
             }
-            if (!('STEEMIT_CHAIN_ID' in result)) {
+            if (!('STEEMIT_CHAIN_ID' in resultObj)) {
               const config = getConfig().all();
-              result.STEEMIT_CHAIN_ID = config.chain_id || '0000000000000000000000000000000000000000000000000000000000000000';
+              resultObj.STEEMIT_CHAIN_ID = (config.chain_id as string) || '0000000000000000000000000000000000000000000000000000000000000000';
             }
           }
           callback(err, result);
@@ -90,76 +89,55 @@ export class Api extends EventEmitter {
       };
 
       // Then define the base method that uses the "With" method
-      (this as any)[methodName] = Api._wrapWithPromise(function(this: any, ...args: any[]) {
-        const options = methodParams.reduce((memo: any, param: string, i: number) => {
+      (this as Record<string, unknown>)[methodName] = Api._wrapWithPromise(function(this: unknown, ...args: unknown[]) {
+        const options = methodParams.reduce((memo: Record<string, unknown>, param: string, i: number) => {
           memo[param] = args[i];
           return memo;
         }, {});
-        const callback = args[methodParams.length];
-        return (this as any)[`${methodName}With`](options, callback);
+        const callback = args[methodParams.length] as ((err: Error | null, result?: unknown) => void) | undefined;
+        return ((this as Record<string, unknown>)[`${methodName}With`] as (options: Record<string, unknown>, callback?: (err: Error | null, result?: unknown) => void) => unknown)(options, callback);
       });
 
-      (this as any)[`${methodName}WithAsync`] = Bluebird.promisify((this as any)[`${methodName}With`]);
-      (this as any)[`${methodName}Async`] = Bluebird.promisify((this as any)[methodName]);
+      (this as Record<string, unknown>)[`${methodName}WithAsync`] = promisify((this as Record<string, unknown>)[`${methodName}With`] as (...args: unknown[]) => unknown);
+      (this as Record<string, unknown>)[`${methodName}Async`] = promisify((this as Record<string, unknown>)[methodName] as (...args: unknown[]) => unknown);
     });
   }
 
   private _setTransport(options: ApiOptions) {
-    // Match the original steem-js logic for transport selection
+    // Use HTTP transport only
     if (options.url && options.url.match(/^((http|https)?:\/\/)/)) {
       options.uri = options.url;
       options.transport = 'http';
       this._transportType = options.transport;
       this.options = options;
       this.transport = new transports.http(options);
-    } else if (options.url && options.url.match(/^((ws|wss)?:\/\/)/)) {
-      // NOTE: WebSocket functionality is currently not supported.
-      // This code path is kept for backward compatibility only.
-      // Please use HTTP transport (https://api.steemit.com) for API calls.
-      options.websocket = options.url;
-      options.transport = 'ws';
-      this._transportType = options.transport;
-      this.options = options;
-      this.transport = new transports.ws(options);
     } else if (options.transport) {
-      if (this.transport && this._transportType !== options.transport) {
-        this.transport.stop();
+      const transportType = typeof options.transport === 'string' ? options.transport : 'custom';
+      if (this.transport && this._transportType !== transportType) {
+        if (typeof this.transport.stop === 'function') {
+          this.transport.stop();
+        }
       }
-      this._transportType = options.transport;
+      this._transportType = transportType;
       if (typeof options.transport === 'string') {
-        if (!(transports as Record<string, any>)[options.transport]) {
+        if (!(transports as Record<string, unknown>)[options.transport]) {
           throw new TypeError(
-            'Invalid `transport`, valid values are `http`, `ws` or a class',
+            'Invalid `transport`, valid values are `http` or a class',
           );
         }
-        this.transport = new (transports as Record<string, any>)[options.transport](options);
+        const TransportClass = (transports as Record<string, new (options: TransportOptions) => Transport>)[options.transport];
+        this.transport = new TransportClass(options);
       } else {
         this.transport = new options.transport(options);
       }
     } else {
       // Default to HTTP for https://api.steemit.com
-      const defaultNode = getConfig().get('node') || 'https://api.steemit.com';
-      if (defaultNode.match(/^((http|https)?:\/\/)/)) {
-        options.uri = defaultNode;
-        options.transport = 'http';
-        this._transportType = options.transport;
-        this.options = options;
-        this.transport = new transports.http(options);
-      } else if (defaultNode.match(/^((ws|wss)?:\/\/)/)) {
-        // NOTE: WebSocket functionality is currently not supported.
-        // This code path is kept for backward compatibility only.
-        // Please use HTTP transport (https://api.steemit.com) for API calls.
-        options.websocket = defaultNode;
-        options.transport = 'ws';
-        this._transportType = options.transport;
-        this.options = options;
-        this.transport = new transports.ws(options);
-      } else {
-        // NOTE: WebSocket functionality is currently not supported.
-        // This fallback path is kept for backward compatibility only.
-        // Please use HTTP transport (https://api.steemit.com) for API calls.
-        this.transport = new transports.ws(options);
-      }
+      const defaultNode = (getConfig().get('node') as string) || 'https://api.steemit.com';
+      options.uri = defaultNode;
+      options.transport = 'http';
+      this._transportType = options.transport;
+      this.options = options;
+      this.transport = new transports.http(options);
     }
   }
 
@@ -198,10 +176,16 @@ export class Api extends EventEmitter {
   }
 
   start() {
+    if (!this.transport) {
+      throw new Error('Transport not initialized');
+    }
     return this.transport.start();
   }
 
   stop() {
+    if (!this.transport) {
+      return Promise.resolve();
+    }
     return this.transport.stop();
   }
 
@@ -221,20 +205,24 @@ export class Api extends EventEmitter {
         }
       };
     }
+    if (!this.transport) {
+      throw new Error('Transport not initialized');
+    }
     return this.transport.send(api, data, cb);
   }
 
-  call(method: string, params: any[], callback: any) {
+  call(method: string, params: unknown[], callback: (err: Error | null, result?: unknown) => void) {
     if (this._transportType !== 'http') {
       callback(new Error('RPC methods can only be called when using http transport'));
       return;
     }
     const id = ++this.seqNo;
-    jsonRpc(this.options.uri!, { method, params, id })
+    const fetchMethod = this.options.fetchMethod || fetch;
+    jsonRpc(this.options.uri!, { method, params, id }, fetchMethod)
       .then(res => { callback(null, res); }, err => { callback(err); });
   }
 
-  signedCall(method: string, params: any[], account: string, key: string, callback: any) {
+  signedCall(method: string, params: unknown[], account: string, key: string, callback: (err: Error | null, result?: unknown) => void) {
     if (this._transportType !== 'http') {
       callback(new Error('RPC methods can only be called when using http transport'));
       return;
@@ -244,10 +232,11 @@ export class Api extends EventEmitter {
     try {
       request = signRequest({ method, params, id }, account, [key]);
     } catch (error) {
-      callback(error);
+      callback(error instanceof Error ? error : new Error(String(error)));
       return;
     }
-    jsonRpc(this.options.uri!, request as any)
+    const fetchMethod = this.options.fetchMethod || fetch;
+    jsonRpc(this.options.uri!, request as any, fetchMethod)
       .then(res => { callback(null, res); }, err => { callback(err); });
   }
 
@@ -256,16 +245,16 @@ export class Api extends EventEmitter {
    * @param signedRequest The signed request to verify
    * @param callback Callback function
    */
-  verifySignedRequest(signedRequest: any, callback: any) {
+  verifySignedRequest(signedRequest: unknown, callback: (err: Error | null, result?: unknown) => void) {
     import('./rpc-auth').then(({ validate }) => {
       // Create verification function that checks signatures against account's public keys
       const verifyFunction = async (message: Buffer, signatures: string[], account: string) => {
         try {
           // Get account's public keys
-          const accounts = await new Promise<any[]>((resolve, reject) => {
-            this.call('condenser_api.get_accounts', [[account]], (err: any, result: any) => {
+          const accounts = await new Promise<unknown[]>((resolve, reject) => {
+            this.call('condenser_api.get_accounts', [[account]], (err: Error | null, result?: unknown) => {
               if (err) reject(err);
-              else resolve(result);
+              else resolve(Array.isArray(result) ? result : []);
             });
           });
 
@@ -273,11 +262,14 @@ export class Api extends EventEmitter {
             throw new Error(`Account ${account} not found`);
           }
 
-          const accountData = accounts[0];
+          const accountData = accounts[0] as Record<string, unknown>;
+          const owner = (accountData.owner as Record<string, unknown>)?.key_auths as unknown[][];
+          const active = (accountData.active as Record<string, unknown>)?.key_auths as unknown[][];
+          const posting = (accountData.posting as Record<string, unknown>)?.key_auths as unknown[][];
           const publicKeys = [
-            accountData.owner.key_auths[0]?.[0],
-            accountData.active.key_auths[0]?.[0],
-            accountData.posting.key_auths[0]?.[0],
+            owner?.[0]?.[0],
+            active?.[0]?.[0],
+            posting?.[0]?.[0],
             accountData.memo_key
           ].filter(Boolean);
 
@@ -290,7 +282,7 @@ export class Api extends EventEmitter {
             for (const publicKey of publicKeys) {
               try {
                 const sig = Signature.fromHex(signature);
-                const pubKey = PublicKey.fromString(publicKey);
+                const pubKey = PublicKey.fromString(String(publicKey));
                 if (pubKey && sig.verifyBuffer(message, pubKey)) {
                   verified = true;
                   break;
@@ -311,9 +303,9 @@ export class Api extends EventEmitter {
       };
 
       // Validate the signed request
-      validate(signedRequest, verifyFunction)
+      validate(signedRequest as SignedRequest, verifyFunction)
         .then(params => callback(null, { valid: true, params }))
-        .catch(error => callback(error));
+        .catch(error => callback(error instanceof Error ? error : new Error(String(error))));
     }).catch(callback);
   }
 
@@ -321,24 +313,15 @@ export class Api extends EventEmitter {
     Object.assign(this.options, options);
     this._setLogger(options);
     this._setTransport(options);
+    if (!this.transport) {
+      throw new Error('Transport not initialized');
+    }
     this.transport.setOptions(options);
     if (Object.prototype.hasOwnProperty.call(options, 'useTestNet')) {
       getConfig().set('address_prefix', options.useTestNet ? 'TST' : 'STM');
     }
   }
 
-  /**
-   * Set WebSocket URL
-   * 
-   * NOTE: WebSocket functionality is currently not supported.
-   * This method is kept for backward compatibility only.
-   * Please use HTTP transport (via setOptions({ url: 'https://api.steemit.com' })) for API calls.
-   */
-  setWebSocket(url: string) {
-    this.setOptions({
-      websocket: url
-    });
-  }
 
   setUri(url: string) {
     this.setOptions({
@@ -357,11 +340,12 @@ export class Api extends EventEmitter {
     const update = () => {
       if (!running) return;
 
-      (this as any).getDynamicGlobalPropertiesAsync().then(
-        (result: any) => {
+      ((this as Record<string, unknown>).getDynamicGlobalPropertiesAsync as () => Promise<unknown>)().then(
+        (result: unknown) => {
+          const props = result as Record<string, unknown>;
           const blockId = mode === 'irreversible' ?
-            result.last_irreversible_block_num :
-            result.head_block_number;
+            (props.last_irreversible_block_num as number) :
+            (props.head_block_number as number);
 
           if (blockId !== current) {
             if (current) {
@@ -379,7 +363,7 @@ export class Api extends EventEmitter {
 
           setTimeout(update, ts);
         },
-        (err: any) => {
+        (err: Error | null) => {
           callback(err);
         },
       );
@@ -509,13 +493,13 @@ export class Api extends EventEmitter {
    * @param trx The transaction object
    * @param callback Callback function
    */
-  broadcastTransaction(trx: any, callback: any) {
+  broadcastTransaction(trx: unknown, callback: (err: Error | null, result?: unknown) => void) {
     // Use the transport to send the transaction
     // This assumes the transport implements broadcastTransactionSynchronous
     if (typeof (this as any).broadcastTransactionSynchronous === 'function') {
       (this as any).broadcastTransactionSynchronous(trx, callback);
-    } else if (this.transport && typeof this.transport.broadcastTransactionSynchronous === 'function') {
-      this.transport.broadcastTransactionSynchronous(trx, callback);
+    } else if (this.transport && typeof ((this.transport as unknown) as Record<string, unknown>).broadcastTransactionSynchronous === 'function') {
+      (((this.transport as unknown) as Record<string, unknown>).broadcastTransactionSynchronous as (trx: unknown, callback: (err: Error | null, result?: unknown) => void) => void)(trx, callback);
     } else {
       callback(new Error('broadcastTransaction is not implemented'));
     }
@@ -527,7 +511,7 @@ export class Api extends EventEmitter {
    * @param keys Array of WIF private keys
    * @returns Signed transaction object
    */
-  signTransaction(trx: any, keys: string[]): any {
+  signTransaction(trx: unknown, keys: string[]): unknown {
     // Use the signTransaction logic from auth if available
     // Fallback: just return the transaction for now
     try {
@@ -545,7 +529,7 @@ export class Api extends EventEmitter {
    * @param callback Optional callback
    * @returns Account object or Promise
    */
-  getAccount(name: string, callback?: (err: any, result?: any) => void): Bluebird<any> | void {
+  getAccount(name: string, callback?: (err: any, result?: any) => void): Promise<any> | void {
     if (callback) {
       (this as any).getAccounts([name], (err: any, res: any) => {
         if (err) return callback(err);
@@ -553,7 +537,10 @@ export class Api extends EventEmitter {
       });
       return;
     }
-    return (this as any).getAccounts([name]).then((res: any) => res && res[0]);
+    return ((this as Record<string, unknown>).getAccounts as (names: string[]) => Promise<unknown>)([name]).then((res: unknown) => {
+      const accounts = Array.isArray(res) ? res : [];
+      return accounts[0];
+    });
   }
 
   /**
@@ -565,7 +552,7 @@ export class Api extends EventEmitter {
    * @param callback Optional callback
    * @returns Array of followers or Promise
    */
-  getFollowers(account: string, startFollower: string, type: string, limit: number, callback?: (err: any, result?: any) => void): Bluebird<any[]> | void {
+  getFollowers(account: string, startFollower: string, type: string, limit: number, callback?: (err: any, result?: any) => void): Promise<any[]> | void {
     if (callback) {
       (this as any).get_followers(account, startFollower, type, limit, (err: any, res: any) => {
         if (err) return callback(err);
@@ -574,7 +561,7 @@ export class Api extends EventEmitter {
       return;
     }
     return (this as any).get_followers(account, startFollower, type, limit)
-      .then((res: any) => Array.isArray(res) ? res : [])
+      .then((res: unknown) => Array.isArray(res) ? res : [])
       .catch(() => []);
   }
 
@@ -584,7 +571,7 @@ export class Api extends EventEmitter {
    * @param trx Transaction object to broadcast
    * @param callback Callback function
    */
-  broadcastTransactionWithCallback(confirmationCallback: any, trx: any, callback: any) {
+  broadcastTransactionWithCallback(confirmationCallback: (result: unknown) => void, trx: unknown, callback: (err: Error | null, result?: unknown) => void) {
     if (this._transportType !== 'http') {
       callback(new Error('broadcastTransactionWithCallback can only be called when using http transport'));
       return;
@@ -600,7 +587,7 @@ export class Api extends EventEmitter {
    * @param block Block object to broadcast
    * @param callback Callback function
    */
-  broadcastBlock(block: any, callback: any) {
+  broadcastBlock(block: unknown, callback: (err: Error | null, result?: unknown) => void) {
     if (this._transportType !== 'http') {
       callback(new Error('broadcastBlock can only be called when using http transport'));
       return;
@@ -616,7 +603,7 @@ export class Api extends EventEmitter {
    * @param maxBlockAge Maximum block age in seconds
    * @param callback Callback function
    */
-  setMaxBlockAge(maxBlockAge: number, callback: any) {
+  setMaxBlockAge(maxBlockAge: number, callback: (err: Error | null, result?: unknown) => void) {
     if (this._transportType !== 'http') {
       callback(new Error('setMaxBlockAge can only be called when using http transport'));
       return;
@@ -633,31 +620,31 @@ export class Api extends EventEmitter {
    * @param callback Optional callback function
    * @returns Promise with verification result if no callback provided
    */
-  verifyAuthority(trx: any, callback?: (err: any, result?: boolean) => void): Bluebird<boolean> | void {
+  verifyAuthority(trx: any, callback?: (err: any, result?: boolean) => void): Promise<boolean> | void {
     if (this._transportType !== 'http') {
       const err = new Error('verifyAuthority can only be called when using http transport');
       if (callback) {
         callback(err);
         return;
       }
-      return Bluebird.reject(err);
+      return Promise.reject(err);
     }
     if (callback) {
       this.send('database_api', {
         method: 'verify_authority',
         params: [trx]
-      }, (err: any, result: any) => {
-        callback(err, result || false);
+      }, (err: Error | null, result?: unknown) => {
+        callback(err, Boolean(result));
       });
       return;
     }
-    return new Bluebird((resolve: any, reject: any) => {
+    return new Promise<boolean>((resolve, reject) => {
       this.send('database_api', {
         method: 'verify_authority',
         params: [trx]
-      }, (err: any, result: any) => {
+      }, (err: Error | null, result?: unknown) => {
         if (err) return reject(err);
-        resolve(result || false);
+        resolve(Boolean(result));
       });
     });
   }
@@ -669,38 +656,38 @@ export class Api extends EventEmitter {
    * @param callback Optional callback function
    * @returns Promise with verification result if no callback provided
    */
-  verifyAccountAuthority(nameOrId: string, signers: string[], callback?: (err: any, result?: boolean) => void): Bluebird<boolean> | void {
+  verifyAccountAuthority(nameOrId: string, signers: string[], callback?: (err: Error | null, result?: boolean) => void): Promise<boolean> | void {
     if (this._transportType !== 'http') {
       const err = new Error('verifyAccountAuthority can only be called when using http transport');
       if (callback) {
         callback(err);
         return;
       }
-      return Bluebird.reject(err);
+      return Promise.reject(err);
     }
     if (callback) {
       this.send('database_api', {
         method: 'verify_account_authority',
         params: [nameOrId, signers]
-      }, (err: any, result: any) => {
-        callback(err, result || false);
+      }, (err: Error | null, result?: unknown) => {
+        callback(err, Boolean(result));
       });
       return;
     }
-    return new Bluebird((resolve: any, reject: any) => {
+    return new Promise<boolean>((resolve, reject) => {
       this.send('database_api', {
         method: 'verify_account_authority',
         params: [nameOrId, signers]
-      }, (err: any, result: any) => {
+      }, (err: Error | null, result?: unknown) => {
         if (err) return reject(err);
-        resolve(result || false);
+        resolve(Boolean(result));
       });
     });
   }
 }
 
 // Export singleton instance for compatibility
-const api = new Api({ uri: getConfig().get('uri'), websocket: getConfig().get('websocket') });
+const api = new Api({ uri: (getConfig().get('uri') as string) || 'https://api.steemit.com' });
 
 export function setOptions(options: ApiOptions) {
   api.setOptions(options);
@@ -710,11 +697,11 @@ export function call(method: string, params: any[], callback: any) {
   return api.call(method, params, callback);
 }
 
-export function signTransaction(trx: any, keys: string[]) {
+export function signTransaction(trx: unknown, keys: string[]) {
   return api.signTransaction(trx, keys);
 }
 
-export function verifyAuthority(..._args: any[]) {
+export function verifyAuthority(..._args: unknown[]) {
   // Implementation would go here
   return false;
 }
@@ -722,15 +709,15 @@ export function verifyAuthority(..._args: any[]) {
 export default api;
 
 // Export async variants and listeners for compatibility with tests
-export const getDynamicGlobalPropertiesAsync = (api as any).getDynamicGlobalPropertiesAsync;
-export const getBlockAsync = (api as any).getBlockAsync;
-export const getFollowersAsync = (api as any).getFollowersAsync;
-export const getContentAsync = (api as any).getContentAsync;
-export const listeners = (...args: any[]) => (api as any).listeners(...args);
-export const streamBlockNumber = (...args: any[]) => (api as any).streamBlockNumber(...args);
-export const streamBlock = (...args: any[]) => (api as any).streamBlock(...args);
-export const streamTransactions = (...args: any[]) => (api as any).streamTransactions(...args);
-export const streamOperations = (...args: any[]) => (api as any).streamOperations(...args);
+export const getDynamicGlobalPropertiesAsync = ((api as unknown) as Record<string, unknown>).getDynamicGlobalPropertiesAsync as () => Promise<unknown>;
+export const getBlockAsync = ((api as unknown) as Record<string, unknown>).getBlockAsync as (...args: unknown[]) => Promise<unknown>;
+export const getFollowersAsync = ((api as unknown) as Record<string, unknown>).getFollowersAsync as (...args: unknown[]) => Promise<unknown>;
+export const getContentAsync = ((api as unknown) as Record<string, unknown>).getContentAsync as (...args: unknown[]) => Promise<unknown>;
+export const listeners = (...args: unknown[]) => (((api as unknown) as Record<string, unknown>).listeners as (...args: unknown[]) => unknown)(...args);
+export const streamBlockNumber = (...args: unknown[]) => (((api as unknown) as Record<string, unknown>).streamBlockNumber as (...args: unknown[]) => unknown)(...args);
+export const streamBlock = (...args: unknown[]) => (((api as unknown) as Record<string, unknown>).streamBlock as (...args: unknown[]) => unknown)(...args);
+export const streamTransactions = (...args: unknown[]) => (((api as unknown) as Record<string, unknown>).streamTransactions as (...args: unknown[]) => unknown)(...args);
+export const streamOperations = (...args: unknown[]) => (((api as unknown) as Record<string, unknown>).streamOperations as (...args: unknown[]) => unknown)(...args);
 
 // Export signature verification utilities
 export { sign as signRequest, validate as validateRequest } from './rpc-auth';
