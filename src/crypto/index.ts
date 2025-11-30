@@ -1,14 +1,19 @@
-import { createHash, createHmac, randomBytes } from 'crypto';
+import { sha256 as nobleSha256 } from '@noble/hashes/sha2';
+import { ripemd160 as nobleRipemd160 } from '@noble/hashes/legacy';
+import { hmac } from '@noble/hashes/hmac';
+import { randomBytes } from './random-bytes';
 import type { KeyPair } from '../auth';
 import { PrivateKey, PublicKey } from '../auth';
 import { Signature } from '../auth/ecc/src/signature';
 
 export const sha256 = (data: string | Buffer): Buffer => {
-  return createHash('sha256').update(data).digest();
+  const input = Buffer.isBuffer(data) ? data : Buffer.from(data);
+  return Buffer.from(nobleSha256(input));
 };
 
 export const ripemd160 = (data: string | Buffer): Buffer => {
-  return createHash('ripemd160').update(data).digest();
+  const input = Buffer.isBuffer(data) ? data : Buffer.from(data);
+  return Buffer.from(nobleRipemd160(input));
 };
 
 export const doubleSha256 = (data: string | Buffer): Buffer => {
@@ -16,7 +21,9 @@ export const doubleSha256 = (data: string | Buffer): Buffer => {
 };
 
 export const hmacSha256 = (key: string | Buffer, data: string | Buffer): Buffer => {
-  return createHmac('sha256', key).update(data).digest();
+  const keyBuf = Buffer.isBuffer(key) ? key : Buffer.from(key);
+  const dataBuf = Buffer.isBuffer(data) ? data : Buffer.from(data);
+  return Buffer.from(hmac(nobleSha256, keyBuf, dataBuf));
 };
 
 /**

@@ -1,7 +1,8 @@
-import { createHash } from 'crypto';
+import { sha256 as nobleSha256 } from '@noble/hashes/sha2';
 
 export const hash = {
   sha256: (data: Buffer | string): Buffer => {
-    return createHash('sha256').update(data).digest();
+    const input = Buffer.isBuffer(data) ? data : Buffer.from(data);
+    return Buffer.from(nobleSha256(input));
   }
 }; 

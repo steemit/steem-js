@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv } from 'crypto';
+import { cbc } from '@noble/ciphers/aes';
 import { PrivateKey } from './key_private';
 import { PublicKey } from './key_public';
 import { sha256, sha512 } from './hash';
@@ -69,8 +69,8 @@ export class Aes {
         const cbuf = ByteBuffer.fromBinary(checkBinary, ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
         const checksum = cbuf.readUint32();
 
-        const cipher = createCipheriv('aes-256-cbc', key, iv);
-        const encrypted = Buffer.concat([cipher.update(messageBuffer), cipher.final()]);
+        // Use @noble/ciphers for AES-256-CBC encryption
+        const encrypted = Buffer.from(cbc(key, iv).encrypt(messageBuffer));
 
         return {
             nonce,
@@ -127,9 +127,9 @@ export class Aes {
             throw new Error('Invalid checksum');
         }
 
-        const decipher = createDecipheriv('aes-256-cbc', key, iv);
+        // Use @noble/ciphers for AES-256-CBC decryption
         const messageBuffer = Buffer.from(message, 'hex');
-        return Buffer.concat([decipher.update(messageBuffer), decipher.final()]);
+        return Buffer.from(cbc(key, iv).decrypt(messageBuffer));
     }
 
     static fromSeed(seed: string): Buffer {

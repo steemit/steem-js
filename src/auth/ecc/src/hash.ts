@@ -1,42 +1,57 @@
-import createHash from 'create-hash';
-import createHmac from 'create-hmac';
+import { sha1 as nobleSha1, ripemd160 as nobleRipemd160 } from '@noble/hashes/legacy';
+import { sha256 as nobleSha256, sha512 as nobleSha512 } from '@noble/hashes/sha2';
+import { hmac } from '@noble/hashes/hmac';
 
 /** @arg {string|Buffer} data
     @arg {string} [digest = null] - 'hex', 'binary' or 'base64'
     @return {string|Buffer} - Buffer when digest is null, or string
 */
 export function sha1(data: string | Buffer, encoding?: BufferEncoding): string | Buffer {
-    return createHash('sha1').update(data).digest(encoding);
+    const input = Buffer.isBuffer(data) ? data : Buffer.from(data);
+    const hash = nobleSha1(input);
+    if (encoding) {
+        return Buffer.from(hash).toString(encoding);
+    }
+    return Buffer.from(hash);
 }
 
 /** @arg {string|Buffer} data
     @arg {string} [digest = null] - 'hex', 'binary' or 'base64'
     @return {string|Buffer} - Buffer when digest is null, or string
 */
-export function sha256(data: string | Buffer, encoding?: BufferEncoding): Buffer {
+export function sha256(data: string | Buffer): Buffer;
+export function sha256(data: string | Buffer, encoding: BufferEncoding): string;
+export function sha256(data: string | Buffer, encoding?: BufferEncoding): string | Buffer {
+    const input = Buffer.isBuffer(data) ? data : Buffer.from(data);
+    const hash = nobleSha256(input);
     if (encoding) {
-        return Buffer.from(createHash('sha256').update(data).digest(encoding));
+        return Buffer.from(hash).toString(encoding);
     }
-    return createHash('sha256').update(data).digest();
+    return Buffer.from(hash);
 }
 
 /** @arg {string|Buffer} data
     @arg {string} [digest = null] - 'hex', 'binary' or 'base64'
     @return {string|Buffer} - Buffer when digest is null, or string
 */
-export function sha512(data: string | Buffer, encoding?: BufferEncoding): Buffer {
+export function sha512(data: string | Buffer): Buffer;
+export function sha512(data: string | Buffer, encoding: BufferEncoding): string;
+export function sha512(data: string | Buffer, encoding?: BufferEncoding): string | Buffer {
+    const input = Buffer.isBuffer(data) ? data : Buffer.from(data);
+    const hash = nobleSha512(input);
     if (encoding) {
-        return Buffer.from(createHash('sha512').update(data).digest(encoding));
+        return Buffer.from(hash).toString(encoding);
     }
-    return createHash('sha512').update(data).digest();
+    return Buffer.from(hash);
 }
 
 export function HmacSHA256(buffer: Buffer, secret: Buffer): Buffer {
-    return createHmac('sha256', secret).update(buffer).digest();
+    return Buffer.from(hmac(nobleSha256, secret, buffer));
 }
 
 export function ripemd160(data: string | Buffer): Buffer {
-    return createHash('rmd160').update(data).digest();
+    const input = Buffer.isBuffer(data) ? data : Buffer.from(data);
+    return Buffer.from(nobleRipemd160(input));
 }
 
 export default {

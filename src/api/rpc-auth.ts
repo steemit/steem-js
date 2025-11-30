@@ -4,11 +4,12 @@
 
 import { Signature } from '../auth/ecc/src/signature';
 import { PrivateKey } from '../auth/key_classes';
-import { createHash, randomBytes } from 'crypto';
+import { sha256 } from '@noble/hashes/sha2';
+import { randomBytes } from '../crypto/random-bytes';
 
 interface RpcRequest {
   method: string;
-  params: any[];
+  params: unknown[];
   id: number;
 }
 
@@ -45,16 +46,18 @@ export const K = Buffer.from('3b3b081e46ea808d5a96b08c4bc5003f5e15767090f344faab
  * @returns bytes to be signed or validated.
  */
 function hashMessage(timestamp: string, account: string, method: string, params: string, nonce: Buffer): Buffer {
-  const first = createHash('sha256');
-  first.update(timestamp);
-  first.update(account);
-  first.update(method);
-  first.update(params);
-  const second = createHash('sha256');
-  second.update(K);
-  second.update(first.digest());
-  second.update(nonce);
-  return second.digest();
+  // First hash: sha256(timestamp + account + method + params)
+  const firstInput = Buffer.concat([
+    Buffer.from(timestamp),
+    Buffer.from(account),
+    Buffer.from(method),
+    Buffer.from(params)
+  ]);
+  const firstHash = Buffer.from(sha256(firstInput));
+  
+  // Second hash: sha256(K + firstHash + nonce)
+  const secondInput = Buffer.concat([K, firstHash, nonce]);
+  return Buffer.from(sha256(secondInput));
 }
 
 /**
@@ -105,7 +108,7 @@ export function sign(request: RpcRequest, account: string, keys: string[]): Sign
 export async function validate(
   request: SignedRequest, 
   verify: (message: Buffer, signatures: string[], account: string) => Promise<void>
-): Promise<any> {
+): Promise<unknown> {
   if (request.jsonrpc !== '2.0' || typeof request.method !== 'string') {
     throw new Error('Invalid JSON RPC Request');
   }
@@ -124,12 +127,13 @@ export async function validate(
     throw new Error('Missing account');
   }
 
-  let params: any;
+  let params: unknown;
   try {
     const jsonString = Buffer.from(signed.params, 'base64').toString('utf8');
     params = JSON.parse(jsonString);
-  } catch (cause: any) {
-    throw new Error(`Invalid encoded params: ${cause.message}`);
+  } catch (cause: unknown) {
+    const message = cause instanceof Error ? cause.message : String(cause);
+    throw new Error(`Invalid encoded params: ${message}`);
   }
 
   if (signed.nonce == undefined || typeof signed.nonce !== 'string') {
@@ -154,8 +158,9 @@ export async function validate(
 
   try {
     await verify(message, signed.signatures, signed.account);
-  } catch (cause: any) {
-    throw new Error(`Verification failed: ${cause.message}`);
+  } catch (cause: unknown) {
+    const message = cause instanceof Error ? cause.message : String(cause);
+    throw new Error(`Verification failed: ${message}`);
   }
 
   return params;

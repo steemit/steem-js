@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import { sha256 } from '@noble/hashes/sha2';
 import type { Operation, Transaction } from '../types';
 
 export const serializeTransaction = (transaction: Transaction): Buffer => {
@@ -11,7 +11,8 @@ export const serializeOperation = (operation: Operation): Buffer => {
 
 export const getTransactionDigest = (transaction: Transaction): Buffer => {
   const serialized = serializeTransaction(transaction);
-  return createHash('sha256').update(serialized).digest();
+  const serializedBuf = Buffer.isBuffer(serialized) ? serialized : Buffer.from(serialized);
+  return Buffer.from(sha256(serializedBuf));
 };
 
 export const getTransactionId = (transaction: Transaction): string => {
@@ -23,12 +24,12 @@ export const serialize = (operation: any): Buffer => {
   return Buffer.from(JSON.stringify(operation));
 };
 
-export const deserialize = (buffer: Buffer): any => {
+export const deserialize = (buffer: Buffer): unknown => {
   if (!buffer || buffer.length === 0) return {};
   return JSON.parse(buffer.toString());
 };
 
-export const deserializeTransaction = (buffer: Buffer): any => {
+export const deserializeTransaction = (buffer: Buffer): unknown => {
   if (!buffer || buffer.length === 0) {
     return {
       ref_block_num: 0,
