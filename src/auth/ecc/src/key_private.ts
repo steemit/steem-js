@@ -2,7 +2,9 @@ import { ec as EC } from 'elliptic';
 const secp256k1 = new EC('secp256k1');
 import BN from 'bn.js';
 import base58 from 'bs58';
-import assert from 'assert';
+// @ts-ignore - CommonJS module
+import * as assertModule from 'assert';
+const assert = assertModule as any;
 import * as hash from './hash';
 import { PublicKey } from './key_public';
 import { debug } from '../../../utils/debug';
