@@ -1,6 +1,6 @@
-type TypeName = 'Array' | 'Boolean' | 'Buffer' | 'Number' | 'String' | { new(...args: any[]): any };
+type TypeName = 'Array' | 'Boolean' | 'Buffer' | 'Number' | 'String' | { new(...args: unknown[]): unknown };
 
-export default function enforce(type: TypeName, value: any): void {
+export default function enforce(type: TypeName, value: unknown): void {
     switch (type) {
         case 'Array': {
             if (Array.isArray(value)) return;
@@ -28,11 +28,11 @@ export default function enforce(type: TypeName, value: any): void {
         }
 
         default: {
-            if (typeof type === 'function' && getName(value.constructor) === getName(type)) return;
+            if (typeof type === 'function' && value != null && typeof value === 'object' && 'constructor' in value && getName(value.constructor as Function) === getName(type)) return;
         }
     }
 
-    throw new TypeError('Expected ' + (typeof type === 'function' ? getName(type) : type) + ', got ' + value);
+    throw new TypeError('Expected ' + (typeof type === 'function' ? getName(type) : type) + ', got ' + String(value));
 }
 
 function getName(fn: Function): string | null {

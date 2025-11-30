@@ -26,7 +26,7 @@ export interface Authority {
 
 export interface Operation {
   type: string;
-  value: any;
+  value: unknown;
 }
 
 export interface Transaction {
@@ -34,6 +34,6 @@ export interface Transaction {
   ref_block_prefix: number;
   expiration: string;
   operations: Operation[];
-  extensions: any[];
+  extensions: unknown[];
   signatures?: string[];
 } 

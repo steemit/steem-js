@@ -6,8 +6,8 @@ export default class ECSignature {
     s: BN;
 
     constructor(r: BN, s: BN) {
-        enforce(BN, r);
-        enforce(BN, s);
+        enforce(BN as { new(...args: unknown[]): unknown }, r);
+        enforce(BN as { new(...args: unknown[]): unknown }, s);
 
         this.r = r;
         this.s = s;

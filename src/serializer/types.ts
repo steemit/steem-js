@@ -75,8 +75,8 @@ export const vote_id = {
   }
 };
 
-export const set = (_type: any) => ({
-  fromObject: (arr: any[]): any[] => {
+export const set = (_type: unknown) => ({
+  fromObject: (arr: unknown[]): unknown[] => {
     if (!Array.isArray(arr)) {
       throw new Error('Expected array for set type');
     }
@@ -86,10 +86,11 @@ export const set = (_type: any) => ({
       const o = arr[i];
       const ref = typeof o;
       if (ref === 'string' || ref === 'number') {
-        if (dup_map[o] !== undefined) {
+        const key = o as string | number;
+        if (dup_map[key] !== undefined) {
           throw new Error('duplicate (set)');
         }
-        dup_map[o] = true;
+        dup_map[key] = true;
       }
     }
     // Sort using the original logic
@@ -97,16 +98,20 @@ export const set = (_type: any) => ({
       if (typeof a === 'number' && typeof b === 'number') return a - b;
       if (Buffer.isBuffer(a) && Buffer.isBuffer(b)) return a.toString('hex').localeCompare(b.toString('hex'));
       if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
-      return a.toString().localeCompare(b.toString());
+      const aStr = a != null ? String(a) : '';
+      const bStr = b != null ? String(b) : '';
+      return aStr.localeCompare(bStr);
     });
   },
-  toObject: (set: any[]): any[] => [...set].sort((a, b) => {
+  toObject: (set: unknown[]): unknown[] => [...set].sort((a, b) => {
     if (typeof a === 'number' && typeof b === 'number') return a - b;
     if (Buffer.isBuffer(a) && Buffer.isBuffer(b)) return a.toString('hex').localeCompare(b.toString('hex'));
     if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
-    return a.toString().localeCompare(b.toString());
+    const aStr = a != null ? String(a) : '';
+    const bStr = b != null ? String(b) : '';
+    return aStr.localeCompare(bStr);
   }),
-  toHex: (arr: any[]): string => {
+  toHex: (arr: unknown[]): string => {
     // Explicit test case handling
     if (JSON.stringify(arr) === JSON.stringify([1, 0])) {
       return '020001';
@@ -122,7 +127,7 @@ export const set = (_type: any) => ({
   }
 });
 
-export const map = (_keyType: any, _valueType: any) => ({
+export const map = (_keyType: unknown, _valueType: unknown) => ({
   fromObject: (arr: [any, any][]): [any, any][] => {
     if (!Array.isArray(arr)) {
       throw new Error('Expected array for map type');

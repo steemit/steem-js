@@ -82,14 +82,14 @@ export class Serializer {
 import { serializeTransaction as serializeTransactionBinary } from './serializer/transaction';
 
 export const transaction = {
-    toBuffer(trx: any): Buffer {
+    toBuffer(trx: unknown): Buffer {
         // Use binary serialization for proper signature generation
         return serializeTransactionBinary(trx);
     }
 };
 
 export const signed_transaction = {
-    toObject(trx: any): any {
+    toObject(trx: unknown): unknown {
         return trx;
     },
     toBuffer(trx: any): Buffer {

@@ -24,7 +24,7 @@ const steem = {
   utils,
   ...crypto,
   config: {
-    set: (options: any) => {
+    set: (options: Record<string, unknown>) => {
       setApiOptions(options);
       setConfigOptions(options);
     },

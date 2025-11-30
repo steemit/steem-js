@@ -21,7 +21,7 @@ export class Address {
     }
 
     static fromString(address: string): Buffer {
-        const prefix = getConfig().get('address_prefix');
+        const prefix = (getConfig().get('address_prefix') as string | undefined) || 'STM';
         if (!address.startsWith(prefix)) {
             throw new Error(`Expecting address to begin with ${prefix}`);
         }

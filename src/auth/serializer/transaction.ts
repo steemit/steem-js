@@ -6,35 +6,36 @@ import { PublicKey } from '../ecc/src/key_public';
  * Serialize a transaction to binary format for Steem blockchain
  * This is a simplified implementation that handles the basic structure
  */
-export function serializeTransaction(trx: any): Buffer {
+export function serializeTransaction(trx: unknown): Buffer {
     const bb = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
+    const trxObj = trx as Record<string, unknown>;
     
     // Write ref_block_num (uint16)
-    bb.writeUint16(trx.ref_block_num || 0);
+    bb.writeUint16((trxObj.ref_block_num as number) || 0);
     
     // Write ref_block_prefix (uint32)
-    bb.writeUint32(trx.ref_block_prefix || 0);
+    bb.writeUint32((trxObj.ref_block_prefix as number) || 0);
     
     // Write expiration (time_point_sec - uint32 seconds since epoch)
     // Match old-steem-js behavior: ensure UTC time and precision to seconds
     let expiration: number;
-    if (typeof trx.expiration === 'string') {
+    if (typeof trxObj.expiration === 'string') {
         // If string doesn't end with 'Z', append it to ensure UTC time
-        let expirationStr = trx.expiration;
+        let expirationStr = trxObj.expiration;
         if (!expirationStr.endsWith('Z')) {
             expirationStr = expirationStr + 'Z';
         }
         const date = new Date(expirationStr);
         expiration = Math.floor(date.getTime() / 1000);
-    } else if (typeof trx.expiration === 'number') {
-        expiration = trx.expiration;
+    } else if (typeof trxObj.expiration === 'number') {
+        expiration = trxObj.expiration;
     } else {
         expiration = 0;
     }
     bb.writeUint32(expiration);
     
     // Write operations array
-    const operations = trx.operations || [];
+    const operations = (Array.isArray(trxObj.operations) ? trxObj.operations : []) as unknown[];
     bb.writeVarint32(operations.length);
     
     for (const op of operations) {
@@ -46,8 +47,8 @@ export function serializeTransaction(trx: any): Buffer {
     
     // Write signatures array ONLY if explicitly present (for signed_transaction serialization)
     // Note: signatures are NOT included in digest calculation for signing
-    if (trx.hasOwnProperty('signatures')) {
-        const signatures = trx.signatures || [];
+    if ('signatures' in trxObj) {
+        const signatures = (Array.isArray(trxObj.signatures) ? trxObj.signatures : []) as unknown[];
         bb.writeVarint32(signatures.length);
         for (const sig of signatures) {
             // Each signature should be a Buffer or hex string
@@ -69,7 +70,7 @@ export function serializeTransaction(trx: any): Buffer {
 /**
  * Serialize an operation to binary format
  */
-function serializeOperation(bb: ByteBuffer, op: any): void {
+function serializeOperation(bb: ByteBuffer, op: unknown): void {
     if (!Array.isArray(op) || op.length !== 2) {
         throw new Error('Operation must be an array of [operation_type, operation_data]');
     }
@@ -120,7 +121,7 @@ function getOperationTypeIndex(opType: string): number {
 /**
  * Serialize operation data based on operation type
  */
-function serializeOperationData(bb: ByteBuffer, opType: string, opData: any): void {
+function serializeOperationData(bb: ByteBuffer, opType: string, opData: unknown): void {
     switch (opType) {
         case 'comment':
             serializeComment(bb, opData);
@@ -142,92 +143,113 @@ function serializeOperationData(bb: ByteBuffer, opType: string, opData: any): vo
 /**
  * Serialize comment operation
  */
-function serializeComment(bb: ByteBuffer, data: any): void {
-    writeString(bb, data.parent_author || '');
-    writeString(bb, data.parent_permlink || '');
-    writeString(bb, data.author || '');
-    writeString(bb, data.permlink || '');
-    writeString(bb, data.title || '');
-    writeString(bb, data.body || '');
-    writeString(bb, data.json_metadata || '{}');
+function serializeComment(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.parent_author || ''));
+    writeString(bb, String(dataObj.parent_permlink || ''));
+    writeString(bb, String(dataObj.author || ''));
+    writeString(bb, String(dataObj.permlink || ''));
+    writeString(bb, String(dataObj.title || ''));
+    writeString(bb, String(dataObj.body || ''));
+    writeString(bb, String(dataObj.json_metadata || '{}'));
 }
 
 /**
  * Serialize vote operation
  */
-function serializeVote(bb: ByteBuffer, data: any): void {
-    writeString(bb, data.voter || '');
-    writeString(bb, data.author || '');
-    writeString(bb, data.permlink || '');
-    bb.writeInt16(data.weight || 0);
+function serializeVote(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.voter || ''));
+    writeString(bb, String(dataObj.author || ''));
+    writeString(bb, String(dataObj.permlink || ''));
+    bb.writeInt16((dataObj.weight as number) || 0);
 }
 
 /**
  * Serialize transfer operation
  */
-function serializeTransfer(bb: ByteBuffer, data: any): void {
-    writeString(bb, data.from || '');
-    writeString(bb, data.to || '');
-    serializeAsset(bb, data.amount || '0.000 STEEM');
-    writeString(bb, data.memo || '');
+function serializeTransfer(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.from || ''));
+    writeString(bb, String(dataObj.to || ''));
+    serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
+    writeString(bb, String(dataObj.memo || ''));
 }
 
 /**
  * Serialize account_create operation
  */
-function serializeAccountCreate(bb: ByteBuffer, data: any): void {
-    serializeAsset(bb, data.fee || '0.000 STEEM');
-    writeString(bb, data.creator || '');
-    writeString(bb, data.new_account_name || '');
-    serializeAuthority(bb, data.owner);
-    serializeAuthority(bb, data.active);
-    serializeAuthority(bb, data.posting);
+function serializeAccountCreate(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    serializeAsset(bb, String(dataObj.fee || '0.000 STEEM'));
+    writeString(bb, String(dataObj.creator || ''));
+    writeString(bb, String(dataObj.new_account_name || ''));
+    serializeAuthority(bb, dataObj.owner);
+    serializeAuthority(bb, dataObj.active);
+    serializeAuthority(bb, dataObj.posting);
     
     // Serialize memo_key (public_key)
     // PublicKey.fromStringOrThrow returns a PublicKey object which has toBuffer
     // Or we can manually parse the string
-    if (typeof data.memo_key === 'string') {
-        const pubKey = PublicKey.fromStringOrThrow(data.memo_key);
+    if (typeof dataObj.memo_key === 'string') {
+        const pubKey = PublicKey.fromStringOrThrow(dataObj.memo_key);
         bb.append(pubKey.toBuffer());
-    } else if (Buffer.isBuffer(data.memo_key)) {
-        bb.append(data.memo_key);
-    } else if (data.memo_key && typeof data.memo_key.toBuffer === 'function') {
-        bb.append(data.memo_key.toBuffer());
+    } else if (Buffer.isBuffer(dataObj.memo_key)) {
+        bb.append(dataObj.memo_key);
+    } else if (dataObj.memo_key && typeof (dataObj.memo_key as { toBuffer?: () => Buffer }).toBuffer === 'function') {
+        bb.append((dataObj.memo_key as { toBuffer: () => Buffer }).toBuffer());
     } else {
         throw new Error('Invalid memo_key format');
     }
     
-    writeString(bb, data.json_metadata || '');
+    writeString(bb, String(dataObj.json_metadata || ''));
 }
 
 /**
  * Serialize Authority
  */
-function serializeAuthority(bb: ByteBuffer, auth: any): void {
-    bb.writeUint32(auth.weight_threshold || 1);
+function serializeAuthority(bb: ByteBuffer, auth: unknown): void {
+    const authObj = auth as Record<string, unknown>;
+    bb.writeUint32((authObj.weight_threshold as number) || 1);
     
     // Account auths (map<string, uint16>)
-    const accountAuths = auth.account_auths || [];
+    const accountAuths = (Array.isArray(authObj.account_auths) ? authObj.account_auths : []) as unknown[][];
     // Maps in Steem serialization are sorted by key
-    accountAuths.sort((a: any[], b: any[]) => a[0].localeCompare(b[0]));
+    const accountAuthsArray = accountAuths as unknown[][];
+    accountAuthsArray.sort((a: unknown[], b: unknown[]) => {
+      const aKey = Array.isArray(a) && a[0] ? String(a[0]) : '';
+      const bKey = Array.isArray(b) && b[0] ? String(b[0]) : '';
+      return aKey.localeCompare(bKey);
+    });
     
     bb.writeVarint32(accountAuths.length);
-    for (const [name, weight] of accountAuths) {
-        writeString(bb, name);
-        bb.writeUint16(weight);
+    for (const authEntry of accountAuths) {
+        if (Array.isArray(authEntry) && authEntry.length >= 2) {
+            writeString(bb, String(authEntry[0]));
+            bb.writeUint16(authEntry[1] as number);
+        }
     }
     
     // Key auths (map<public_key, uint16>)
-    const keyAuths = auth.key_auths || [];
+    const keyAuths = (Array.isArray(authObj.key_auths) ? authObj.key_auths : []) as unknown[][];
     // Maps in Steem serialization are sorted by key (public key string)
     // But serialized as bytes. Usually sorting by string representation of public key works.
-    keyAuths.sort((a: any[], b: any[]) => a[0].localeCompare(b[0]));
+    const keyAuthsArray = keyAuths as unknown[][];
+    keyAuthsArray.sort((a: unknown[], b: unknown[]) => {
+      const aKey = Array.isArray(a) && a[0] ? String(a[0]) : '';
+      const bKey = Array.isArray(b) && b[0] ? String(b[0]) : '';
+      return aKey.localeCompare(bKey);
+    });
     
     bb.writeVarint32(keyAuths.length);
-    for (const [keyStr, weight] of keyAuths) {
-        const pubKey = PublicKey.fromStringOrThrow(keyStr);
-        bb.append(pubKey.toBuffer());
-        bb.writeUint16(weight);
+    for (const keyAuth of keyAuths) {
+        if (Array.isArray(keyAuth) && keyAuth.length >= 2) {
+            const keyStr = String(keyAuth[0]);
+            const weight = keyAuth[1] as number;
+            const pubKey = PublicKey.fromStringOrThrow(keyStr);
+            bb.append(pubKey.toBuffer());
+            bb.writeUint16(weight);
+        }
     }
 }
 

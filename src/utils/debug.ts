@@ -8,12 +8,20 @@
 
 import { getConfig } from '../config';
 
+// Safely get process.env for browser compatibility
+function getProcessEnv(key: string): string | undefined {
+  if (typeof process !== 'undefined' && process.env) {
+    return process.env[key];
+  }
+  return undefined;
+}
+
 // Check if debug is enabled via environment variable
-const DEBUG_ENV = process.env.DEBUG || '';
+const DEBUG_ENV = getProcessEnv('DEBUG') || '';
 const DEBUG_ENABLED = DEBUG_ENV.includes('steem-js');
 
 // Parse debug flags from environment
-const DEBUG_FLAGS = DEBUG_ENV.split(',').map(f => f.trim());
+const DEBUG_FLAGS = DEBUG_ENV ? DEBUG_ENV.split(',').map(f => f.trim()) : [];
 
 function isDebugEnabled(flag?: string): boolean {
   // Check config first
@@ -46,7 +54,7 @@ export const debug = {
    * @param flag - Optional debug flag (e.g., 'transaction', 'signature')
    * @param args - Arguments to log
    */
-  log(flag?: string, ...args: any[]): void {
+  log(flag?: string, ...args: unknown[]): void {
     if (isDebugEnabled(flag)) {
       const prefix = flag ? `[steem-js:${flag}]` : '[steem-js]';
       console.log(prefix, ...args);
@@ -56,21 +64,21 @@ export const debug = {
   /**
    * Log transaction debug info
    */
-  transaction(...args: any[]): void {
+  transaction(...args: unknown[]): void {
     this.log('transaction', ...args);
   },
 
   /**
    * Log signature debug info
    */
-  signature(...args: any[]): void {
+  signature(...args: unknown[]): void {
     this.log('signature', ...args);
   },
 
   /**
    * Log warning (always shown, but can be controlled)
    */
-  warn(...args: any[]): void {
+  warn(...args: unknown[]): void {
     if (isDebugEnabled() || getConfig().get('debug_warnings') !== false) {
       console.warn('[steem-js]', ...args);
     }
@@ -79,7 +87,7 @@ export const debug = {
   /**
    * Log error (always shown)
    */
-  error(...args: any[]): void {
+  error(...args: unknown[]): void {
     console.error('[steem-js]', ...args);
   },
 

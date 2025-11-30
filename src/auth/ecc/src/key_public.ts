@@ -4,7 +4,9 @@ const secp256k1 = new EC('secp256k1');
 import base58 from 'bs58';
 import * as hash from './hash';
 import { getConfig } from '../../../config';
-import assert from 'assert';
+// @ts-ignore - CommonJS module
+import * as assertModule from 'assert';
+const assert = assertModule as any;
 
 // Use elliptic types directly
 type ECPoint = any;
@@ -59,7 +61,7 @@ export class PublicKey {
         return hash.ripemd160(pub_sha);
     }
 
-    toString(address_prefix = getConfig().get('address_prefix')): string {
+    toString(address_prefix = getConfig().get('address_prefix') as string | undefined): string {
         return this.toPublicKeyString(address_prefix);
     }
 
@@ -67,13 +69,14 @@ export class PublicKey {
      * Full public key
      * {return} string
      */
-    toPublicKeyString(address_prefix = getConfig().get('address_prefix')): string {
-        if (this.pubdata) return address_prefix + this.pubdata;
+    toPublicKeyString(address_prefix = getConfig().get('address_prefix') as string | undefined): string {
+        const prefix = address_prefix || 'STM';
+        if (this.pubdata) return prefix + this.pubdata;
         const pub_buf = this.toBuffer();
         const checksum = hash.ripemd160(pub_buf);
         const addy = Buffer.concat([pub_buf, checksum.slice(0, 4)]);
         this.pubdata = base58.encode(addy);
-        return address_prefix + this.pubdata;
+        return prefix + this.pubdata;
     }
 
     /**
@@ -82,7 +85,7 @@ export class PublicKey {
      * @return PublicKey or `null` (if the public_key string is invalid)
      * @deprecated fromPublicKeyString (use fromString instead)
      */
-    static fromString(public_key: string, address_prefix = getConfig().get('address_prefix')): PublicKey | null {
+    static fromString(public_key: string, address_prefix = getConfig().get('address_prefix') as string | undefined): PublicKey | null {
         try {
             return PublicKey.fromStringOrThrow(public_key, address_prefix);
         } catch (e) {
@@ -96,13 +99,14 @@ export class PublicKey {
      * @throws {Error} if public key is invalid
      * @return PublicKey
      */
-    static fromStringOrThrow(public_key: string, address_prefix = getConfig().get('address_prefix')): PublicKey {
-        const prefix = public_key.slice(0, address_prefix.length);
+    static fromStringOrThrow(public_key: string, address_prefix = getConfig().get('address_prefix') as string | undefined): PublicKey {
+        const prefixStr = address_prefix || 'STM';
+        const prefix = public_key.slice(0, prefixStr.length);
         assert.equal(
-            address_prefix, prefix,
-            `Expecting key to begin with ${address_prefix}, instead got ${prefix}`
+            prefixStr, prefix,
+            `Expecting key to begin with ${prefixStr}, instead got ${prefix}`
         );
-        public_key = public_key.slice(address_prefix.length);
+        public_key = public_key.slice(prefixStr.length);
 
         const decoded = base58.decode(public_key);
         const buffer = Buffer.from(decoded);

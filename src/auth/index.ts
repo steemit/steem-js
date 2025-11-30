@@ -20,7 +20,7 @@ export interface Authority {
 }
 
 export interface Auth {
-    verify(name: string, password: string, auths: any): boolean;
+    verify(name: string, password: string, auths: unknown): boolean;
     generateKeys(name: string, password: string, roles: string[]): { [key: string]: string };
     getPrivateKeys(name: string, password: string, roles?: string[]): { [key: string]: string };
     isWif(privWif: string): boolean;
@@ -28,17 +28,23 @@ export interface Auth {
     wifIsValid(privWif: string, pubWif: string): boolean;
     wifToPublic(privWif: string): string;
     isPubkey(pubkey: string, address_prefix?: string): boolean;
-    signTransaction(trx: any, keys: string[]): any;
+    signTransaction(trx: unknown, keys: string[]): unknown;
 }
 
 export const Auth: Auth = {
-    verify(name: string, password: string, auths: any): boolean {
+    verify(name: string, password: string, auths: unknown): boolean {
         let hasKey = false;
-        const roles = Object.keys(auths);
+        const authsObj = auths as Record<string, unknown> | null;
+        if (!authsObj || typeof authsObj !== 'object') return false;
+        const roles = Object.keys(authsObj);
         const pubKeys = this.generateKeys(name, password, roles);
         roles.forEach((role) => {
-            if (auths[role][0][0] === pubKeys[role]) {
-                hasKey = true;
+            const roleAuth = authsObj[role] as unknown;
+            if (Array.isArray(roleAuth) && roleAuth.length > 0) {
+                const firstAuth = roleAuth[0] as unknown;
+                if (Array.isArray(firstAuth) && firstAuth.length > 0 && firstAuth[0] === pubKeys[role]) {
+                    hasKey = true;
+                }
             }
         });
         return hasKey;
@@ -112,20 +118,22 @@ export const Auth: Auth = {
         }
     },
 
-    signTransaction(trx: any, keys: string[]): any {
+    signTransaction(trx: unknown, keys: string[]): unknown {
         if (!Array.isArray(keys)) {
             throw new Error('Keys must be an array');
         }
         
         const signatures: string[] = [];
-        if (trx.signatures) {
-            signatures.push(...trx.signatures.map((sig: any) => 
-                Buffer.isBuffer(sig) ? sig.toString('hex') : sig
+        const trxObjWithSigs = trx as { signatures?: unknown[] };
+        if (Array.isArray(trxObjWithSigs.signatures)) {
+            signatures.push(...trxObjWithSigs.signatures.map((sig: unknown) => 
+                Buffer.isBuffer(sig) ? sig.toString('hex') : String(sig)
             ));
         }
 
-        const cid = Buffer.from(getConfig().get('chain_id') || '', 'hex');
-        const buf = transaction.toBuffer(trx);
+        const chainId = (getConfig().get('chain_id') as string | undefined) || '';
+        const cid = Buffer.from(chainId, 'hex');
+        const buf = transaction.toBuffer(trx as unknown);
 
         for (const key of keys) {
             const sig = Signature.signBuffer(Buffer.concat([cid, buf]), key);
@@ -134,7 +142,8 @@ export const Auth: Auth = {
             signatures.push(sig.toBuffer().toString('hex'));
         }
 
-        return signed_transaction.toObject(Object.assign(trx, { signatures }));
+        const trxObj = trx as Record<string, unknown>;
+        return signed_transaction.toObject(Object.assign(trxObj, { signatures }));
     }
 };
 

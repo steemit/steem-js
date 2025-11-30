@@ -9,7 +9,7 @@ export interface Account {
     savings_balance: string;
     savings_sbd_balance: string;
     sbd_balance: string;
-    other_history?: any[];
+    other_history?: unknown[];
 }
 
 export interface GlobalProperties {
@@ -161,7 +161,7 @@ export class Formatter {
     }
 
     async estimateAccountValue(account: Account, options: AccountValueOptions = {}): Promise<string> {
-        const promises: Promise<any>[] = [];
+        const promises: Promise<unknown>[] = [];
         const username = account.name;
         const assetPrecision = 1000;
         let orders: { steemOrders: number; sbdOrders: number };
@@ -171,9 +171,10 @@ export class Formatter {
         if (!vesting_steem || !feed_price) {
             if (!gprops || !feed_price) {
                 promises.push(
-                    (this.api as any).getStateAsync(`/@${username}`).then((data: any) => {
-                        gprops = data.props;
-                        feed_price = data.feed_price;
+                    ((this.api as unknown) as Record<string, (path: string) => Promise<unknown>>).getStateAsync(`/@${username}`).then((data: unknown) => {
+                        const dataObj = data as { props?: GlobalProperties; feed_price?: FeedPrice };
+                        gprops = dataObj.props;
+                        feed_price = dataObj.feed_price;
                         if (gprops) {
                             vesting_steem = this.vestingSteem(account, gprops);
                         }

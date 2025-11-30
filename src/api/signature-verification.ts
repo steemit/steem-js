@@ -26,7 +26,7 @@ export interface SignedRequest {
 export interface VerificationResult {
   valid: boolean;
   account?: string;
-  params?: any;
+  params?: unknown;
   error?: string;
   timestamp?: string;
   signatures?: string[];
@@ -92,10 +92,11 @@ export async function verifySignedRequest(
       timestamp: signedRequest.params.__signed.timestamp,
       signatures: signedRequest.params.__signed.signatures
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     return {
       valid: false,
-      error: error.message
+      error: message
     };
   }
 }
@@ -150,39 +151,51 @@ export function verifyMultipleSignatures(
 /**
  * Extract account keys from Steem account data
  */
-export function extractAccountKeys(accountData: any): AccountKeys {
-  const extractKeys = (authority: any): string[] => {
-    if (!authority || !authority.key_auths) return [];
-    return authority.key_auths.map((auth: any) => auth[0]).filter(Boolean);
+export function extractAccountKeys(accountData: unknown): AccountKeys {
+  const extractKeys = (authority: unknown): string[] => {
+    if (!authority || typeof authority !== 'object') return [];
+    const authObj = authority as { key_auths?: unknown[][] };
+    if (!Array.isArray(authObj.key_auths)) return [];
+    return authObj.key_auths.map((auth: unknown[]) => {
+      const key = Array.isArray(auth) && auth[0] ? String(auth[0]) : '';
+      return key;
+    }).filter(Boolean);
+  };
+
+  const accountObj = accountData as {
+    owner?: unknown;
+    active?: unknown;
+    posting?: unknown;
+    memo_key?: string;
   };
 
   return {
-    owner: extractKeys(accountData.owner),
-    active: extractKeys(accountData.active),
-    posting: extractKeys(accountData.posting),
-    memo: accountData.memo_key || ''
+    owner: extractKeys(accountObj.owner),
+    active: extractKeys(accountObj.active),
+    posting: extractKeys(accountObj.posting),
+    memo: accountObj.memo_key || ''
   };
 }
 
 /**
  * Create a verification function for use with API calls
  */
-export function createApiVerificationFunction(api: any) {
+export function createApiVerificationFunction(api: { call: (method: string, params: unknown[], callback: (err: Error | null, result?: unknown) => void) => void }) {
   return async (account: string): Promise<AccountKeys> => {
     return new Promise((resolve, reject) => {
-      api.call('condenser_api.get_accounts', [[account]], (err: any, result: any) => {
+      api.call('condenser_api.get_accounts', [[account]], (err: Error | null, result?: unknown) => {
         if (err) {
           reject(err);
           return;
         }
 
-        if (!result || result.length === 0) {
+        if (!result || !Array.isArray(result) || result.length === 0) {
           reject(new Error(`Account ${account} not found`));
           return;
         }
 
         try {
-          const accountKeys = extractAccountKeys(result[0]);
+          const accountKeys = extractAccountKeys(result[0] as unknown);
           resolve(accountKeys);
         } catch (error) {
           reject(error);

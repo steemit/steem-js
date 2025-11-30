@@ -1,4 +1,6 @@
-import assert from 'assert';
+// @ts-ignore - CommonJS module
+import * as assertModule from 'assert';
+const assert = assertModule as any;
 import * as crypto from './hash';
 import enforce from './enforce_types';
 import BN from 'bn.js';
@@ -13,7 +15,7 @@ type ECPoint = any;
 // https://tools.ietf.org/html/rfc6979#section-3.2
 function deterministicGenerateK(curve: ECInstance, hash: Buffer, d: BN, checkSig: (k: BN) => boolean, nonce?: number): BN {
     enforce('Buffer', hash);
-    enforce(BN, d);
+    enforce(BN as { new(...args: unknown[]): unknown }, d);
 
     if (nonce) {
         hash = crypto.sha256(Buffer.concat([hash, Buffer.alloc(nonce)])) as Buffer;
@@ -149,7 +151,9 @@ function verifyRaw(curve: ECInstance, e: BN, signature: ECSignature, Q: ECPoint)
  * http://www.secg.org/download/aid-780/sec1-v2.pdf
  */
 export function recoverPubKey(curve: ECInstance, e: BN, signature: ECSignature, i: number): ECPoint {
-    assert.strictEqual(i & 3, i, 'Recovery param is more than two bits');
+    if ((i & 3) !== i) {
+      throw new Error('Recovery param is more than two bits');
+    }
 
     const n = new BN(curve.n!.toString());
     const G = curve.g;
