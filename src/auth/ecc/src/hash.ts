@@ -1,6 +1,6 @@
-import { sha1 as nobleSha1, ripemd160 as nobleRipemd160 } from '@noble/hashes/legacy';
-import { sha256 as nobleSha256, sha512 as nobleSha512 } from '@noble/hashes/sha2';
-import { hmac } from '@noble/hashes/hmac';
+import { sha1 as nobleSha1, ripemd160 as nobleRipemd160 } from '@noble/hashes/legacy.js';
+import { sha256 as nobleSha256, sha512 as nobleSha512 } from '@noble/hashes/sha2.js';
+import { hmac } from '@noble/hashes/hmac.js';
 
 /** @arg {string|Buffer} data
     @arg {string} [digest = null] - 'hex', 'binary' or 'base64'

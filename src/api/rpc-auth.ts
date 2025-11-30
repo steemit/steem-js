@@ -4,7 +4,7 @@
 
 import { Signature } from '../auth/ecc/src/signature';
 import { PrivateKey } from '../auth/key_classes';
-import { sha256 } from '@noble/hashes/sha2';
+import { sha256 } from '@noble/hashes/sha2.js';
 import { randomBytes } from '../crypto/random-bytes';
 
 interface RpcRequest {

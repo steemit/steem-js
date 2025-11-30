@@ -1,4 +1,4 @@
-import { cbc } from '@noble/ciphers/aes';
+import { cbc } from '@noble/ciphers/aes.js';
 import { PrivateKey } from './key_private';
 import { PublicKey } from './key_public';
 import { sha256, sha512 } from './hash';

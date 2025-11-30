@@ -190,7 +190,7 @@ export default [
       generatedCode: {
         constBindings: true
       },
-      banner: `// Process polyfill for browser
+      banner: `// Process polyfill and CommonJS exports for browser
 (function() {
   var g = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
   var proc = { browser: true, env: {}, version: '', versions: {}, nextTick: function(fn) { setTimeout(fn, 0); }, exit: function() {}, cwd: function() { return '/'; }, platform: 'browser' };
@@ -201,6 +201,15 @@ export default [
       Object.defineProperty(globalThis, 'process', { value: proc, writable: true, configurable: true });
     } catch(e) {
       globalThis.process = proc;
+    }
+  }
+  // Define exports for util module that uses top-level exports.*
+  // This is a fallback for modules that Rollup's commonjs plugin doesn't fully transform
+  if (typeof exports === 'undefined') {
+    try {
+      Object.defineProperty(g, 'exports', { value: {}, writable: true, configurable: true });
+    } catch(e) {
+      g.exports = {};
     }
   }
 })();`
@@ -216,6 +225,16 @@ export default [
           'typeof require !== "undefined" ? require("crypto") : null': 'null',
           "require('crypto')": 'null',
           'require("crypto")': 'null'
+        }
+      }),
+      replace({
+        // Fix util module exports that are not properly transformed by commonjs plugin
+        // This replaces top-level exports.* references that appear outside of IIFE wrappers
+        preventAssignment: false,
+        delimiters: ['\\b', '\\b'],
+        values: {
+          'exports.format': 'utilExports.format',
+          'exports.inspect': 'utilExports.inspect'
         }
       }),
       inject({
@@ -236,7 +255,10 @@ export default [
       }),
       commonjs({
         transformMixedEsModules: true,
-        strictRequires: true
+        strictRequires: true,
+        requireReturnsDefault: 'auto',
+        defaultIsModuleExports: 'auto',
+        esmExternals: true
       }),
       json(),
       typescript({

@@ -1,4 +1,3 @@
-import get from 'lodash/get';
 import { PrivateKey } from '../auth/ecc/src/key_private';
 import { Api } from '../api';
 
@@ -220,15 +219,27 @@ export class Formatter {
             let conversionValue = 0;
             const currentTime = new Date().getTime();
             (account.other_history || []).reduce((out, item) => {
-                if (get(item, [1, 'op', 0], '') !== 'convert') return out;
+                // Use optional chaining instead of lodash/get
+                // Type assertion for array access
+                const itemArray = item as unknown[];
+                if (!Array.isArray(itemArray) || itemArray.length < 2) return out;
+                
+                const opType = (itemArray[1] as { op?: unknown[] })?.op?.[0] ?? '';
+                if (opType !== 'convert') return out;
 
-                const timestamp = new Date(get(item, [1, 'timestamp'])).getTime();
+                const item1 = itemArray[1] as { timestamp?: string; op?: unknown[] };
+                const timestampStr = item1?.timestamp;
+                if (!timestampStr) return out;
+                const timestamp = new Date(timestampStr).getTime();
                 const finishTime = timestamp + 86400000 * 3.5; // add 3.5day conversion delay
                 if (finishTime < currentTime) return out;
 
-                const amount = parseFloat(
-                    get(item, [1, 'op', 1, 'amount']).replace(' SBD', '')
-                );
+                const opArray = item1?.op;
+                if (!Array.isArray(opArray) || opArray.length < 2) return out;
+                const op1 = opArray[1] as { amount?: string };
+                const amountStr = op1?.amount;
+                if (!amountStr) return out;
+                const amount = parseFloat(amountStr.replace(' SBD', ''));
                 conversionValue += amount;
                 return out;
             }, []);

@@ -4,7 +4,7 @@ import { createOperation, createTransaction, BroadcastOptions } from './helpers'
 import { operations } from './operations';
 import { camelCase } from '../utils';
 import { promisify } from '../utils/promisify';
-import { sha256 } from '@noble/hashes/sha2';
+import { sha256 } from '@noble/hashes/sha2.js';
 
 export interface BroadcastConfig {
     api: Api;

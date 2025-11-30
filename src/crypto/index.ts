@@ -1,6 +1,6 @@
-import { sha256 as nobleSha256 } from '@noble/hashes/sha2';
-import { ripemd160 as nobleRipemd160 } from '@noble/hashes/legacy';
-import { hmac } from '@noble/hashes/hmac';
+import { sha256 as nobleSha256 } from '@noble/hashes/sha2.js';
+import { ripemd160 as nobleRipemd160 } from '@noble/hashes/legacy.js';
+import { hmac } from '@noble/hashes/hmac.js';
 import { randomBytes } from './random-bytes';
 import type { KeyPair } from '../auth';
 import { PrivateKey, PublicKey } from '../auth';
