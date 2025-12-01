@@ -116,7 +116,18 @@ describe('steem.broadcast:', () => {
 
   describe('downvoting', () => {
     let oldSend: any;
+    let getDynamicGlobalPropertiesSpy: any;
+    let getBlockHeaderAsyncSpy: any;
     beforeAll(() => {
+      // Mock getDynamicGlobalPropertiesAsync to return valid time data
+      getDynamicGlobalPropertiesSpy = vi.spyOn((steem.api as any), 'getDynamicGlobalPropertiesAsync').mockResolvedValue({
+        time: '2019-04-14T21:30:56',
+        last_irreversible_block_num: 32047459,
+      });
+      // Mock getBlockHeaderAsync to return valid block data
+      getBlockHeaderAsyncSpy = vi.spyOn((steem.api as any), 'getBlockHeaderAsync').mockResolvedValue({
+        previous: '0000000000000000000000000000000000000000'
+      });
       oldSend = steem.api.send;
       steem.api.send = (method: any, params: any, cb: any) => {
         cb(null, {
@@ -131,6 +142,8 @@ describe('steem.broadcast:', () => {
     });
     afterAll(() => {
       steem.api.send = oldSend;
+      if (getDynamicGlobalPropertiesSpy) getDynamicGlobalPropertiesSpy.mockRestore();
+      if (getBlockHeaderAsyncSpy) getBlockHeaderAsyncSpy.mockRestore();
     });
     it('works', async () => {
       let tx;
@@ -157,7 +170,18 @@ describe('steem.broadcast:', () => {
 
   describe('voting', () => {
     let oldSend: any;
+    let getDynamicGlobalPropertiesSpy: any;
+    let getBlockHeaderAsyncSpy: any;
     beforeAll(() => {
+      // Mock getDynamicGlobalPropertiesAsync to return valid time data
+      getDynamicGlobalPropertiesSpy = vi.spyOn((steem.api as any), 'getDynamicGlobalPropertiesAsync').mockResolvedValue({
+        time: '2019-04-14T21:30:56',
+        last_irreversible_block_num: 32047459,
+      });
+      // Mock getBlockHeaderAsync to return valid block data
+      getBlockHeaderAsyncSpy = vi.spyOn((steem.api as any), 'getBlockHeaderAsync').mockResolvedValue({
+        previous: '0000000000000000000000000000000000000000'
+      });
       oldSend = steem.api.send;
       steem.api.send = (method: any, params: any, cb: any) => {
         cb(null, {
@@ -172,6 +196,8 @@ describe('steem.broadcast:', () => {
     });
     afterAll(() => {
       steem.api.send = oldSend;
+      if (getDynamicGlobalPropertiesSpy) getDynamicGlobalPropertiesSpy.mockRestore();
+      if (getBlockHeaderAsyncSpy) getBlockHeaderAsyncSpy.mockRestore();
     });
     beforeEach(async () => {
       await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -227,7 +253,18 @@ describe('steem.broadcast:', () => {
 
   describe('customJson', () => {
     let oldSend: any;
+    let getDynamicGlobalPropertiesSpy: any;
+    let getBlockHeaderAsyncSpy: any;
     beforeAll(() => {
+      // Mock getDynamicGlobalPropertiesAsync to return valid time data
+      getDynamicGlobalPropertiesSpy = vi.spyOn((steem.api as any), 'getDynamicGlobalPropertiesAsync').mockResolvedValue({
+        time: '2019-04-14T21:30:56',
+        last_irreversible_block_num: 32047459,
+      });
+      // Mock getBlockHeaderAsync to return valid block data
+      getBlockHeaderAsyncSpy = vi.spyOn((steem.api as any), 'getBlockHeaderAsync').mockResolvedValue({
+        previous: '0000000000000000000000000000000000000000'
+      });
       oldSend = steem.api.send;
       steem.api.send = (method: any, params: any, cb: any) => {
         cb(null, {
@@ -242,6 +279,8 @@ describe('steem.broadcast:', () => {
     });
     afterAll(() => {
       steem.api.send = oldSend;
+      if (getDynamicGlobalPropertiesSpy) getDynamicGlobalPropertiesSpy.mockRestore();
+      if (getBlockHeaderAsyncSpy) getBlockHeaderAsyncSpy.mockRestore();
     });
     beforeAll(async () => {
       await new Promise((resolve) => setTimeout(resolve, 3000));

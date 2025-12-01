@@ -266,12 +266,8 @@ export function isValidSignatureFormat(signature: string): boolean {
  * Validate public key format
  */
 export function isValidPublicKeyFormat(publicKey: string): boolean {
-  try {
-    PublicKey.fromString(publicKey);
-    return true;
-  } catch {
-    return false;
-  }
+  // PublicKey.fromString returns null for invalid keys instead of throwing
+  return PublicKey.fromString(publicKey) !== null;
 }
 
 // Default export with all verification functions
