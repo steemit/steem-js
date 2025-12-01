@@ -1,4 +1,4 @@
-function assert(condition: any, message: string): asserts condition {
+function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
 
@@ -12,14 +12,14 @@ export function toImpliedDecimal(number: number | string, precision: number): st
   if (typeof number === "number") {
     assert(number <= 9007199254740991, "overflow");
     number = "" + number;
-  } else if ((number as any).toString) {
-    number = number.toString();
+  } else if (typeof number === 'object' && number !== null && 'toString' in number && typeof (number as { toString: () => string }).toString === 'function') {
+    number = (number as { toString: () => string }).toString();
   }
   assert(typeof number === "string", "number should be an actual number or string: " + (typeof number));
   number = number.trim();
   assert(/^[0-9]*\.?[0-9]*$/.test(number), "Invalid decimal number " + number);
   let [whole = "", decimal = ""] = number.split(".");
-  let padding = precision - decimal.length;
+  const padding = precision - decimal.length;
   assert(padding >= 0, "Too many decimal digits in " + number + " to create an implied decimal of " + precision);
   for (let i = 0; i < padding; i++) decimal += "0";
   while (whole.charAt(0) === "0") whole = whole.substring(1);
@@ -30,10 +30,10 @@ export function fromImpliedDecimal(number: number | string, precision: number): 
   if (typeof number === "number") {
     assert(number <= 9007199254740991, "overflow");
     number = "" + number;
-  } else if ((number as any).toString) {
-    number = number.toString();
+  } else if (typeof number === 'object' && number !== null && 'toString' in number && typeof (number as { toString: () => string }).toString === 'function') {
+    number = (number as { toString: () => string }).toString();
   }
   while (number.length < precision + 1) number = "0" + number;
-  let dec_string = number.substring(number.length - precision);
+  const dec_string = number.substring(number.length - precision);
   return number.substring(0, number.length - precision) + (dec_string ? "." + dec_string : "");
 } 

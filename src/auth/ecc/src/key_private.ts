@@ -2,15 +2,13 @@ import { ec as EC } from 'elliptic';
 const secp256k1 = new EC('secp256k1');
 import BN from 'bn.js';
 import base58 from 'bs58';
-// @ts-ignore - CommonJS module
-import * as assertModule from 'assert';
-const assert = assertModule as any;
 import * as hash from './hash';
 import { PublicKey } from './key_public';
 import { debug } from '../../../utils/debug';
 
 // Use elliptic types directly
-type ECPoint = any;
+// ECPoint is a point on the elliptic curve
+type ECPoint = ReturnType<typeof secp256k1.g.mul>;
 
 const G = secp256k1.g;
 const n = new BN(secp256k1.n!.toString());
@@ -51,7 +49,7 @@ export class PrivateKey {
         try {
             this.fromWif(text);
             return true;
-        } catch (e) {
+        } catch {
             return false;
         }
     }
@@ -63,7 +61,7 @@ export class PrivateKey {
     static fromWif(private_wif: string): PrivateKey {
         const private_wif_buffer = Buffer.from(base58.decode(private_wif));
         const version = private_wif_buffer.readUInt8(0);
-        assert.equal(0x80, version, `Expected version ${0x80}, instead got ${version}`);
+        if (version !== 0x80) throw new Error(`Expected version ${0x80}, instead got ${version}`);
         // checksum includes the version
         const private_key = private_wif_buffer.slice(0, -4);
         const checksum = private_wif_buffer.slice(-4);

@@ -4,12 +4,10 @@ const secp256k1 = new EC('secp256k1');
 import base58 from 'bs58';
 import * as hash from './hash';
 import { getConfig } from '../../../config';
-// @ts-ignore - CommonJS module
-import * as assertModule from 'assert';
-const assert = assertModule as any;
 
 // Use elliptic types directly
-type ECPoint = any;
+// ECPoint is a point on the elliptic curve
+type ECPoint = ReturnType<typeof secp256k1.g.mul>;
 
 const G = secp256k1.g;
 const n = new BN(secp256k1.n!.toString());
@@ -88,7 +86,7 @@ export class PublicKey {
     static fromString(public_key: string, address_prefix = getConfig().get('address_prefix') as string | undefined): PublicKey | null {
         try {
             return PublicKey.fromStringOrThrow(public_key, address_prefix);
-        } catch (e) {
+        } catch {
             return null;
         }
     }
@@ -102,10 +100,7 @@ export class PublicKey {
     static fromStringOrThrow(public_key: string, address_prefix = getConfig().get('address_prefix') as string | undefined): PublicKey {
         const prefixStr = address_prefix || 'STM';
         const prefix = public_key.slice(0, prefixStr.length);
-        assert.equal(
-            prefixStr, prefix,
-            `Expecting key to begin with ${prefixStr}, instead got ${prefix}`
-        );
+        if (prefixStr !== prefix) throw new Error(`Expecting key to begin with ${prefixStr}, instead got ${prefix}`);
         public_key = public_key.slice(prefixStr.length);
 
         const decoded = base58.decode(public_key);
@@ -114,7 +109,9 @@ export class PublicKey {
         const key = buffer.slice(0, -4);
         const new_checksum = hash.ripemd160(key);
         const new_checksum_slice = new_checksum.slice(0, 4);
-        assert.deepEqual(checksum, new_checksum_slice, 'Checksum did not match');
+        if (!Buffer.isBuffer(checksum) || !Buffer.isBuffer(new_checksum_slice) || !checksum.equals(new_checksum_slice)) {
+            throw new Error('Checksum did not match');
+        }
         return PublicKey.fromBuffer(key);
     }
 
@@ -140,8 +137,8 @@ export class PublicKey {
     }
 
     child(offset: Buffer): PublicKey {
-        assert(Buffer.isBuffer(offset), "Buffer required: offset");
-        assert.equal(offset.length, 32, "offset length");
+        if (!Buffer.isBuffer(offset)) throw new Error("Buffer required: offset");
+        if (offset.length !== 32) throw new Error("offset length");
 
         offset = Buffer.concat([this.toBuffer(), offset]);
         offset = hash.sha256(offset) as Buffer;

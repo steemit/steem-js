@@ -64,15 +64,15 @@ export interface Account {
   last_market_bandwidth_update: string;
   vesting_balance: string;
   reputation: string;
-  transfer_history: any[];
-  market_history: any[];
-  post_history: any[];
-  vote_history: any[];
-  other_history: any[];
+  transfer_history: unknown[];
+  market_history: unknown[];
+  post_history: unknown[];
+  vote_history: unknown[];
+  other_history: unknown[];
   witness_votes: string[];
-  tags_usage: any[];
-  guest_bloggers: any[];
-  blog_category: any;
+  tags_usage: unknown[];
+  guest_bloggers: unknown[];
+  blog_category: unknown;
 }
 
 export interface Authority {
@@ -86,7 +86,7 @@ export interface Transaction {
   ref_block_prefix: number;
   expiration: string;
   operations: Operation[];
-  extensions: any[];
+  extensions: unknown[];
   signatures?: string[];
 }
 

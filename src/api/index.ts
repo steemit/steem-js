@@ -7,8 +7,9 @@ import methods from './methods';
 import { jsonRpc } from './transports/http';
 import { transports } from './transports/index';
 import type { Transport } from './transports/types';
-import type { TransportOptions } from './transports/types';
+import type { TransportOptions, JsonRpcRequest } from './transports/types';
 import type { SignedRequest } from './signature-verification';
+import { Auth } from '../auth';
 
 interface ApiOptions {
   url?: string;
@@ -35,16 +36,16 @@ export class Api extends EventEmitter {
 
   // Patch for all API methods to support both callback and promise styles
   // This is a helper to wrap methods
-  private static _wrapWithPromise(fn: (...args: any[]) => void) {
-    return function(this: any, ...args: any[]) {
+  private static _wrapWithPromise(fn: (...args: unknown[]) => void) {
+    return function(this: unknown, ...args: unknown[]) {
       const lastArg = args[args.length - 1];
       if (typeof lastArg === 'function') {
         return fn.apply(this, args);
       }
       return new Promise<boolean>((resolve, reject) => {
-        fn.apply(this, [...args, (err: any, result: any) => {
+        fn.apply(this, [...args, (err: Error | null, result: unknown) => {
           if (err) return reject(err);
-          resolve(result);
+          resolve(Boolean(result));
         }]);
       });
     };
@@ -61,10 +62,12 @@ export class Api extends EventEmitter {
       const methodParams = method.params || [];
 
       // Ensure we define the "With" method first
-      (this as any)[`${methodName}With`] = (options: any, callback: any) => {
-        let params;
+      (this as Record<string, unknown>)[`${methodName}With`] = (options: unknown, callback: unknown) => {
+        const optionsObj = options as Record<string, unknown>;
+        const callbackFn = callback as ((err: Error | null, result?: unknown) => void) | undefined;
+        let params: unknown;
         if (!method.is_object) {
-          params = methodParams.map((param: string) => options[param]);
+          params = methodParams.map((param: string) => optionsObj[param]);
         } else {
           params = options;
         }
@@ -84,7 +87,9 @@ export class Api extends EventEmitter {
               resultObj.STEEMIT_CHAIN_ID = (config.chain_id as string) || '0000000000000000000000000000000000000000000000000000000000000000';
             }
           }
-          callback(err, result);
+          if (callbackFn) {
+            callbackFn(err, result);
+          }
         });
       };
 
@@ -115,7 +120,7 @@ export class Api extends EventEmitter {
       const transportType = typeof options.transport === 'string' ? options.transport : 'custom';
       if (this.transport && this._transportType !== transportType) {
         if (typeof this.transport.stop === 'function') {
-          this.transport.stop();
+        this.transport.stop();
         }
       }
       this._transportType = transportType;
@@ -133,11 +138,11 @@ export class Api extends EventEmitter {
     } else {
       // Default to HTTP for https://api.steemit.com
       const defaultNode = (getConfig().get('node') as string) || 'https://api.steemit.com';
-      options.uri = defaultNode;
-      options.transport = 'http';
-      this._transportType = options.transport;
-      this.options = options;
-      this.transport = new transports.http(options);
+        options.uri = defaultNode;
+        options.transport = 'http';
+        this._transportType = options.transport;
+        this.options = options;
+        this.transport = new transports.http(options);
     }
   }
 
@@ -165,10 +170,11 @@ export class Api extends EventEmitter {
     }
   }
 
-  log(logLevel: string, ...args: any[]) {
+  log(logLevel: string, ...args: unknown[]) {
     if (this.__logger) {
-      if ((args.length > 0) && typeof (this.__logger as any)[logLevel] === 'function') {
-        (this.__logger as any)[logLevel].apply(this.__logger, args);
+      const logger = this.__logger as Record<string, (...args: unknown[]) => void>;
+      if ((args.length > 0) && typeof logger[logLevel] === 'function') {
+        logger[logLevel].apply(this.__logger, args);
       } else {
         this.__logger.log.apply(this.__logger, [logLevel, ...args]);
       }
@@ -189,19 +195,19 @@ export class Api extends EventEmitter {
     return this.transport.stop();
   }
 
-  send(api: string, data: any, callback: any) {
-    let cb = callback;
+  send(api: string, data: unknown, callback: unknown) {
+    let cb = callback as (err: Error | null, result?: unknown) => void;
     if (this.__logger) {
       const id = Math.random();
       this.log('xmit:' + id + ':', data);
-      cb = (e: any, d: any) => {
+      cb = (e: Error | null, d?: unknown) => {
         if (e) {
           this.log('error', 'rsp:' + id + ':\n\n', e, d);
         } else {
           this.log('rsp:' + id + ':', d);
         }
-        if (callback) {
-          callback(e, d);
+        if (callback && typeof callback === 'function') {
+          (callback as (err: Error | null, result?: unknown) => void)(e, d);
         }
       };
     }
@@ -236,7 +242,7 @@ export class Api extends EventEmitter {
       return;
     }
     const fetchMethod = this.options.fetchMethod || fetch;
-    jsonRpc(this.options.uri!, request as any, fetchMethod)
+    jsonRpc(this.options.uri!, request as unknown as Partial<JsonRpcRequest>, fetchMethod)
       .then(res => { callback(null, res); }, err => { callback(err); });
   }
 
@@ -249,12 +255,11 @@ export class Api extends EventEmitter {
     import('./rpc-auth').then(({ validate }) => {
       // Create verification function that checks signatures against account's public keys
       const verifyFunction = async (message: Buffer, signatures: string[], account: string) => {
-        try {
           // Get account's public keys
-          const accounts = await new Promise<unknown[]>((resolve, reject) => {
-            this.call('condenser_api.get_accounts', [[account]], (err: Error | null, result?: unknown) => {
+        const accounts = await new Promise<unknown[]>((resolve, reject) => {
+          this.call('condenser_api.get_accounts', [[account]], (err: Error | null, result?: unknown) => {
               if (err) reject(err);
-              else resolve(Array.isArray(result) ? result : []);
+            else resolve(Array.isArray(result) ? result : []);
             });
           });
 
@@ -262,14 +267,14 @@ export class Api extends EventEmitter {
             throw new Error(`Account ${account} not found`);
           }
 
-          const accountData = accounts[0] as Record<string, unknown>;
-          const owner = (accountData.owner as Record<string, unknown>)?.key_auths as unknown[][];
-          const active = (accountData.active as Record<string, unknown>)?.key_auths as unknown[][];
-          const posting = (accountData.posting as Record<string, unknown>)?.key_auths as unknown[][];
+        const accountData = accounts[0] as Record<string, unknown>;
+        const owner = (accountData.owner as Record<string, unknown>)?.key_auths as unknown[][];
+        const active = (accountData.active as Record<string, unknown>)?.key_auths as unknown[][];
+        const posting = (accountData.posting as Record<string, unknown>)?.key_auths as unknown[][];
           const publicKeys = [
-            owner?.[0]?.[0],
-            active?.[0]?.[0],
-            posting?.[0]?.[0],
+          owner?.[0]?.[0],
+          active?.[0]?.[0],
+          posting?.[0]?.[0],
             accountData.memo_key
           ].filter(Boolean);
 
@@ -282,7 +287,7 @@ export class Api extends EventEmitter {
             for (const publicKey of publicKeys) {
               try {
                 const sig = Signature.fromHex(signature);
-                const pubKey = PublicKey.fromString(String(publicKey));
+              const pubKey = PublicKey.fromString(String(publicKey));
                 if (pubKey && sig.verifyBuffer(message, pubKey)) {
                   verified = true;
                   break;
@@ -296,9 +301,6 @@ export class Api extends EventEmitter {
 
           if (!verified) {
             throw new Error('No valid signature found for account');
-          }
-        } catch (error) {
-          throw error;
         }
       };
 
@@ -329,10 +331,13 @@ export class Api extends EventEmitter {
     });
   }
 
-  streamBlockNumber(mode = 'head', callback: any, ts = 200) {
+  streamBlockNumber(mode: string | ((err: Error | null, blockNumber?: unknown) => void) = 'head', callback?: (err: Error | null, blockNumber?: unknown) => void, ts = 200) {
     if (typeof mode === 'function') {
       callback = mode;
       mode = 'head';
+    }
+    if (!callback) {
+      throw new Error('callback is required');
     }
     let current = 0;
     let running = true;
@@ -376,7 +381,7 @@ export class Api extends EventEmitter {
     };
   }
 
-  streamBlock(mode = 'head', callback: any) {
+  streamBlock(mode = 'head', callback: (err: Error | null, block?: unknown) => void) {
     if (typeof mode === 'function') {
       callback = mode;
       mode = 'head';
@@ -385,24 +390,24 @@ export class Api extends EventEmitter {
     let current = 0;
     let last = 0;
 
-    const release = this.streamBlockNumber(mode, (err: any, id: any) => {
+    const release = this.streamBlockNumber(mode, (err: Error | null, id?: unknown) => {
       if (err) {
         release();
         callback(err);
         return;
       }
 
-      current = id;
+      current = id as number;
       if (current !== last) {
         last = current;
-        (this as any).getBlock(current, callback);
+        ((this as Record<string, unknown>).getBlock as (blockNumber: number, callback: (err: Error | null, block?: unknown) => void) => void)(current, callback);
       }
     });
 
     return release;
   }
 
-  streamTransactions(mode = 'head', callback: any) {
+  streamTransactions(mode: string | ((err: Error | null, tx?: unknown) => void) = 'head', callback?: (err: Error | null, tx?: unknown) => void) {
     if (typeof mode === 'function') {
       callback = mode;
       mode = 'head';
@@ -411,25 +416,35 @@ export class Api extends EventEmitter {
     let current = 0;
     let last = 0;
 
-    const release = this.streamBlockNumber(mode, (err: any, id: any) => {
+    if (typeof mode === 'function') {
+      callback = mode;
+      mode = 'head';
+    }
+    if (!callback) {
+      throw new Error('callback is required');
+    }
+    const release = this.streamBlockNumber(mode, (err: Error | null, id?: unknown) => {
       if (err) {
         release();
-        callback(err);
+        callback!(err);
         return;
       }
 
-      current = id;
+      current = id as number;
       if (current !== last) {
         last = current;
-        (this as any).getBlock(current, (err: any, block: any) => {
+        ((this as Record<string, unknown>).getBlock as (blockNumber: number, callback: (err: Error | null, block?: unknown) => void) => void)(current, (err: Error | null, block?: unknown) => {
           if (err) {
-            callback(err);
+            callback!(err);
             return;
           }
-          if (block && block.transactions) {
-            block.transactions.forEach((tx: any) => {
-              callback(null, tx);
+          if (block && typeof block === 'object' && 'transactions' in block) {
+            const blockObj = block as { transactions?: unknown[] };
+            if (Array.isArray(blockObj.transactions)) {
+              blockObj.transactions.forEach((tx: unknown) => {
+                callback!(null, tx);
             });
+            }
           }
         });
       }
@@ -438,7 +453,7 @@ export class Api extends EventEmitter {
     return release;
   }
 
-  streamOperations(mode = 'head', callback: any) {
+  streamOperations(mode: string | ((err: Error | null, op?: unknown) => void) = 'head', callback?: (err: Error | null, op?: unknown) => void) {
     if (typeof mode === 'function') {
       callback = mode;
       mode = 'head';
@@ -447,29 +462,39 @@ export class Api extends EventEmitter {
     let current = 0;
     let last = 0;
 
-    const release = this.streamBlockNumber(mode, (err: any, id: any) => {
+    if (typeof mode === 'function') {
+      callback = mode;
+      mode = 'head';
+    }
+    if (!callback) {
+      throw new Error('callback is required');
+    }
+    const release = this.streamBlockNumber(mode, (err: Error | null, id?: unknown) => {
       if (err) {
         release();
-        callback(err);
+        callback!(err);
         return;
       }
 
-      current = id;
+      current = id as number;
       if (current !== last) {
         last = current;
-        (this as any).getBlock(current, (err: any, block: any) => {
+        ((this as Record<string, unknown>).getBlock as (blockNumber: number, callback: (err: Error | null, block?: unknown) => void) => void)(current, (err: Error | null, block?: unknown) => {
           if (err) {
-            callback(err);
+            callback!(err);
             return;
           }
-          if (block && block.transactions) {
-            block.transactions.forEach((tx: any) => {
-              if (tx.operations) {
-                tx.operations.forEach((op: any) => {
-                  callback(null, op);
+          if (block && typeof block === 'object' && 'transactions' in block) {
+            const blockObj = block as { transactions?: Array<{ operations?: unknown[] }> };
+            if (Array.isArray(blockObj.transactions)) {
+              blockObj.transactions.forEach((tx: { operations?: unknown[] }) => {
+                if (Array.isArray(tx.operations)) {
+                  tx.operations.forEach((op: unknown) => {
+                    callback!(null, op);
                 });
               }
             });
+            }
           }
         });
       }
@@ -478,14 +503,14 @@ export class Api extends EventEmitter {
     return release;
   }
 
-  broadcastTransactionSynchronousWith(options: any, callback: any) {
+  broadcastTransactionSynchronousWith(options: { transaction: unknown }, callback: (err: Error | null, result?: unknown) => void) {
     const trx = options.transaction;
     if (!trx) {
       callback(new Error('transaction is required'));
       return;
     }
 
-    (this as any).broadcastTransactionSynchronous(trx, callback);
+    ((this as Record<string, unknown>).broadcastTransactionSynchronous as (trx: unknown, callback: (err: Error | null, result?: unknown) => void) => void)(trx, callback);
   }
 
   /**
@@ -496,8 +521,9 @@ export class Api extends EventEmitter {
   broadcastTransaction(trx: unknown, callback: (err: Error | null, result?: unknown) => void) {
     // Use the transport to send the transaction
     // This assumes the transport implements broadcastTransactionSynchronous
-    if (typeof (this as any).broadcastTransactionSynchronous === 'function') {
-      (this as any).broadcastTransactionSynchronous(trx, callback);
+    const broadcastMethod = (this as Record<string, unknown>).broadcastTransactionSynchronous;
+    if (typeof broadcastMethod === 'function') {
+      (broadcastMethod as (trx: unknown, callback: (err: Error | null, result?: unknown) => void) => void)(trx, callback);
     } else if (this.transport && typeof ((this.transport as unknown) as Record<string, unknown>).broadcastTransactionSynchronous === 'function') {
       (((this.transport as unknown) as Record<string, unknown>).broadcastTransactionSynchronous as (trx: unknown, callback: (err: Error | null, result?: unknown) => void) => void)(trx, callback);
     } else {
@@ -512,15 +538,8 @@ export class Api extends EventEmitter {
    * @returns Signed transaction object
    */
   signTransaction(trx: unknown, keys: string[]): unknown {
-    // Use the signTransaction logic from auth if available
-    // Fallback: just return the transaction for now
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { signTransaction } = require('../auth');
-      return signTransaction(trx, keys);
-    } catch (e) {
-      throw new Error('signTransaction is not implemented');
-    }
+    // Use the signTransaction logic from auth
+    return Auth.signTransaction(trx, keys);
   }
 
   /**
@@ -529,11 +548,11 @@ export class Api extends EventEmitter {
    * @param callback Optional callback
    * @returns Account object or Promise
    */
-  getAccount(name: string, callback?: (err: any, result?: any) => void): Promise<any> | void {
+  getAccount(name: string, callback?: (err: Error | null, result?: unknown) => void): Promise<unknown> | void {
     if (callback) {
-      (this as any).getAccounts([name], (err: any, res: any) => {
+      ((this as Record<string, unknown>).getAccounts as (names: string[], callback: (err: Error | null, res?: unknown) => void) => void)([name], (err: Error | null, res?: unknown) => {
         if (err) return callback(err);
-        callback(null, res && res[0]);
+        callback(null, Array.isArray(res) && res.length > 0 ? res[0] : undefined);
       });
       return;
     }
@@ -552,15 +571,15 @@ export class Api extends EventEmitter {
    * @param callback Optional callback
    * @returns Array of followers or Promise
    */
-  getFollowers(account: string, startFollower: string, type: string, limit: number, callback?: (err: any, result?: any) => void): Promise<any[]> | void {
+  getFollowers(account: string, startFollower: string, type: string, limit: number, callback?: (err: Error | null, result?: unknown[]) => void): Promise<unknown[]> | void {
     if (callback) {
-      (this as any).get_followers(account, startFollower, type, limit, (err: any, res: any) => {
+      ((this as Record<string, unknown>).get_followers as (account: string, startFollower: string, type: string, limit: number, callback: (err: Error | null, res?: unknown) => void) => void)(account, startFollower, type, limit, (err: Error | null, res?: unknown) => {
         if (err) return callback(err);
         callback(null, Array.isArray(res) ? res : []);
       });
       return;
     }
-    return (this as any).get_followers(account, startFollower, type, limit)
+    return ((this as Record<string, unknown>).get_followers as (account: string, startFollower: string, type: string, limit: number) => Promise<unknown>)(account, startFollower, type, limit)
       .then((res: unknown) => Array.isArray(res) ? res : [])
       .catch(() => []);
   }
@@ -620,7 +639,7 @@ export class Api extends EventEmitter {
    * @param callback Optional callback function
    * @returns Promise with verification result if no callback provided
    */
-  verifyAuthority(trx: any, callback?: (err: any, result?: boolean) => void): Promise<boolean> | void {
+  verifyAuthority(trx: unknown, callback?: (err: Error | null, result?: boolean) => void): Promise<boolean> | void {
     if (this._transportType !== 'http') {
       const err = new Error('verifyAuthority can only be called when using http transport');
       if (callback) {
@@ -693,7 +712,7 @@ export function setOptions(options: ApiOptions) {
   api.setOptions(options);
 }
 
-export function call(method: string, params: any[], callback: any) {
+export function call(method: string, params: unknown[], callback: (err: Error | null, result?: unknown) => void) {
   return api.call(method, params, callback);
 }
 

@@ -3,7 +3,7 @@ import { operations, Operation } from './operations';
 export interface BroadcastOptions {
     roles: string[];
     operation: string;
-    params: any[];
+    params: unknown[];
 }
 
 export function getOperation(operation: string): Operation | undefined {
@@ -26,12 +26,12 @@ export function validateOperation(options: BroadcastOptions): void {
     }
 }
 
-export function createOperation(options: BroadcastOptions): [string, any[]] {
+export function createOperation(options: BroadcastOptions): [string, unknown[]] {
     validateOperation(options);
     return [options.operation, options.params];
 }
 
-export function createTransaction(operations: [string, any[]][]): any {
+export function createTransaction(operations: [string, unknown[]][]): { ref_block_num: number; ref_block_prefix: number; expiration: string; operations: [string, unknown[]][]; extensions: unknown[] } {
     return {
         ref_block_num: 0,
         ref_block_prefix: 0,
@@ -41,7 +41,7 @@ export function createTransaction(operations: [string, any[]][]): any {
     };
 }
 
-export function createSignedTransaction(transaction: any, signatures: string[]): any {
+export function createSignedTransaction(transaction: { ref_block_num: number; ref_block_prefix: number; expiration: string; operations: [string, unknown[]][]; extensions: unknown[] }, signatures: string[]): { ref_block_num: number; ref_block_prefix: number; expiration: string; operations: [string, unknown[]][]; extensions: unknown[]; signatures: string[] } {
     return {
         ...transaction,
         signatures: signatures

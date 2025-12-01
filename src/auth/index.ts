@@ -43,7 +43,7 @@ export const Auth: Auth = {
             if (Array.isArray(roleAuth) && roleAuth.length > 0) {
                 const firstAuth = roleAuth[0] as unknown;
                 if (Array.isArray(firstAuth) && firstAuth.length > 0 && firstAuth[0] === pubKeys[role]) {
-                    hasKey = true;
+                hasKey = true;
                 }
             }
         });
@@ -54,7 +54,7 @@ export const Auth: Auth = {
         const pubKeys: { [key: string]: string } = {};
         roles.forEach((role) => {
             const seed = name + role + password;
-            const brainKey = seed.trim().split(/[	\n\v\f\r ]+/).join(' ');
+            const brainKey = seed.trim().split(/[\t\n\v\f\r ]+/).join(' ');
             const privKey = PrivateKey.fromSeed(brainKey);
             pubKeys[role] = privKey.toPublic().toString();
         });
@@ -65,7 +65,7 @@ export const Auth: Auth = {
         const privKeys: { [key: string]: string } = {};
         roles.forEach((role) => {
             const seed = name + role + password;
-            const brainKey = seed.trim().split(/[	\n\v\f\r ]+/).join(' ');
+            const brainKey = seed.trim().split(/[\t\n\v\f\r ]+/).join(' ');
             const privKey = PrivateKey.fromSeed(brainKey);
             privKeys[role] = privKey.toWif();
             privKeys[role + 'Pubkey'] = privKey.toPublic().toString();
@@ -85,7 +85,9 @@ export const Auth: Auth = {
             if (checksum.toString() === newChecksum.toString()) {
                 isWif = true;
             }
-        } catch (e) { }
+        } catch {
+            // Ignore errors
+        }
         return isWif;
     },
 
@@ -183,12 +185,14 @@ export const verifySignature = (message: string, signature: string, publicKey: s
     }
 };
 
-export const verifyTransaction = (transaction: any, publicKey: string): boolean => {
+export const verifyTransaction = (transaction: unknown, publicKey: string): boolean => {
     try {
         const pub = PublicKey.fromString(publicKey);
         if (!pub) return false;
         const serialized = Buffer.from(JSON.stringify(transaction));
-        return transaction.signatures.some((sig: string) => {
+        const trx = transaction as { signatures?: string[] };
+        if (!trx.signatures || !Array.isArray(trx.signatures)) return false;
+        return trx.signatures.some((sig: string) => {
             const signature = Signature.fromHex(sig);
             return signature.verifyBuffer(serialized, pub);
         });

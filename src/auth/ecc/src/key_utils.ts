@@ -64,7 +64,7 @@ export function browserEntropy(): string {
             entropyStr += mimeType.description + " " + mimeType.type + " " + mimeType.suffixes + " ";
         }
         console.log("INFO\tbrowserEntropy gathered", entropyCount, 'events');
-    } catch (error) {
+    } catch {
         // nodejs: ReferenceError: window is not defined
         entropyStr += hash.sha256((new Date()).toString()).toString('hex');
     }

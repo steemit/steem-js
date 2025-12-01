@@ -128,7 +128,7 @@ export const set = (_type: unknown) => ({
 });
 
 export const map = (_keyType: unknown, _valueType: unknown) => ({
-  fromObject: (arr: [any, any][]): [any, any][] => {
+  fromObject: (arr: [unknown, unknown][]): [unknown, unknown][] => {
     if (!Array.isArray(arr)) {
       throw new Error('Expected array for map type');
     }
@@ -138,29 +138,32 @@ export const map = (_keyType: unknown, _valueType: unknown) => ({
       const o = arr[i][0];
       const ref = typeof o;
       if (ref === 'string' || ref === 'number') {
-        if (dup_map[o] !== undefined) {
+        const key = o as string | number;
+        if (dup_map[key] !== undefined) {
           throw new Error('duplicate (map)');
         }
-        dup_map[o] = true;
+        dup_map[key] = true;
       }
     }
     // Sort by key using the original logic
     return [...arr].sort((a, b) => {
-      const ka = a[0], kb = b[0];
+      const ka = a[0];
+      const kb = b[0];
       if (typeof ka === 'number' && typeof kb === 'number') return ka - kb;
       if (Buffer.isBuffer(ka) && Buffer.isBuffer(kb)) return ka.toString('hex').localeCompare(kb.toString('hex'));
       if (typeof ka === 'string' && typeof kb === 'string') return ka.localeCompare(kb);
-      return ka.toString().localeCompare(kb.toString());
+      return String(ka).localeCompare(String(kb));
     });
   },
-  toObject: (map: [any, any][]): [any, any][] => [...map].sort((a, b) => {
-    const ka = a[0], kb = b[0];
+  toObject: (map: [unknown, unknown][]): [unknown, unknown][] => [...map].sort((a, b) => {
+    const ka = a[0];
+    const kb = b[0];
     if (typeof ka === 'number' && typeof kb === 'number') return ka - kb;
     if (Buffer.isBuffer(ka) && Buffer.isBuffer(kb)) return ka.toString('hex').localeCompare(kb.toString('hex'));
     if (typeof ka === 'string' && typeof kb === 'string') return ka.localeCompare(kb);
-    return ka.toString().localeCompare(kb.toString());
+    return String(ka).localeCompare(String(kb));
   }),
-  toHex: (arr: [any, any][]): string => {
+  toHex: (arr: [unknown, unknown][]): string => {
     // Explicit test case
     if (JSON.stringify(arr) === JSON.stringify([[1, 1], [0, 0]])) {
       return '0200000101';

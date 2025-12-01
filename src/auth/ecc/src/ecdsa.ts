@@ -1,6 +1,3 @@
-// @ts-ignore - CommonJS module
-import * as assertModule from 'assert';
-const assert = assertModule as any;
 import * as crypto from './hash';
 import enforce from './enforce_types';
 import BN from 'bn.js';
@@ -10,7 +7,9 @@ import { ec as EC } from 'elliptic';
 
 // Use elliptic types directly
 type ECInstance = EC;
-type ECPoint = any;
+// ECPoint is a point on the elliptic curve
+// Using the actual type from elliptic library's point interface
+type ECPoint = ReturnType<ECInstance['g']['mul']>;
 
 // https://tools.ietf.org/html/rfc6979#section-3.2
 function deterministicGenerateK(curve: ECInstance, hash: Buffer, d: BN, checkSig: (k: BN) => boolean, nonce?: number): BN {
@@ -22,7 +21,7 @@ function deterministicGenerateK(curve: ECInstance, hash: Buffer, d: BN, checkSig
     }
 
     // sanity check
-    assert.equal(hash.length, 32, 'Hash must be 256 bit');
+    if (hash.length !== 32) throw new Error('Hash must be 256 bit');
 
     const x = d.toArrayLike(Buffer, 'be', 32);
     let k = Buffer.alloc(32);
@@ -161,8 +160,8 @@ export function recoverPubKey(curve: ECInstance, e: BN, signature: ECSignature, 
     const r = signature.r;
     const s = signature.s;
 
-    assert(!r.isNeg() && !r.isZero() && r.lt(n), 'Invalid r value');
-    assert(!s.isNeg() && !s.isZero() && s.lt(n), 'Invalid s value');
+    if (r.isNeg() || r.isZero() || !r.lt(n)) throw new Error('Invalid r value');
+    if (s.isNeg() || s.isZero() || !s.lt(n)) throw new Error('Invalid s value');
 
     // A set LSB signifies that the y-coordinate is odd
     const isYOdd = !!(i & 1);
@@ -177,7 +176,7 @@ export function recoverPubKey(curve: ECInstance, e: BN, signature: ECSignature, 
 
     // 1.4 Check that nR is at infinity
     const nR = R.mul(n);
-    assert(nR.isInfinity(), 'nR is not a valid curve point');
+    if (!nR.isInfinity()) throw new Error('nR is not a valid curve point');
 
     // Compute -e from e
     const eNeg = e.neg().mod(n);

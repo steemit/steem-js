@@ -16,11 +16,14 @@ export class BaseTransport extends EventEmitter implements Transport {
     this.stop();
   }
 
-  listenTo(target: EventEmitter, eventName: string, callback: (...args: any[]) => void): () => void {
-    if ('addEventListener' in target && typeof (target as any).addEventListener === 'function') {
-      (target as any).addEventListener(eventName, callback);
+  listenTo(target: EventEmitter, eventName: string, callback: (...args: unknown[]) => void): () => void {
+    const targetWithAddEventListener = target as EventEmitter & { addEventListener?: (event: string, callback: (...args: unknown[]) => void) => void; removeEventListener?: (event: string, callback: (...args: unknown[]) => void) => void };
+    if ('addEventListener' in target && typeof targetWithAddEventListener.addEventListener === 'function') {
+      targetWithAddEventListener.addEventListener(eventName, callback);
       return () => {
-        (target as any).removeEventListener(eventName, callback);
+        if (targetWithAddEventListener.removeEventListener) {
+          targetWithAddEventListener.removeEventListener(eventName, callback);
+        }
       };
     } else {
       target.on(eventName, callback);
@@ -30,7 +33,7 @@ export class BaseTransport extends EventEmitter implements Transport {
     }
   }
 
-  send(_api: string, _data: any, _callback: (error: any, result?: any) => void): void {
+  send(_api: string, _data: unknown, _callback: (error: Error | null, result?: unknown) => void): void {
     // Base implementation - should be overridden by subclasses
   }
 

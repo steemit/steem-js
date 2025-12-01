@@ -212,6 +212,28 @@ export default [
       g.exports = {};
     }
   }
+})();
+// Define utilExports in global scope for replace plugin (exports.format -> utilExports.format)
+var utilExports = typeof globalThis !== 'undefined' ? (globalThis.utilExports || (globalThis.utilExports = {})) : (typeof window !== 'undefined' ? (window.utilExports || (window.utilExports = {})) : {});
+// Make Buffer available globally (injected by @rollup/plugin-inject)
+// The inject plugin will replace Buffer references with require('buffer').Buffer
+// We need to ensure it's also available on globalThis/window for direct access
+(function() {
+  if (typeof Buffer === 'undefined') {
+    try {
+      var bufferModule = typeof require !== 'undefined' ? require('buffer') : null;
+      if (bufferModule && bufferModule.Buffer) {
+        var Buffer = bufferModule.Buffer;
+        var g = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+        g.Buffer = Buffer;
+        if (typeof globalThis !== 'undefined') {
+          globalThis.Buffer = Buffer;
+        }
+      }
+    } catch(e) {
+      // Buffer will be available from the bundled code
+    }
+  }
 })();`
     },
     plugins: [
@@ -239,6 +261,7 @@ export default [
       }),
       inject({
         process: 'process/browser',
+        Buffer: ['buffer', 'Buffer'],
         preventAssignment: false
       }),
       alias({
@@ -299,4 +322,4 @@ export default [
   // Browser builds (UMD)
   createUmdConfig(false), // Regular UMD build
   createUmdConfig(true)   // Minified UMD build
-];
+]; 

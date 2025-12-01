@@ -20,18 +20,17 @@ export class Broadcast {
         this.auth = config.auth;
     }
 
-    async send(tx: { operations: unknown[]; extensions?: unknown[] }, privKeys: unknown, callback?: (err: Error | null, result?: unknown) => void): Promise<unknown> {
+    async send(tx: { operations: unknown[]; extensions?: unknown[] }, privKeys: string | string[], callback?: (err: Error | null, result?: unknown) => void): Promise<unknown> {
         // Use instance or global steem.api/auth for compatibility
-        // @ts-ignore
-        const api = this && this.api ? this.api : (typeof steem !== 'undefined' && steem.api ? steem.api : undefined);
-        // @ts-ignore
-        const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : undefined);
+        const thisObj = this as unknown as { api?: Api; auth?: Auth };
+        const api = (thisObj && thisObj.api) ? thisObj.api : (typeof steem !== 'undefined' && steem.api ? steem.api : undefined);
+        const auth = (thisObj && thisObj.auth) ? thisObj.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : undefined);
         if (!api || !auth) {
             throw new Error('API and Auth must be set on Broadcast instance or global steem object');
         }
         try {
             // Prepare the transaction (fetch global props, block header, etc.)
-            const transaction = await broadcastMethods._prepareTransaction.call(this, tx);
+            const transaction = await (broadcastMethods._prepareTransaction as (this: Broadcast, transaction: { operations: unknown[]; extensions?: unknown[] }) => Promise<unknown>).call(this, tx);
 
             // Debug: Print transaction, digest, and hex before signing (if debug enabled)
             const { debug } = await import('../utils/debug');
@@ -52,11 +51,11 @@ export class Broadcast {
             }
 
             // Ensure privKeys is always an array for signTransaction
-            const keysArray = Array.isArray(privKeys)
-                ? privKeys
+            const keysArray: string[] = Array.isArray(privKeys)
+                ? privKeys.filter((k): k is string => typeof k === 'string')
                 : privKeys && typeof privKeys === 'object'
-                    ? Object.values(privKeys)
-                    : privKeys
+                    ? Object.values(privKeys).filter((k): k is string => typeof k === 'string')
+                    : privKeys && typeof privKeys === 'string'
                         ? [privKeys]
                         : [];
 
@@ -102,7 +101,7 @@ export class Broadcast {
             this.api.send('network_broadcast_api', {
                 method: 'broadcast_transaction_synchronous',
                 params: [signedTransaction]
-            }, (err: any, result: any) => {
+            }, (err: Error | null, result?: unknown) => {
                 if (err) reject(err);
                 else resolve(result);
             });
@@ -115,7 +114,7 @@ export class Broadcast {
             this.api.send('network_broadcast_api', {
                 method: 'broadcast_transaction_synchronous',
                 params: [signedTransaction]
-            }, (err: any, result: any) => {
+            }, (err: Error | null, result?: unknown) => {
                 if (err) reject(err);
                 else resolve(result);
             });
@@ -127,7 +126,7 @@ export class Broadcast {
             this.api.send('network_broadcast_api', {
                 method: 'broadcast_transaction_synchronous',
                 params: [signedTransaction]
-            }, (err: any, result: any) => {
+            }, (err: Error | null, result?: unknown) => {
                 if (err) reject(err);
                 else resolve(result);
             });
@@ -173,7 +172,9 @@ export function broadcast(api: unknown, transaction: unknown): Promise<unknown> 
 }
 
 // Dynamically generate all broadcast operation methods and their Async variants
-const broadcastMethods: Record<string, any> = {};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type BroadcastMethod = (...args: any[]) => unknown | Promise<unknown> | undefined | void;
+const broadcastMethods: Record<string, BroadcastMethod> = {};
 
 operations.forEach((operation) => {
     const operationName = camelCase(operation.operation);
@@ -181,23 +182,25 @@ operations.forEach((operation) => {
     
     // Implement synchronous version with proper parameters
     // First parameter is WIF, then operation params, last is callback
-    broadcastMethods[operationName] = function(wif: string, ...args: any[]) {
+    broadcastMethods[operationName] = function(wif: string, ...args: unknown[]) {
         // The last argument might be the callback
-        let callback: any = undefined;
+        let callback: ((err: Error | null, result?: unknown) => void) | undefined = undefined;
         if (args.length > 0 && typeof args[args.length - 1] === 'function') {
-            callback = args.pop();
+            const lastArg = args.pop();
+            callback = lastArg as (err: Error | null, result?: unknown) => void;
         }
         
         // For tests, 'this' may have the api as a property
-        const api = this && this.api ? this.api : steem.api;
-        // @ts-ignore
-        const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+        const thisObj = this as unknown as { api?: Api; auth?: Auth };
+        const api: Api | null = (thisObj && thisObj.api) ? thisObj.api : steem.api;
+        const authObj = thisObj as { auth?: Auth };
+        const auth: Auth = (authObj && authObj.auth) ? authObj.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
         
         // Build options object from args
         const options: Record<string, unknown> = {};
         operationParams.forEach((param: string, i: number) => {
             if (i < args.length) {
-                options[param] = args[i];
+                options[param] = args[i] as unknown;
             }
         });
         
@@ -209,6 +212,7 @@ operations.forEach((operation) => {
             };
             
             // Use send method to sign and broadcast with WIF
+            if (!api) throw new Error('API is required');
             const broadcastInstance = new Broadcast({ api, auth });
             if (callback) {
                 broadcastInstance.send(transaction, wif, callback);
@@ -229,9 +233,10 @@ operations.forEach((operation) => {
     // Implement "With" methods for each operation
     broadcastMethods[operationName + 'With'] = function(wif: string, options: Record<string, unknown>, callback?: (err: Error | null, result?: unknown) => void) {
         // For tests, 'this' may have the api as a property
-        const api = this && this.api ? this.api : steem.api;
-        // @ts-ignore
-        const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+        const thisObj = this as unknown as { api?: Api; auth?: Auth };
+        const api: Api | null = (thisObj && thisObj.api) ? thisObj.api : (steem.api as Api | null);
+        const authObj = thisObj as { auth?: Auth };
+        const auth: Auth = (authObj && authObj.auth) ? authObj.auth : (typeof steem !== 'undefined' ? (steem.auth as Auth) : Auth);
         
         if (typeof callback !== 'function') {
             callback = undefined;
@@ -244,6 +249,7 @@ operations.forEach((operation) => {
             };
             
             // Use send method to sign and broadcast with WIF
+            if (!api) throw new Error('API is required');
             const broadcastInstance = new Broadcast({ api, auth });
             if (callback) {
                 broadcastInstance.send(transaction, wif, callback);
@@ -268,23 +274,25 @@ operations.forEach((operation) => {
 // Add any additional required stubs
 broadcastMethods._prepareTransaction = async function(transaction: unknown) {
     // Use global or instance API
-    // @ts-ignore
-    const api = this && this.api ? this.api : (typeof steem !== 'undefined' && steem.api ? steem.api : undefined);
+    const thisObj = this as unknown as { api?: Api };
+    const api: Api | undefined = (thisObj && thisObj.api) ? thisObj.api : (typeof steem !== 'undefined' && steem.api ? (steem.api as Api) : undefined);
     if (!api) throw new Error('API must be set on Broadcast instance or global steem object');
 
     // Fetch dynamic global properties
-    const properties = await api.getDynamicGlobalPropertiesAsync();
+    const apiWithMethods = api as unknown as { getDynamicGlobalPropertiesAsync: () => Promise<{ time: string; last_irreversible_block_num: number }> };
+    const properties = await apiWithMethods.getDynamicGlobalPropertiesAsync();
     const chainDate = new Date(properties.time + 'Z');
     const refBlockNum = (properties.last_irreversible_block_num - 1) & 0xFFFF;
     // Fetch block header - try getBlockHeaderAsync first, fallback to getBlockAsync
     let block: unknown = null;
     try {
-        if (typeof (api as any).getBlockHeaderAsync === 'function') {
-            block = await (api as any).getBlockHeaderAsync(properties.last_irreversible_block_num);
-        } else if (typeof (api as any).getBlockAsync === 'function') {
-            block = await (api as any).getBlockAsync(properties.last_irreversible_block_num);
+        const apiWithMethods = api as unknown as Record<string, (blockNum: number) => Promise<unknown>>;
+        if (typeof apiWithMethods.getBlockHeaderAsync === 'function') {
+            block = await apiWithMethods.getBlockHeaderAsync(properties.last_irreversible_block_num);
+        } else if (typeof apiWithMethods.getBlockAsync === 'function') {
+            block = await apiWithMethods.getBlockAsync(properties.last_irreversible_block_num);
         }
-    } catch (e) {
+    } catch {
         // If block fetch fails, use default
         block = null;
     }
@@ -301,7 +309,8 @@ broadcastMethods._prepareTransaction = async function(transaction: unknown) {
 };
 
 // Mock implementation of steem for tests
-const steem = { api: null as any, auth: Auth };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const steem: { api: Api | null; auth: Auth; [key: string]: any } = { api: null, auth: Auth };
 
 /**
  * Set the API reference for the broadcast module
@@ -311,11 +320,12 @@ export function setApi(api: Api): void {
 }
 
 // Implement the most commonly used methods
-broadcastMethods.vote = function(wif: string, voter: string, author: string, permlink: string, weight: number, callback?: any): any {
+broadcastMethods.vote = function(wif: string, voter: string, author: string, permlink: string, weight: number, callback?: (err: Error | null, result?: unknown) => void): Promise<unknown> | void {
     // For tests, 'this' may have the api as a property
-    const api = this && this.api ? this.api : steem.api;
-    // @ts-ignore
-    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+    const thisObj = this as unknown as { api?: Api; auth?: Auth };
+    const api: Api | null = (thisObj && thisObj.api) ? thisObj.api : (steem.api as Api | null);
+    const authObj = thisObj as { auth?: Auth };
+    const auth: Auth = (authObj && authObj.auth) ? authObj.auth : (typeof steem !== 'undefined' ? (steem.auth as Auth) : Auth);
     
     if (typeof callback !== 'function') {
         callback = undefined;
@@ -335,6 +345,7 @@ broadcastMethods.vote = function(wif: string, voter: string, author: string, per
         };
         
         // Use send method to sign and broadcast with WIF
+        if (!api) throw new Error('API is required');
         const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
             broadcastInstance.send(transaction, wif, callback);
@@ -354,9 +365,10 @@ broadcastMethods.vote = function(wif: string, voter: string, author: string, per
 
 broadcastMethods.voteWith = function(wif: string, options: Record<string, unknown>, callback?: (err: Error | null, result?: unknown) => void): unknown {
     // For tests, 'this' may have the api as a property
-    const api = this && this.api ? this.api : steem.api;
-    // @ts-ignore
-    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+    const thisObj = this as unknown as { api?: Api; auth?: Auth };
+    const api: Api | null = (thisObj && thisObj.api) ? thisObj.api : (steem.api as Api | null);
+    const authObj = thisObj as { auth?: Auth };
+    const auth: Auth = (authObj && authObj.auth) ? authObj.auth : (typeof steem !== 'undefined' ? (steem.auth as Auth) : Auth);
     
     if (typeof callback !== 'function') {
         callback = undefined;
@@ -369,6 +381,7 @@ broadcastMethods.voteWith = function(wif: string, options: Record<string, unknow
         };
         
         // Use send method to sign and broadcast with WIF
+        if (!api) throw new Error('API is required');
         const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
             broadcastInstance.send(transaction, wif, callback);
@@ -388,9 +401,10 @@ broadcastMethods.voteWith = function(wif: string, options: Record<string, unknow
 
 broadcastMethods.comment = function(wif: string, parentAuthor: string, parentPermlink: string, author: string, permlink: string, title: string, body: string, jsonMetadata: unknown, callback?: (err: Error | null, result?: unknown) => void): unknown {
     // For tests, 'this' may have the api as a property
-    const api = this && this.api ? this.api : steem.api;
-    // @ts-ignore
-    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+    const thisObj = this as unknown as { api?: Api; auth?: Auth };
+    const api: Api | null = (thisObj && thisObj.api) ? thisObj.api : (steem.api as Api | null);
+    const authObj = thisObj as { auth?: Auth };
+    const auth: Auth = (authObj && authObj.auth) ? authObj.auth : (typeof steem !== 'undefined' ? (steem.auth as Auth) : Auth);
     
     if (typeof callback !== 'function') {
         callback = undefined;
@@ -413,6 +427,7 @@ broadcastMethods.comment = function(wif: string, parentAuthor: string, parentPer
         };
         
         // Use send method to sign and broadcast with WIF
+        if (!api) throw new Error('API is required');
         const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
             broadcastInstance.send(transaction, wif, callback);
@@ -432,9 +447,10 @@ broadcastMethods.comment = function(wif: string, parentAuthor: string, parentPer
 
 broadcastMethods.customJson = function(wif: string, requiredPostingAuths: string[], id: string, customJson: unknown, callback?: (err: Error | null, result?: unknown) => void): unknown {
     // For tests, 'this' may have the api as a property
-    const api = this && this.api ? this.api : steem.api;
-    // @ts-ignore
-    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+    const thisObj = this as unknown as { api?: Api; auth?: Auth };
+    const api: Api | null = (thisObj && thisObj.api) ? thisObj.api : (steem.api as Api | null);
+    const authObj = thisObj as { auth?: Auth };
+    const auth: Auth = (authObj && authObj.auth) ? authObj.auth : (typeof steem !== 'undefined' ? (steem.auth as Auth) : Auth);
     
     if (typeof callback !== 'function') {
         callback = undefined;
@@ -454,6 +470,7 @@ broadcastMethods.customJson = function(wif: string, requiredPostingAuths: string
         };
         
         // Use send method to sign and broadcast with WIF
+        if (!api) throw new Error('API is required');
         const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
             broadcastInstance.send(transaction, wif, callback);
@@ -473,9 +490,10 @@ broadcastMethods.customJson = function(wif: string, requiredPostingAuths: string
 
 // Claim account operation
 broadcastMethods.claimAccount = function(wif: string, options: Record<string, unknown>, callback?: (err: Error | null, result?: unknown) => void): unknown {
-    const api = this && this.api ? this.api : steem.api;
-    // @ts-ignore
-    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+    const thisObj = this as unknown as { api?: Api; auth?: Auth };
+    const api: Api | null = (thisObj && thisObj.api) ? thisObj.api : (steem.api as Api | null);
+    const authObj = thisObj as { auth?: Auth };
+    const auth: Auth = (authObj && authObj.auth) ? authObj.auth : (typeof steem !== 'undefined' ? (steem.auth as Auth) : Auth);
     if (typeof callback !== 'function') {
         callback = undefined;
     }
@@ -485,6 +503,7 @@ broadcastMethods.claimAccount = function(wif: string, options: Record<string, un
             extensions: []
         };
         // Use send method to sign and broadcast with WIF
+        if (!api) throw new Error('API is required');
         const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
             broadcastInstance.send(transaction, wif, callback);
@@ -505,9 +524,10 @@ broadcastMethods.claimAccountAsync = promisify(broadcastMethods.claimAccount);
 
 // Create claimed account operation
 broadcastMethods.createClaimedAccount = function(wif: string, options: Record<string, unknown>, callback?: (err: Error | null, result?: unknown) => void): unknown {
-    const api = this && this.api ? this.api : steem.api;
-    // @ts-ignore
-    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+    const thisObj = this as unknown as { api?: Api; auth?: Auth };
+    const api: Api | null = (thisObj && thisObj.api) ? thisObj.api : (steem.api as Api | null);
+    const authObj = thisObj as { auth?: Auth };
+    const auth: Auth = (authObj && authObj.auth) ? authObj.auth : (typeof steem !== 'undefined' ? (steem.auth as Auth) : Auth);
     if (typeof callback !== 'function') {
         callback = undefined;
     }
@@ -517,6 +537,7 @@ broadcastMethods.createClaimedAccount = function(wif: string, options: Record<st
             extensions: []
         };
         // Use send method to sign and broadcast with WIF
+        if (!api) throw new Error('API is required');
         const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
             broadcastInstance.send(transaction, wif, callback);
@@ -537,9 +558,10 @@ broadcastMethods.createClaimedAccountAsync = promisify(broadcastMethods.createCl
 
 // Create proposal operation
 broadcastMethods.createProposal = function(wif: string, options: Record<string, unknown>, callback?: (err: Error | null, result?: unknown) => void): unknown {
-    const api = this && this.api ? this.api : steem.api;
-    // @ts-ignore
-    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+    const thisObj = this as unknown as { api?: Api; auth?: Auth };
+    const api: Api | null = (thisObj && thisObj.api) ? thisObj.api : (steem.api as Api | null);
+    const authObj = thisObj as { auth?: Auth };
+    const auth: Auth = (authObj && authObj.auth) ? authObj.auth : (typeof steem !== 'undefined' ? (steem.auth as Auth) : Auth);
     if (typeof callback !== 'function') {
         callback = undefined;
     }
@@ -549,6 +571,7 @@ broadcastMethods.createProposal = function(wif: string, options: Record<string, 
             extensions: []
         };
         // Use send method to sign and broadcast with WIF
+        if (!api) throw new Error('API is required');
         const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
             broadcastInstance.send(transaction, wif, callback);
@@ -569,9 +592,10 @@ broadcastMethods.createProposalAsync = promisify(broadcastMethods.createProposal
 
 // Update proposal votes operation
 broadcastMethods.updateProposalVotes = function(wif: string, options: Record<string, unknown>, callback?: (err: Error | null, result?: unknown) => void): unknown {
-    const api = this && this.api ? this.api : steem.api;
-    // @ts-ignore
-    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+    const thisObj = this as unknown as { api?: Api; auth?: Auth };
+    const api: Api | null = (thisObj && thisObj.api) ? thisObj.api : (steem.api as Api | null);
+    const authObj = thisObj as { auth?: Auth };
+    const auth: Auth = (authObj && authObj.auth) ? authObj.auth : (typeof steem !== 'undefined' ? (steem.auth as Auth) : Auth);
     if (typeof callback !== 'function') {
         callback = undefined;
     }
@@ -581,6 +605,7 @@ broadcastMethods.updateProposalVotes = function(wif: string, options: Record<str
             extensions: []
         };
         // Use send method to sign and broadcast with WIF
+        if (!api) throw new Error('API is required');
         const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
             broadcastInstance.send(transaction, wif, callback);
@@ -601,9 +626,10 @@ broadcastMethods.updateProposalVotesAsync = promisify(broadcastMethods.updatePro
 
 // Remove proposal operation
 broadcastMethods.removeProposal = function(wif: string, options: Record<string, unknown>, callback?: (err: Error | null, result?: unknown) => void): unknown {
-    const api = this && this.api ? this.api : steem.api;
-    // @ts-ignore
-    const auth = this && this.auth ? this.auth : (typeof steem !== 'undefined' && steem.auth ? steem.auth : Auth);
+    const thisObj = this as unknown as { api?: Api; auth?: Auth };
+    const api: Api | null = (thisObj && thisObj.api) ? thisObj.api : (steem.api as Api | null);
+    const authObj = thisObj as { auth?: Auth };
+    const auth: Auth = (authObj && authObj.auth) ? authObj.auth : (typeof steem !== 'undefined' ? (steem.auth as Auth) : Auth);
     if (typeof callback !== 'function') {
         callback = undefined;
     }
@@ -613,6 +639,7 @@ broadcastMethods.removeProposal = function(wif: string, options: Record<string, 
             extensions: []
         };
         // Use send method to sign and broadcast with WIF
+        if (!api) throw new Error('API is required');
         const broadcastInstance = new Broadcast({ api, auth });
         if (callback) {
             broadcastInstance.send(transaction, wif, callback);

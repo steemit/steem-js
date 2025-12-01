@@ -10,7 +10,7 @@ export function promisify<T extends (...args: unknown[]) => unknown>(
   fn: T
 ): (...args: Parameters<T>) => Promise<unknown> {
   return function(this: unknown, ...args: Parameters<T>): Promise<unknown> {
-    return new Promise((resolve, reject) => {
+    return new Promise<unknown>((resolve: (value: unknown) => void, reject: (reason?: unknown) => void) => {
       fn.apply(this, [...args, (err: unknown, result: unknown) => {
         if (err) {
           reject(err);

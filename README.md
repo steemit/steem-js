@@ -15,6 +15,11 @@ A modern JavaScript/TypeScript library for interacting with the Steem blockchain
 
 ## 🚀 Quick Start
 
+### Requirements
+
+- **Node.js**: >= 18.0.0 (LTS recommended)
+- **Browser**: Modern browsers with Web Crypto API support
+
 ### Installation
 
 ```bash

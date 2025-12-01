@@ -50,7 +50,7 @@ export class Serializer {
             // Use Long.fromString with unsigned flag for large numbers
             try {
                 nonceLong = Long.fromString(memo.nonce, true, 10); // unsigned, base 10
-            } catch (e) {
+            } catch {
                 // Fallback: try as number if string parsing fails
                 const num = Number(memo.nonce);
                 if (!isNaN(num) && isFinite(num)) {
@@ -92,7 +92,7 @@ export const signed_transaction = {
     toObject(trx: unknown): unknown {
         return trx;
     },
-    toBuffer(trx: any): Buffer {
+    toBuffer(trx: unknown): Buffer {
         return Buffer.from(JSON.stringify(trx));
     }
 }; 

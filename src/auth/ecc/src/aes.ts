@@ -47,7 +47,7 @@ export class Aes {
         }
 
         const S = private_key.get_shared_secret(public_key);
-        let ebuf = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
+        const ebuf = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
         // Convert nonce string to Long and write as uint64
         const nonceLong = Long.fromString(nonce, true, 10); // unsigned, base 10
         // ByteBuffer.writeUint64 may not accept Long objects directly, so write manually using toBytesLE
@@ -101,7 +101,7 @@ export class Aes {
         }
 
         const S = private_key.get_shared_secret(public_key);
-        let ebuf = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
+        const ebuf = new ByteBuffer(ByteBuffer.DEFAULT_CAPACITY, ByteBuffer.LITTLE_ENDIAN);
         // Convert nonce string to Long and write as uint64
         const nonceLong = Long.fromString(nonce, true, 10); // unsigned, base 10
         // ByteBuffer.writeUint64 may not accept Long objects directly, so write manually using toBytesLE

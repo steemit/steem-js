@@ -106,7 +106,7 @@ export function decode(
         try {
             mbuf.mark();
             return '#' + mbuf.readVString();
-        } catch (e) {
+        } catch {
             mbuf.reset();
             // Sender did not length-prefix the memo
             const memo = Buffer.from(mbuf.toString('binary'), 'binary').toString('utf-8');

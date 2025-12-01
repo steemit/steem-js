@@ -246,9 +246,9 @@ function serializeAuthority(bb: ByteBuffer, auth: unknown): void {
         if (Array.isArray(keyAuth) && keyAuth.length >= 2) {
             const keyStr = String(keyAuth[0]);
             const weight = keyAuth[1] as number;
-            const pubKey = PublicKey.fromStringOrThrow(keyStr);
-            bb.append(pubKey.toBuffer());
-            bb.writeUint16(weight);
+        const pubKey = PublicKey.fromStringOrThrow(keyStr);
+        bb.append(pubKey.toBuffer());
+        bb.writeUint16(weight);
         }
     }
 }

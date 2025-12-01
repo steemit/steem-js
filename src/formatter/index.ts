@@ -165,7 +165,8 @@ export class Formatter {
         const assetPrecision = 1000;
         let orders: { steemOrders: number; sbdOrders: number };
         let savings: { savings_pending: number; savings_sbd_pending: number };
-        let { gprops, feed_price, open_orders, savings_withdraws, vesting_steem } = options;
+        let { gprops, feed_price, vesting_steem } = options;
+        const { open_orders, savings_withdraws } = options;
 
         if (!vesting_steem || !feed_price) {
             if (!gprops || !feed_price) {
@@ -186,7 +187,7 @@ export class Formatter {
 
         if (!open_orders) {
             promises.push(
-                (this.api as any).getOpenOrdersAsync(username).then((open_orders: OpenOrder[]) => {
+                ((this.api as unknown as Record<string, unknown>).getOpenOrdersAsync as (username: string) => Promise<OpenOrder[]>)(username).then((open_orders: OpenOrder[]) => {
                     orders = this.processOrders(open_orders, assetPrecision);
                 })
             );
@@ -196,8 +197,7 @@ export class Formatter {
 
         if (!savings_withdraws) {
             promises.push(
-                (this.api as any)
-                    .getSavingsWithdrawFromAsync(username)
+                ((this.api as unknown as Record<string, unknown>).getSavingsWithdrawFromAsync as (username: string) => Promise<SavingsWithdraw[]>)(username)
                     .then((savings_withdraws: SavingsWithdraw[]) => {
                         savings = this.calculateSaving(savings_withdraws);
                     })
@@ -207,7 +207,7 @@ export class Formatter {
         }
 
         return Promise.all(promises).then(() => {
-            let price_per_steem = this.pricePerSteem(feed_price!);
+            const price_per_steem = this.pricePerSteem(feed_price!);
 
             const savings_balance = account.savings_balance;
             const savings_sbd_balance = account.savings_sbd_balance;
@@ -271,7 +271,7 @@ export class Formatter {
     reputation(reputation: number | null | undefined, decimal_places: number = 0): number | null | undefined {
         if (reputation == null) return reputation;
         if (reputation === 0) return 25;
-        let neg = reputation < 0;
+        const neg = reputation < 0;
         let rep = String(reputation);
         rep = neg ? rep.substring(1) : rep;
         let v = (Math.log10((parseInt(rep) > 0 ? parseInt(rep) : -parseInt(rep)) - 10) - 9);
@@ -281,7 +281,7 @@ export class Formatter {
             const multiplier = Math.pow(10, decimal_places);
             return Math.round(v * multiplier) / multiplier;
         }
-        return parseInt(v as any);
+        return parseInt(String(v), 10);
     }
 
     vestToSteem(vestingShares: string, totalVestingShares: string, totalVestingFundSteem: string): number {
@@ -386,7 +386,7 @@ export function commentPermlink(parentAuthor: string, parentPermlink: string): s
 export function reputation(reputation: number | null | undefined, decimal_places: number = 0): number | null | undefined {
     if (reputation == null) return reputation;
     if (reputation === 0) return 25;
-    let neg = reputation < 0;
+    const neg = reputation < 0;
     let rep = String(reputation);
     rep = neg ? rep.substring(1) : rep;
     let v = (Math.log10((parseInt(rep) > 0 ? parseInt(rep) : -parseInt(rep)) - 10) - 9);
@@ -396,5 +396,5 @@ export function reputation(reputation: number | null | undefined, decimal_places
         const multiplier = Math.pow(10, decimal_places);
         return Math.round(v * multiplier) / multiplier;
     }
-    return parseInt(v as any);
+    return parseInt(String(v), 10);
 } 

@@ -8,7 +8,7 @@ export const _internal = {
   decimal_precision_string: (number: string, precision: number): string => {
     if (number === undefined || number === null) throw new Error('number required');
     if (precision === undefined || precision === null) throw new Error('precision required');
-    let number_string = String(number).trim();
+    const number_string = String(number).trim();
     precision = Number(precision);
     // remove leading zeros (not suffixing)
     const number_parts = number_string.match(/^-?0*([0-9]*)\.?([0-9]*)$/);
@@ -22,7 +22,7 @@ export const _internal = {
     while (/0$/.test(decimal_part)) {
       decimal_part = decimal_part.substring(0, decimal_part.length - 1);
     }
-    let zero_pad_count = precision - decimal_part.length;
+    const zero_pad_count = precision - decimal_part.length;
     if (zero_pad_count < 0) {
       throw new Error(`overflow, up to ${precision} decimals may be used`);
     }
@@ -47,7 +47,7 @@ export const to_bigint64 = (number_or_string: string, precision: number) => {
   return value;
 };
 
-export const to_string64 = (input: any, precision: number) => {
+export const to_string64 = (input: unknown, precision: number): string => {
   // Convert to string with implied decimal
   return _internal.decimal_precision_string(String(input), precision);
 }; 

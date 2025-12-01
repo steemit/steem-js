@@ -28,14 +28,15 @@ export default function enforce(type: TypeName, value: unknown): void {
         }
 
         default: {
-            if (typeof type === 'function' && value != null && typeof value === 'object' && 'constructor' in value && getName(value.constructor as Function) === getName(type)) return;
+            if (typeof type === 'function' && value != null && typeof value === 'object' && 'constructor' in value && getName(value.constructor as { name?: string; toString(): string }) === getName(type as { name?: string; toString(): string })) return;
         }
     }
 
     throw new TypeError('Expected ' + (typeof type === 'function' ? getName(type) : type) + ', got ' + String(value));
 }
 
-function getName(fn: Function): string | null {
+function getName(fn: { name?: string; toString(): string }): string | null {
+    if (fn.name) return fn.name;
     const match = fn.toString().match(/function (.*?)\(/);
     return match ? match[1] : null;
 } 

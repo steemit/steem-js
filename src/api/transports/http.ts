@@ -35,8 +35,8 @@ export const jsonRpc = async (
   timeoutMs: number = 30000
 ): Promise<unknown> => {
   const payload = {
-    jsonrpc: '2.0',
-    ...request
+      jsonrpc: '2.0',
+      ...request
   };
 
   let timeoutId: ReturnType<typeof setTimeout> | null = null;

@@ -20,7 +20,7 @@ export const getTransactionId = (transaction: Transaction): string => {
   return digest.toString('hex');
 };
 
-export const serialize = (operation: any): Buffer => {
+export const serialize = (operation: unknown): Buffer => {
   return Buffer.from(JSON.stringify(operation));
 };
 
