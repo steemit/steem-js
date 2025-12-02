@@ -135,6 +135,9 @@ function serializeOperationData(bb: ByteBuffer, opType: string, opData: unknown)
         case 'account_create':
             serializeAccountCreate(bb, opData);
             break;
+        case 'custom_json':
+            serializeCustomJson(bb, opData);
+            break;
         default:
             throw new Error(`Operation type ${opType} serialization not fully implemented`);
     }
@@ -203,6 +206,38 @@ function serializeAccountCreate(bb: ByteBuffer, data: unknown): void {
     }
     
     writeString(bb, String(dataObj.json_metadata || ''));
+}
+
+/**
+ * Serialize custom_json operation
+ */
+function serializeCustomJson(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    
+    // Serialize required_auths (flat_set<account_name_type>)
+    // Set serialization: varint32 length, then each element
+    const requiredAuths = Array.isArray(dataObj.required_auths) 
+        ? (dataObj.required_auths as string[]).slice().sort() 
+        : [];
+    bb.writeVarint32(requiredAuths.length);
+    for (const account of requiredAuths) {
+        writeString(bb, String(account));
+    }
+    
+    // Serialize required_posting_auths (flat_set<account_name_type>)
+    const requiredPostingAuths = Array.isArray(dataObj.required_posting_auths) 
+        ? (dataObj.required_posting_auths as string[]).slice().sort() 
+        : [];
+    bb.writeVarint32(requiredPostingAuths.length);
+    for (const account of requiredPostingAuths) {
+        writeString(bb, String(account));
+    }
+    
+    // Serialize id (string)
+    writeString(bb, String(dataObj.id || ''));
+    
+    // Serialize json (string)
+    writeString(bb, String(dataObj.json || '{}'));
 }
 
 /**

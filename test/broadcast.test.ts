@@ -285,14 +285,17 @@ describe('steem.broadcast:', () => {
     beforeAll(async () => {
       await new Promise((resolve) => setTimeout(resolve, 3000));
     }, 10000);
-    it('works', async () => {
+
+    it('works with follow operation', async () => {
       let tx;
       try {
+        // Parameter order: (wif, required_auths, required_posting_auths, id, json)
+        // Reference: old-steem-js/test/broadcast.test.js and operations.js
         tx = await steem.broadcast.customJsonAsync(
           postingWif,
-          [],
-          [username],
-          'follow',
+          [], // required_auths
+          [username], // required_posting_auths
+          'follow', // id
           JSON.stringify([
             'follow',
             {
@@ -300,7 +303,7 @@ describe('steem.broadcast:', () => {
               following: 'fabien',
               what: ['blog'],
             },
-          ])
+          ]) // json
         );
       } catch (e) {
         console.error('customJson > works error:', e);
@@ -313,6 +316,62 @@ describe('steem.broadcast:', () => {
       expect(tx).toHaveProperty('operations');
       expect(tx).toHaveProperty('signatures');
     }, 10000);
+
+    it('works with notify operation (setLastRead)', async () => {
+      let tx;
+      try {
+        // Parameter order matches Steem protocol: (wif, required_auths, required_posting_auths, id, json)
+        // Example from actual transaction: required_auths=[], required_posting_auths=["ety001234"], id="notify"
+        const requiredAuths: string[] = []; // Empty array for active auths
+        const requiredPostingAuths: string[] = [username]; // Account name for posting auths
+        const id = 'notify';
+        const json = JSON.stringify(['setLastRead', { date: new Date().toISOString() }]);
+
+        tx = await steem.broadcast.customJsonAsync(
+          postingWif,
+          requiredAuths,
+          requiredPostingAuths,
+          id,
+          json
+        );
+      } catch (e) {
+        console.error('customJson > notify error:', e);
+      }
+      console.log('customJson > notify tx:', tx);
+      expect(tx).toHaveProperty('expiration');
+      expect(tx).toHaveProperty('ref_block_num');
+      expect(tx).toHaveProperty('ref_block_prefix');
+      expect(tx).toHaveProperty('extensions');
+      expect(tx).toHaveProperty('operations');
+      expect(tx).toHaveProperty('signatures');
+
+      // Verify operation structure matches Steem protocol
+      if (tx && tx.operations && tx.operations.length > 0) {
+        const op = tx.operations[0];
+        expect(op[0]).toBe('custom_json');
+        const opData = op[1] as any;
+        expect(opData).toHaveProperty('required_auths');
+        expect(opData).toHaveProperty('required_posting_auths');
+        expect(opData).toHaveProperty('id');
+        expect(opData).toHaveProperty('json');
+        expect(Array.isArray(opData.required_auths)).toBe(true);
+        expect(Array.isArray(opData.required_posting_auths)).toBe(true);
+        expect(opData.required_auths.length).toBe(0);
+        expect(opData.required_posting_auths).toContain(username);
+        expect(opData.id).toBe('notify');
+        expect(typeof opData.json).toBe('string');
+      }
+    }, 10000);
+
+    it('validates parameter order matches operations.ts definition', async () => {
+      // Verify that the parameter order in operations.ts matches Steem protocol
+      // operations.ts should have: ["required_auths", "required_posting_auths", "id", "json"]
+      // Reference: old-steem-js/src/broadcast/operations.js and steem protocol definition
+      const { operations } = await import('../src/broadcast/operations');
+      const customJsonOp = operations.find((op: any) => op.operation === 'custom_json');
+      expect(customJsonOp).toBeDefined();
+      expect(customJsonOp?.params).toEqual(['required_auths', 'required_posting_auths', 'id', 'json']);
+    });
   });
 
   describe('writeOperations', () => {
