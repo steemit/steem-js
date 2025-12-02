@@ -24,8 +24,8 @@ function deterministicGenerateK(curve: ECInstance, hash: Buffer, d: BN, checkSig
     if (hash.length !== 32) throw new Error('Hash must be 256 bit');
 
     const x = d.toArrayLike(Buffer, 'be', 32);
-    let k = Buffer.alloc(32);
-    let v = Buffer.alloc(32);
+    let k: Buffer = Buffer.alloc(32);
+    let v: Buffer = Buffer.alloc(32);
 
     // Step B
     v.fill(1);
@@ -34,13 +34,13 @@ function deterministicGenerateK(curve: ECInstance, hash: Buffer, d: BN, checkSig
     k.fill(0);
 
     // Step D
-    k = crypto.HmacSHA256(Buffer.concat([v, Buffer.from([0]), x, hash]), k);
+    k = crypto.HmacSHA256(Buffer.concat([v, Buffer.from([0]), x, hash]) as Buffer, k);
 
     // Step E
     v = crypto.HmacSHA256(v, k);
 
     // Step F
-    k = crypto.HmacSHA256(Buffer.concat([v, Buffer.from([1]), x, hash]), k);
+    k = crypto.HmacSHA256(Buffer.concat([v, Buffer.from([1]), x, hash]) as Buffer, k);
 
     // Step G
     v = crypto.HmacSHA256(v, k);
@@ -53,7 +53,7 @@ function deterministicGenerateK(curve: ECInstance, hash: Buffer, d: BN, checkSig
 
     // Step H3, repeat until T is within the interval [1, n - 1] and passes the supplied check
     while ((T.isNeg() || T.isZero()) || (T.gte(new BN(curve.n!.toString()))) || !checkSig(T)) {
-        k = crypto.HmacSHA256(Buffer.concat([v, Buffer.from([0])]), k);
+        k = crypto.HmacSHA256(Buffer.concat([v, Buffer.from([0])]) as Buffer, k);
         v = crypto.HmacSHA256(v, k);
 
         // Step H1/H2a, again, ignored as tlen === qlen (256 bit)
