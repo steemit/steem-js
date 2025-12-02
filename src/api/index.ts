@@ -543,26 +543,6 @@ export class Api extends EventEmitter {
   }
 
   /**
-   * Get a single account by name (backward compatibility).
-   * @param name The account name
-   * @param callback Optional callback
-   * @returns Account object or Promise
-   */
-  getAccount(name: string, callback?: (err: Error | null, result?: unknown) => void): Promise<unknown> | void {
-    if (callback) {
-      ((this as Record<string, unknown>).getAccounts as (names: string[], callback: (err: Error | null, res?: unknown) => void) => void)([name], (err: Error | null, res?: unknown) => {
-        if (err) return callback(err);
-        callback(null, Array.isArray(res) && res.length > 0 ? res[0] : undefined);
-      });
-      return;
-    }
-    return ((this as Record<string, unknown>).getAccounts as (names: string[]) => Promise<unknown>)([name]).then((res: unknown) => {
-      const accounts = Array.isArray(res) ? res : [];
-      return accounts[0];
-    });
-  }
-
-  /**
    * Get followers for an account (backward compatibility).
    * @param account The account name
    * @param startFollower The follower to start from

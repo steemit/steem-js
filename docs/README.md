@@ -792,66 +792,7 @@ steem.api.getAccountsAsync(['ned', 'dan']).then(function(accounts) {
 });
 ```
 
-#### Get Account
-
-Gets a single account by name. This is a convenience method that wraps `getAccounts` for backward compatibility.
-
-```javascript
-// Using Promise (no callback)
-steem.api.getAccount(name).then(function(result) {
-  console.log(result);
-});
-
-// Using callback
-steem.api.getAccount(name, function(err, result) {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log(result);
-  }
-});
-```
-
-**Parameter Description:**
-
-| Parameter | Data Type | Description |
-|---------|--------|-----------|
-| name | string | Account name |
-| callback | function | Optional callback function(err, result) |
-
-**Call Example:**
-
-```javascript
-// Promise style (recommended)
-steem.api.getAccount('steemit')
-  .then(function(account) {
-    console.log(account);
-  })
-  .catch(function(err) {
-    console.error(err);
-  });
-
-// Async/await style
-async function getAccountInfo() {
-  try {
-    const account = await steem.api.getAccount('steemit');
-    console.log(account);
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-// Callback style
-steem.api.getAccount('steemit', function(err, account) {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log(account);
-  }
-});
-```
-
-**Note:** `getAccount` returns a Promise when called without a callback, so you don't need to use `getAccountAsync` - just call `getAccount` directly.
+**Note:** To get a single account, pass an array with one name: `getAccountsAsync(['username'])` and access the first element of the result.
 
 #### Get Account References
 

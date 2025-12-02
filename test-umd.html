@@ -158,8 +158,8 @@
                     if (typeof steem.api.setOptions === 'function') {
                         addResult('steem-result', '✅ steem.api.setOptions available', 'success');
                     }
-                    if (typeof steem.api.getAccount === 'function') {
-                        addResult('steem-result', '✅ steem.api.getAccount available', 'success');
+                    if (typeof steem.api.getAccounts === 'function') {
+                        addResult('steem-result', '✅ steem.api.getAccounts available', 'success');
                     }
                 } else {
                     addResult('steem-result', '❌ API object not found at steem.api', 'error');

@@ -148,11 +148,11 @@ signTransaction(trx: Transaction, keys: string[]): Transaction
 **Recommendation**: Define specific response types or use `unknown`
 ```typescript
 // Before
-getAccount(name: string, callback?: (err: any, result?: any) => void): Promise<any>
+getAccounts(names: string[], callback?: (err: any, result?: any) => void): Promise<any>
 
 // After
 interface AccountData { /* ... */ }
-getAccount(name: string, callback?: (err: Error | null, result?: AccountData) => void): Promise<AccountData>
+getAccounts(names: string[], callback?: (err: Error | null, result?: AccountData[]) => void): Promise<AccountData[]>
 ```
 
 ### 3. 🔄 **May Keep `any` or Use Type Assertions** (Low Priority)
