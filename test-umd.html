@@ -61,6 +61,9 @@
         <h2>🚀 Steem.js Functionality Test</h2>
         <div id="steem-result"></div>
         
+        <h2>📝 API Test Suite</h2>
+        <div id="api-test-result"></div>
+        
     </div>
 
     <!-- Only includes steem.js, testing if it's truly a single file -->
@@ -177,12 +180,200 @@
         }
 
 
+        // ============================================================================
+        // API Test Suite
+        // ============================================================================
+        
+        // log() function for test suite
+        function log(...args) {
+            const message = args.map(arg => {
+                if (typeof arg === 'object') {
+                    return JSON.stringify(arg, null, 2);
+                }
+                return String(arg);
+            }).join(' ');
+            addResult('api-test-result', message, 'info');
+            console.log(...args);
+        }
+
+        // Promise wrapper for steem.api
+        function steemCall(method, params) {
+            return new Promise((resolve, reject) => {
+                if (!steem.api || !steem.api[method]) {
+                    reject(new Error(`Method ${method} not found`));
+                    return;
+                }
+                steem.api[method](...params, (err, result) => {
+                    if (err) reject(err);
+                    else resolve(result);
+                });
+            });
+        }
+
+        // Promise wrapper for generic RPC calls
+        function steemRpcCall(method, params) {
+            return new Promise((resolve, reject) => {
+                if (!steem.api || !steem.api.call) {
+                    reject(new Error('steem.api.call not found'));
+                    return;
+                }
+                steem.api.call(method, params, (err, result) => {
+                    if (err) reject(err);
+                    else resolve(result);
+                });
+            });
+        }
+
+        // Test registry
+        const tests = [];
+
+        function addTest(name, fn) {
+            tests.push({ name, fn });
+        }
+
+        // ============================================================================
+        // Example: Basic getAccounts usage
+        // ============================================================================
+        function runBasicExample() {
+            addResult('api-test-result', '📋 Running basic getAccounts example...', 'info');
+            if (!steem.api || !steem.api.getAccounts) {
+                addResult('api-test-result', '❌ steem.api.getAccounts not available', 'error');
+                return;
+            }
+            
+            steem.api.getAccounts(['justyy', 'ety001'], function(err, result) {
+                if (!err) {
+                    for (let i = 0; i < result.length; ++i) {
+                        let reputation = result[i].reputation;
+                        let formatted_rep = steem.formatter.reputation(reputation);
+                        log(result[i].name + "'s Reputation is " + formatted_rep);
+                    }
+                } else {
+                    log("Steem API Error: ", err);
+                }
+            });
+        }
+
+        // ============================================================================
+        // 1. Basic positive API tests
+        // ============================================================================
+        addTest("steem.api.getAccounts", async () => {
+            const accounts = await steemCall("getAccounts", [["justyy"]]);
+            if (accounts && accounts[0] && accounts[0].name === "justyy") return;
+            throw new Error("Account not returned");
+        });
+
+        addTest("steem.formatter.reputation", async () => {
+            const rep = steem.formatter.reputation("352352352352");
+            if (typeof rep === "number") return;
+            throw new Error("Formatter did not return number");
+        });
+
+        addTest("steem.api.getDynamicGlobalProperties", async () => {
+            const props = await steemCall("getDynamicGlobalProperties", []);
+            if (props && props.head_block_number) return;
+            throw new Error("Missing head_block_number");
+        });
+
+        addTest("steem.api.getChainProperties", async () => {
+            await steemCall("getChainProperties", []);
+        });
+
+        addTest("steem.api.getConfig", async () => {
+            await steemCall("getConfig", []);
+        });
+
+        addTest("steem.api.getRewardFund", async () => {
+            const fund = await steemCall("getRewardFund", ["post"]);
+            if (fund && fund.reward_balance) return;
+            throw new Error("Reward fund missing");
+        });
+
+        addTest("steem.api.getCurrentMedianHistoryPrice", async () => {
+            const price = await steemCall("getCurrentMedianHistoryPrice", []);
+            if (price && price.base) return;
+            throw new Error("Missing price");
+        });
+
+        addTest("steem.api.getAccountHistory", async () => {
+            const hist = await steemCall("getAccountHistory", ["justyy", -1, 1]);
+            if (Array.isArray(hist)) return;
+            throw new Error("History not an array");
+        });
+
+        addTest("steem.api.getDiscussionsByCreated", async () => {
+            const posts = await steemCall("getDiscussionsByCreated", [{ tag: "steem", limit: 1 }]);
+            if (Array.isArray(posts)) return;
+            throw new Error("Posts not array");
+        });
+
+        addTest("steem.api.getTrendingTags", async () => {
+            const tags = await steemCall("getTrendingTags", ["steem", 1]);
+            if (Array.isArray(tags)) return;
+            throw new Error("Tags not array");
+        });
+
+        // ============================================================================
+        // 2. Negative tests
+        // ============================================================================
+        addTest("Negative invalid method name", async () => {
+            try {
+                await steemRpcCall("NON_EXISTENT_METHOD", {});
+            } catch {
+                return; // PASS
+            }
+            throw new Error("Invalid method unexpectedly succeeded");
+        });
+
+        addTest("Negative invalid history range", async () => {
+            try {
+                await steemCall("getAccountHistory", ["justyy", 999999999, -5]);
+            } catch {
+                return; // PASS
+            }
+            throw new Error("Invalid history range unexpectedly succeeded");
+        });
+
+        // ============================================================================
+        // Test Runner
+        // ============================================================================
+        async function runTests() {
+            log("Starting SteemJS test suite...");
+            for (const t of tests) {
+                try {
+                    await t.fn();
+                    log(`✅ Test passed: ${t.name}`);
+                } catch (err) {
+                    log(`❌ Test failed: ${t.name} (${err.message || err})`);
+                }
+            }
+            log("Finished.");
+        }
+
         // Run all tests
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 testDependencies();
                 testPolyfills();
                 testSteemFunctions();
+                
+                // Configure API endpoint before running API tests
+                if (steem.config) {
+                    steem.config.set({
+                        node: 'https://api.steemit.com',
+                        address_prefix: 'STM'
+                    });
+                }
+                
+                // Run basic example
+                setTimeout(() => {
+                    runBasicExample();
+                }, 500);
+                
+                // Run test suite
+                setTimeout(() => {
+                    runTests();
+                }, 2000);
             }, 100);
         });
     </script>
