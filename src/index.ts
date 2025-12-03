@@ -23,6 +23,7 @@ const steem = {
   operations,
   serializer,
   utils,
+  version: '__VERSION__',
   config: {
     set: (options: Record<string, unknown>) => {
       setApiOptions(options);

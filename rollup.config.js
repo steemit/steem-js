@@ -6,11 +6,20 @@ import alias from '@rollup/plugin-alias';
 import inject from '@rollup/plugin-inject';
 import replace from '@rollup/plugin-replace';
 import terser from '@rollup/plugin-terser';
+import { readFileSync } from 'fs';
+
+// Read version from package.json
+const packageJson = JSON.parse(readFileSync('./package.json', 'utf-8'));
+const version = packageJson.version;
 
 // Helper function to create UMD build configuration
 function createUmdConfig(minified = false) {
   const filename = minified ? 'dist/index.umd.min.js' : 'dist/index.umd.js';
   const plugins = [
+    replace({
+      __VERSION__: version,
+      preventAssignment: true
+    }),
     inject({
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer'],
@@ -140,6 +149,10 @@ export default [
       }
     ],
     plugins: [
+      replace({
+        __VERSION__: version,
+        preventAssignment: true
+      }),
       resolve({
         preferBuiltins: true,
         browser: false
@@ -225,6 +238,10 @@ var utilExports = typeof globalThis !== 'undefined' ? (globalThis.utilExports ||
 `
     },
     plugins: [
+      replace({
+        __VERSION__: version,
+        preventAssignment: true
+      }),
       replace({
         // Replace require('crypto') calls in browser builds to prevent Vite from externalizing crypto
         // This ensures the code path is never executed in browsers

@@ -25,6 +25,7 @@ const steem = {
   serializer,
   utils,
   ...crypto,
+  version: '__VERSION__',
   config: {
     set: (options: Record<string, unknown>) => {
       setApiOptions(options);
