@@ -31,8 +31,39 @@ interface SignedRequest {
 /**
  * Signing constant used to reserve opcode space and prevent cross-protocol attacks.
  * Output of `sha256('steem_jsonrpc_auth')`.
+ * Using lazy initialization to avoid Buffer dependency issues in UMD builds.
  */
-export const K = Buffer.from('3b3b081e46ea808d5a96b08c4bc5003f5e15767090f344faab531ec57565136b', 'hex');
+let _K: Buffer | null = null;
+function getK(): Buffer {
+  if (!_K) {
+    _K = Buffer.from('3b3b081e46ea808d5a96b08c4bc5003f5e15767090f344faab531ec57565136b', 'hex');
+  }
+  return _K;
+}
+// Create a Proxy to make K behave like a Buffer but with lazy initialization
+// This avoids executing Buffer.from() at module load time when Buffer may not be available in UMD builds
+export const K = new Proxy({} as Buffer, {
+  get(_target, prop) {
+    const k = getK();
+    const value = (k as unknown as Record<string | symbol, unknown>)[prop];
+    if (typeof value === 'function') {
+      return value.bind(k);
+    }
+    return value;
+  },
+  has(_target, prop) {
+    const k = getK();
+    return prop in (k as unknown as Record<string | symbol, unknown>);
+  },
+  ownKeys(_target) {
+    const k = getK();
+    return Object.keys(k as unknown as Record<string, unknown>);
+  },
+  getOwnPropertyDescriptor(_target, prop) {
+    const k = getK();
+    return Object.getOwnPropertyDescriptor(k as unknown as Record<string | symbol, unknown>, prop);
+  }
+}) as Buffer;
 
 /**
  * Create request hash to be signed.
@@ -56,7 +87,7 @@ function hashMessage(timestamp: string, account: string, method: string, params:
   const firstHash = Buffer.from(sha256(firstInput));
   
   // Second hash: sha256(K + firstHash + nonce)
-  const secondInput = Buffer.concat([K, firstHash, nonce]);
+  const secondInput = Buffer.concat([getK(), firstHash, nonce]);
   return Buffer.from(sha256(secondInput));
 }
 
@@ -170,5 +201,5 @@ export async function validate(
 export default {
   sign,
   validate,
-  K
+  get K() { return getK(); }
 }; 

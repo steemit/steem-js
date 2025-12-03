@@ -13,6 +13,7 @@ function createUmdConfig(minified = false) {
   const plugins = [
     inject({
       process: 'process/browser',
+      Buffer: ['buffer', 'Buffer'],
       preventAssignment: false
     }),
     alias({
@@ -62,21 +63,25 @@ function createUmdConfig(minified = false) {
       exports: 'default',
       banner: `(function() {
   // Provide minimal polyfills for browser
-  if (typeof globalThis !== 'undefined') {
-    // Process polyfill
-    if (typeof globalThis.process === 'undefined') {
-      globalThis.process = {
-        browser: true,
-        env: {},
-        version: '',
-        versions: {},
-        nextTick: function(fn) { setTimeout(fn, 0); },
-        exit: function() {},
-        cwd: function() { return '/'; },
-        platform: 'browser'
-      };
+  var g = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+  
+  // Process polyfill
+  if (typeof g.process === 'undefined') {
+    g.process = {
+      browser: true,
+      env: {},
+      version: '',
+      versions: {},
+      nextTick: function(fn) { setTimeout(fn, 0); },
+      exit: function() {},
+      cwd: function() { return '/'; },
+      platform: 'browser'
+    };
+    if (typeof globalThis !== 'undefined') {
+      globalThis.process = g.process;
     }
   }
+  // Buffer will be set in outro after all modules are loaded
 })();`,
       globals: {}
     },
@@ -215,26 +220,9 @@ export default [
 })();
 // Define utilExports in global scope for replace plugin (exports.format -> utilExports.format)
 var utilExports = typeof globalThis !== 'undefined' ? (globalThis.utilExports || (globalThis.utilExports = {})) : (typeof window !== 'undefined' ? (window.utilExports || (window.utilExports = {})) : {});
-// Make Buffer available globally (injected by @rollup/plugin-inject)
-// The inject plugin will replace Buffer references with require('buffer').Buffer
-// We need to ensure it's also available on globalThis/window for direct access
-(function() {
-  if (typeof Buffer === 'undefined') {
-    try {
-      var bufferModule = typeof require !== 'undefined' ? require('buffer') : null;
-      if (bufferModule && bufferModule.Buffer) {
-        var Buffer = bufferModule.Buffer;
-        var g = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-        g.Buffer = Buffer;
-        if (typeof globalThis !== 'undefined') {
-          globalThis.Buffer = Buffer;
-        }
-      }
-    } catch(e) {
-      // Buffer will be available from the bundled code
-    }
-  }
-})();`
+// Buffer will be set in src/index.ts after importing buffer module
+// The inject plugin will replace Buffer references with buffer.Buffer in the code
+`
     },
     plugins: [
       replace({
