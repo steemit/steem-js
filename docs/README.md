@@ -95,6 +95,23 @@ const chainId = steem.config.get('chain_id');
 console.log(chainId);
 ```
 
+### Change API URL Directly
+
+You can also change the API URL directly using `setUrl()` method:
+
+```javascript
+// Change API endpoint directly
+steem.api.setUrl('https://api.steem.fans');
+
+// Or use setOptions for more control
+steem.api.setOptions({ 
+  url: 'https://api.steem.fans',
+  transport: 'http'
+});
+```
+
+**Note:** When using `steem.config.set({ nodes: [...] })`, the API URL is automatically updated from the first node in the array. You only need to use `setUrl()` if you want to change the URL without updating the config.
+
 ---
 
 ## JSON-RPC

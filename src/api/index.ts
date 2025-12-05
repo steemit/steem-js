@@ -138,10 +138,10 @@ export class Api extends EventEmitter {
       const nodes = (getConfig().get('nodes') as string[]) || ['https://api.steemit.com'];
       const defaultNode = nodes[0] || 'https://api.steemit.com';
       options.url = defaultNode;
-      options.transport = 'http';
-      this._transportType = options.transport;
-      this.options = options;
-      this.transport = new transports.http(options);
+        options.transport = 'http';
+        this._transportType = options.transport;
+        this.options = options;
+        this.transport = new transports.http(options);
     }
   }
 
@@ -324,7 +324,7 @@ export class Api extends EventEmitter {
   }
 
 
-  setUri(url: string) {
+  setUrl(url: string) {
     this.setOptions({
       url: url
     });

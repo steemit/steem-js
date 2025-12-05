@@ -28,7 +28,12 @@ const steem = {
   version: '__VERSION__',
   config: {
     set: (options: Record<string, unknown>) => {
-      setApiOptions(options);
+      // If nodes is provided, extract the first node as url for API
+      const apiOptions: Record<string, unknown> = { ...options };
+      if (options.nodes && Array.isArray(options.nodes) && options.nodes.length > 0) {
+        apiOptions.url = options.nodes[0];
+      }
+      setApiOptions(apiOptions);
       setConfigOptions(options);
     },
     get: (key: string) => getConfig().get(key),

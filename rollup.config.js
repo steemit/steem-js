@@ -74,18 +74,18 @@ function createUmdConfig(minified = false) {
   // Provide minimal polyfills for browser
   var g = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
   
-  // Process polyfill
+    // Process polyfill
   if (typeof g.process === 'undefined') {
     g.process = {
-      browser: true,
-      env: {},
-      version: '',
-      versions: {},
-      nextTick: function(fn) { setTimeout(fn, 0); },
-      exit: function() {},
-      cwd: function() { return '/'; },
-      platform: 'browser'
-    };
+        browser: true,
+        env: {},
+        version: '',
+        versions: {},
+        nextTick: function(fn) { setTimeout(fn, 0); },
+        exit: function() {},
+        cwd: function() { return '/'; },
+        platform: 'browser'
+      };
     if (typeof globalThis !== 'undefined') {
       globalThis.process = g.process;
     }
