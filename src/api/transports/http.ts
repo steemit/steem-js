@@ -22,14 +22,14 @@ class JsonRpcError extends Error {
  * Makes a JSON-RPC request using native fetch API
  * Universal implementation that works in both Node.js (18+) and browser
  * 
- * @param uri - The URI to the JSON-RPC endpoint
+ * @param url - The URL to the JSON-RPC endpoint
  * @param request - The JSON-RPC request object
  * @param fetchMethod - Optional fetch implementation (defaults to global fetch)
  * @param timeoutMs - Request timeout in milliseconds (default: 30000)
  * @returns Promise resolving to the JSON-RPC result
  */
 export const jsonRpc = async (
-  uri: string,
+  url: string,
   request: Partial<JsonRpcRequest>,
   fetchMethod: typeof fetch = fetch,
   timeoutMs: number = 30000
@@ -49,7 +49,7 @@ export const jsonRpc = async (
   });
 
   // Create the fetch promise
-  const fetchPromise = fetchMethod(uri, {
+  const fetchPromise = fetchMethod(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -108,9 +108,9 @@ export class HttpTransport extends BaseTransport {
     if (typeof callback !== 'function') {
       callback = () => {};
     }
-    const uri = this.options.uri as string;
-    if (!uri) {
-      throw new Error('HTTP transport requires a valid URI');
+    const url = this.options.url as string;
+    if (!url) {
+      throw new Error('HTTP transport requires a valid URL');
     }
     const fetchMethod = this.options.fetchMethod || fetch;
     const id = data.id;
@@ -121,7 +121,7 @@ export class HttpTransport extends BaseTransport {
     if (!isBroadcast && retryOptions) {
       const operation = typeof retryOptions === 'object' ? retry.operation(retryOptions) : retry.operation();
       operation.attempt((currentAttempt: number) => {
-        (fetchMethod as typeof fetch)(uri, {
+        (fetchMethod as typeof fetch)(url, {
           method: 'POST',
           body: JSON.stringify({
             jsonrpc: '2.0',
@@ -160,7 +160,7 @@ export class HttpTransport extends BaseTransport {
           );
       });
     } else {
-      (fetchMethod as typeof fetch)(uri, {
+      (fetchMethod as typeof fetch)(url, {
         method: 'POST',
         body: JSON.stringify({
           jsonrpc: '2.0',

@@ -133,7 +133,7 @@
                 // Test configuration
                 if (steem.config) {
                     steem.config.set({
-                        node: 'https://api.steemit.com',
+                        nodes: ['https://api.steemit.com'],
                         address_prefix: 'STM'
                     });
                     addResult('steem-result', '✅ Configuration set successfully', 'success');
@@ -360,7 +360,7 @@
                 // Configure API endpoint before running API tests
                 if (steem.config) {
                     steem.config.set({
-                        node: 'https://api.steemit.com',
+                        nodes: ['https://api.steemit.com'],
                         address_prefix: 'STM'
                     });
                 }

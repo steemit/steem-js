@@ -12,7 +12,7 @@ const testPublicKey = auth.wifToPublic(testPrivateKey);
 describe('Signature Verification', () => {
   beforeAll(() => {
     config.set({
-      node: 'https://api.steemit.com',
+      nodes: ['https://api.steemit.com'],
       transport: 'http'
     });
   });

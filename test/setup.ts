@@ -10,8 +10,6 @@ beforeAll(() => {
   setConfig({
     address_prefix: 'STM',
     chain_id: '0000000000000000000000000000000000000000000000000000000000000000',
-    node: 'https://api.steemit.com',
     nodes: ['https://api.steemit.com'],
-    websocket: 'wss://api.steemit.com'
   });
 }); 

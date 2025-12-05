@@ -9,7 +9,8 @@ const activeWif = auth.toWif(username, password, 'active');
 describe('SMT', () => {
   describe('smt creation ops', () => {
     it.skip('signs and verifies smt_create', async () => {
-      const url = config.get('uri');
+      const nodes = (config.get('nodes') as string[]) || [];
+      const url = nodes[0] || 'https://api.steemit.com';
       api.setOptions({ url, useAppbaseApi: true });
 
       const tx = {

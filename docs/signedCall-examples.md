@@ -13,7 +13,7 @@ import { steem } from '@steemit/steem-js';
 
 // Configure for HTTP transport (required for signedCall)
 steem.config.set({
-  node: 'https://api.steemit.com',
+  nodes: ['https://api.steemit.com'],
   transport: 'http'
 });
 ```

@@ -18,7 +18,7 @@ import { signatureVerification } from '@steemit/steem-js/api';
 
 // Configure API
 steem.config.set({
-  node: 'https://api.steemit.com',
+  nodes: ['https://api.steemit.com'],
   transport: 'http'
 });
 ```

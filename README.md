@@ -40,7 +40,7 @@ import { steem } from '@steemit/steem-js';
 
 // Configure API endpoint
 steem.config.set({
-  node: 'https://api.steemit.com',
+  nodes: ['https://api.steemit.com'],
   address_prefix: 'STM'
 });
 
@@ -58,7 +58,7 @@ await steem.broadcast.voteAsync(postingWif, 'voter', 'author', 'permlink', 10000
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@steemit/steem-js/dist/index.umd.min.js"></script>
 <script>
-  steem.config.set({ node: 'https://api.steemit.com' });
+  steem.config.set({ nodes: ['https://api.steemit.com'] });
   steem.api.getAccountsAsync(['username']).then(console.log);
 </script>
 ```

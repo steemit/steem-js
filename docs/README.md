@@ -76,9 +76,9 @@ steem.api.getAccountsAsync(['ned', 'dan']).then(function(accounts) {
 Default configuration works with Steem network. You can also configure it for other compatible networks:
 
 ```javascript
-// Set API node
+// Set API nodes (array of node URLs)
 steem.config.set({
-  node: 'https://api.steemit.com',
+  nodes: ['https://api.steemit.com'],
   address_prefix: 'STM',
   chain_id: '0000000000000000000000000000000000000000000000000000000000000000'
 });
@@ -102,7 +102,7 @@ console.log(chainId);
 Activate JSON-RPC transport:
 
 ```javascript
-steem.config.set({ node: 'https://api.steemit.com' });
+steem.config.set({ nodes: ['https://api.steemit.com'] });
 ```
 
 ### Signed RPC Calls
@@ -137,7 +137,7 @@ steem.api.signedCall(method, params, account, privateKey, callback);
 ```javascript
 // Configure for HTTP transport
 steem.config.set({ 
-  node: 'https://api.steemit.com',
+  nodes: ['https://api.steemit.com'],
   transport: 'http' 
 });
 
@@ -1862,7 +1862,7 @@ import { steem } from '@steemit/steem-js';
 
 // Configure API endpoint
 steem.config.set({
-  node: 'https://api.steemit.com',
+  nodes: ['https://api.steemit.com'],
   address_prefix: 'STM',
   chain_id: '0000000000000000000000000000000000000000000000000000000000000000'
 });
@@ -1969,7 +1969,7 @@ const props: DynamicGlobalProperties = await steem.api.getDynamicGlobalPropertie
 
 // Typed configuration
 steem.config.set({
-  node: 'https://api.steemit.com',
+  nodes: ['https://api.steemit.com'],
   address_prefix: 'STM' as const,
   chain_id: '0000000000000000000000000000000000000000000000000000000000000000'
 });

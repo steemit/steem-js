@@ -1,14 +1,12 @@
 export interface SteemConfig {
   addressPrefix: string;
   chainId: string;
-  node: string;
   nodes: string[];
-  uri?: string;
   /**
    * WebSocket URL
    * NOTE: WebSocket functionality is currently not supported.
    * This field is kept for backward compatibility only.
-   * Please use HTTP transport (via node or uri field) for API calls.
+   * Please use HTTP transport (via nodes array) for API calls.
    */
   websocket?: string;
 }

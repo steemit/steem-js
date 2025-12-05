@@ -1,7 +1,5 @@
 interface SteemConfig {
-  node?: string;
   nodes?: string[];
-  uri?: string;
   address_prefix?: string;
   chain_id?: string;
   debug?: boolean;
@@ -42,12 +40,10 @@ export class Config {
 const DEFAULT_CONFIG: SteemConfig = {
   address_prefix: 'STM',
   chain_id: '0000000000000000000000000000000000000000000000000000000000000000',
-  // Default API endpoint: api.steemit.com
-  node: 'https://api.steemit.com',
+  // Default API endpoints: api.steemit.com
   nodes: [
     'https://api.steemit.com'
-  ],
-  uri: 'https://api.steemit.com'
+  ]
 };
 
 // Singleton config instance

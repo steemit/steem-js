@@ -18,8 +18,8 @@ function doneCallback(done: any, fn: (...args: any[]) => void) {
 describe('steem.api:', () => {
   describe('setOptions', () => {
     it('works', () => {
-      let url = steem.config.get('uri');
-      if (!url) url = steem.config.get('websocket');
+      const nodes = (steem.config.get('nodes') as string[]) || [];
+      let url = nodes[0];
       steem.api.setOptions({ url: url, useAppbaseApi: true });
     });
   });
@@ -260,9 +260,11 @@ describe('steem.api:', () => {
   describe('useApiOptions', () => {
     it('works ok with the prod instances', async () => {
       try {
-        (steem.api as any).setOptions({ useAppbaseApi: true, url: steem.config.get('uri') });
+        const nodes = (steem.config.get('nodes') as string[]) || [];
+        const url = nodes[0] || 'https://api.steemit.com';
+        (steem.api as any).setOptions({ useAppbaseApi: true, url: url });
         const result = await (steem.api as any).getContentAsync('yamadapc', 'test-1-2-3-4-5-6-7-9');
-        (steem.api as any).setOptions({ useAppbaseApi: false, url: steem.config.get('uri') });
+        (steem.api as any).setOptions({ useAppbaseApi: false, url: url });
         expect(result).toMatchObject(testPost);
       } catch (error: any) {
         // Skip test if network is unavailable (integration test)

@@ -13,7 +13,6 @@ import { Auth } from '../auth';
 
 interface ApiOptions {
   url?: string;
-  uri?: string;
   transport?: string | (new (options: TransportOptions) => Transport); // Transport type string or Transport class constructor
   logger?: Logger; // Logger instance
   useTestNet?: boolean;
@@ -111,7 +110,6 @@ export class Api extends EventEmitter {
   private _setTransport(options: ApiOptions) {
     // Use HTTP transport only
     if (options.url && options.url.match(/^((http|https)?:\/\/)/)) {
-      options.uri = options.url;
       options.transport = 'http';
       this._transportType = options.transport;
       this.options = options;
@@ -136,13 +134,14 @@ export class Api extends EventEmitter {
         this.transport = new options.transport(options);
       }
     } else {
-      // Default to HTTP for https://api.steemit.com
-      const defaultNode = (getConfig().get('node') as string) || 'https://api.steemit.com';
-        options.uri = defaultNode;
-        options.transport = 'http';
-        this._transportType = options.transport;
-        this.options = options;
-        this.transport = new transports.http(options);
+      // Default to HTTP using first node from config.nodes
+      const nodes = (getConfig().get('nodes') as string[]) || ['https://api.steemit.com'];
+      const defaultNode = nodes[0] || 'https://api.steemit.com';
+      options.url = defaultNode;
+      options.transport = 'http';
+      this._transportType = options.transport;
+      this.options = options;
+      this.transport = new transports.http(options);
     }
   }
 
@@ -224,7 +223,7 @@ export class Api extends EventEmitter {
     }
     const id = ++this.seqNo;
     const fetchMethod = this.options.fetchMethod || fetch;
-    jsonRpc(this.options.uri!, { method, params, id }, fetchMethod)
+    jsonRpc(this.options.url!, { method, params, id }, fetchMethod)
       .then(res => { callback(null, res); }, err => { callback(err); });
   }
 
@@ -242,7 +241,7 @@ export class Api extends EventEmitter {
       return;
     }
     const fetchMethod = this.options.fetchMethod || fetch;
-    jsonRpc(this.options.uri!, request as unknown as Partial<JsonRpcRequest>, fetchMethod)
+    jsonRpc(this.options.url!, request as unknown as Partial<JsonRpcRequest>, fetchMethod)
       .then(res => { callback(null, res); }, err => { callback(err); });
   }
 
@@ -327,7 +326,7 @@ export class Api extends EventEmitter {
 
   setUri(url: string) {
     this.setOptions({
-      uri: url
+      url: url
     });
   }
 
@@ -686,7 +685,9 @@ export class Api extends EventEmitter {
 }
 
 // Export singleton instance for compatibility
-const api = new Api({ uri: (getConfig().get('uri') as string) || 'https://api.steemit.com' });
+// Use first node from config.nodes array
+const nodes = (getConfig().get('nodes') as string[]) || ['https://api.steemit.com'];
+const api = new Api({ url: nodes[0] || 'https://api.steemit.com' });
 
 export function setOptions(options: ApiOptions) {
   api.setOptions(options);

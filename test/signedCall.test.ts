@@ -12,7 +12,7 @@ describe('SignedCall', () => {
   beforeAll(() => {
     // Configure for HTTP transport (required for signedCall)
     config.set({
-      node: 'https://api.steemit.com',
+      nodes: ['https://api.steemit.com'],
       transport: 'http'
     });
   });
