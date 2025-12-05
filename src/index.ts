@@ -1,4 +1,5 @@
-import { Api, setOptions as setApiOptions } from './api';
+import { setOptions as setApiOptions } from './api';
+import api from './api'; // Import singleton instance from api module
 import { setOptions as setConfigOptions, getConfig } from './config';
 import * as auth from './auth';
 import * as broadcast from './broadcast';
@@ -10,8 +11,8 @@ import * as utils from './utils';
 // Import buffer module for browser builds to expose Buffer globally
 import { Buffer as BufferPolyfill } from 'buffer';
 
-// Create the API instance
-const api = new Api();
+// Use the singleton API instance exported from api module
+// This ensures steem.api and setOptions() operate on the same instance
 
 // Create the main steem object with all modules
 const steem = {
@@ -66,4 +67,6 @@ if (typeof window !== 'undefined' || typeof globalThis !== 'undefined') {
 
 // Export everything as named exports
 export { steem };
-export * from './crypto'; 
+export * from './crypto';
+// Export Api class for creating multiple instances
+export { Api } from './api'; 

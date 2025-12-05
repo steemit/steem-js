@@ -1,4 +1,5 @@
-import { Api, setOptions as setApiOptions } from './api';
+import { setOptions as setApiOptions, Api } from './api';
+import api from './api'; // Import singleton instance from api module
 import { setOptions as setConfigOptions, getConfig } from './config';
 import * as auth from './auth';
 import * as broadcast from './broadcast';
@@ -11,12 +12,13 @@ import * as crypto from './crypto';
 // Import buffer module for UMD builds to expose Buffer globally
 import { Buffer as BufferPolyfill } from 'buffer';
 
-// Create the API instance
-const api = new Api();
+// Use the singleton API instance exported from api module
+// This ensures steem.api and setOptions() operate on the same instance
 
 // Create the main steem object with all modules - this will be the default export for UMD
 const steem = {
   api,
+  Api, // Export Api class for creating multiple instances
   auth,
   broadcast,
   formatter,
