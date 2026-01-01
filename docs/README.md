@@ -34,6 +34,11 @@ Steem.js is a JavaScript/TypeScript library for interacting with the Steem block
 
 ## Installation
 
+### Requirements
+
+- **Node.js**: >= 20.19.0 (required for Node.js usage)
+- Modern browsers with ES6+ support (for browser usage)
+
 ### npm / pnpm / yarn
 
 ```bash

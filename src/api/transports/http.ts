@@ -20,7 +20,7 @@ class JsonRpcError extends Error {
 
 /**
  * Makes a JSON-RPC request using native fetch API
- * Universal implementation that works in both Node.js (18+) and browser
+ * Universal implementation that works in both Node.js (20.19+) and browser
  * 
  * @param url - The URL to the JSON-RPC endpoint
  * @param request - The JSON-RPC request object
