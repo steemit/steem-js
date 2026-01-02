@@ -1,4 +1,4 @@
-name: Test on Node.js 18, 20, 22
+name: Test on Node.js 20, 22
 
 on:
   push:
@@ -14,40 +14,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-node18:
-    name: Test on Node.js 18
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Show Node and PNPM version
-        run: |
-          node --version
-          pnpm --version || echo "PNPM will be installed via corepack in Docker"
-      
-      - name: Verify package files
-        run: |
-          cat package.json
-          ls -la pnpm-lock.yaml || echo "pnpm-lock.yaml not found"
-      
-      - name: Build Docker image and run tests (Node.js 18)
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: node-18.dockerfile
-          push: false
-          tags: steem-js-test:node18
-          no-cache: false
-          build-args: |
-            NODE_ENV=development
-
   test-node20:
     name: Test on Node.js 20
     runs-on: ubuntu-latest
