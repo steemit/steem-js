@@ -227,6 +227,25 @@ export class Api extends EventEmitter {
       .then(res => { callback(null, res); }, err => { callback(err); });
   }
 
+  /**
+   * Promise-based version of call
+   * Makes a JSON-RPC call to the Steem blockchain
+   * @param method Method name (e.g., 'condenser_api.get_accounts')
+   * @param params Parameters array for the method
+   * @returns Promise that resolves with the result or rejects with an error
+   */
+  callAsync(method: string, params: unknown[]): Promise<unknown> {
+    return new Promise<unknown>((resolve: (value: unknown) => void, reject: (reason?: unknown) => void) => {
+      this.call(method, params, (err: Error | null, result?: unknown) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
   signedCall(method: string, params: unknown[], account: string, key: string, callback: (err: Error | null, result?: unknown) => void) {
     if (this._transportType !== 'http') {
       callback(new Error('RPC methods can only be called when using http transport'));
@@ -243,6 +262,27 @@ export class Api extends EventEmitter {
     const fetchMethod = this.options.fetchMethod || fetch;
     jsonRpc(this.options.url!, request as unknown as Partial<JsonRpcRequest>, fetchMethod)
       .then(res => { callback(null, res); }, err => { callback(err); });
+  }
+
+  /**
+   * Promise-based version of signedCall
+   * Makes an authenticated JSON-RPC call with cryptographic signature
+   * @param method Method name (e.g., 'conveyor.is_email_registered')
+   * @param params Parameters array for the method
+   * @param account Account name to sign the request with
+   * @param key Private key (WIF) to sign the request
+   * @returns Promise that resolves with the result or rejects with an error
+   */
+  signedCallAsync(method: string, params: unknown[], account: string, key: string): Promise<unknown> {
+    return new Promise<unknown>((resolve: (value: unknown) => void, reject: (reason?: unknown) => void) => {
+      this.signedCall(method, params, account, key, (err: Error | null, result?: unknown) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
   }
 
   /**
@@ -308,6 +348,24 @@ export class Api extends EventEmitter {
         .then(params => callback(null, { valid: true, params }))
         .catch(error => callback(error instanceof Error ? error : new Error(String(error))));
     }).catch(callback);
+  }
+
+  /**
+   * Promise-based version of verifySignedRequest
+   * Verifies a signed RPC request
+   * @param signedRequest The signed request to verify
+   * @returns Promise that resolves with verification result or rejects with an error
+   */
+  verifySignedRequestAsync(signedRequest: unknown): Promise<{ valid: boolean; params: unknown }> {
+    return new Promise<{ valid: boolean; params: unknown }>((resolve: (value: { valid: boolean; params: unknown }) => void, reject: (reason?: unknown) => void) => {
+      this.verifySignedRequest(signedRequest, (err: Error | null, result?: unknown) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result as { valid: boolean; params: unknown });
+        }
+      });
+    });
   }
 
   setOptions(options: ApiOptions) {
@@ -513,6 +571,24 @@ export class Api extends EventEmitter {
   }
 
   /**
+   * Promise-based version of broadcastTransactionSynchronousWith
+   * Broadcasts a transaction synchronously
+   * @param options Options object containing the transaction
+   * @returns Promise that resolves with the result or rejects with an error
+   */
+  broadcastTransactionSynchronousWithAsync(options: { transaction: unknown }): Promise<unknown> {
+    return new Promise<unknown>((resolve: (value: unknown) => void, reject: (reason?: unknown) => void) => {
+      this.broadcastTransactionSynchronousWith(options, (err: Error | null, result?: unknown) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  /**
    * Broadcast a transaction to the blockchain.
    * @param trx The transaction object
    * @param callback Callback function
@@ -528,6 +604,24 @@ export class Api extends EventEmitter {
     } else {
       callback(new Error('broadcastTransaction is not implemented'));
     }
+  }
+
+  /**
+   * Promise-based version of broadcastTransaction
+   * Broadcasts a transaction to the blockchain
+   * @param trx The transaction object
+   * @returns Promise that resolves with the result or rejects with an error
+   */
+  broadcastTransactionAsync(trx: unknown): Promise<unknown> {
+    return new Promise<unknown>((resolve: (value: unknown) => void, reject: (reason?: unknown) => void) => {
+      this.broadcastTransaction(trx, (err: Error | null, result?: unknown) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
   }
 
   /**
@@ -581,6 +675,25 @@ export class Api extends EventEmitter {
   }
 
   /**
+   * Promise-based version of broadcastTransactionWithCallback
+   * Note: The confirmationCallback will still be called when the transaction is confirmed
+   * @param confirmationCallback Callback function for transaction confirmation
+   * @param trx Transaction object to broadcast
+   * @returns Promise that resolves with the result or rejects with an error
+   */
+  broadcastTransactionWithCallbackAsync(confirmationCallback: (result: unknown) => void, trx: unknown): Promise<unknown> {
+    return new Promise<unknown>((resolve: (value: unknown) => void, reject: (reason?: unknown) => void) => {
+      this.broadcastTransactionWithCallback(confirmationCallback, trx, (err: Error | null, result?: unknown) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  /**
    * Broadcast a block to the network.
    * @param block Block object to broadcast
    * @param callback Callback function
@@ -597,6 +710,24 @@ export class Api extends EventEmitter {
   }
 
   /**
+   * Promise-based version of broadcastBlock
+   * Broadcasts a block to the network
+   * @param block Block object to broadcast
+   * @returns Promise that resolves with the result or rejects with an error
+   */
+  broadcastBlockAsync(block: unknown): Promise<unknown> {
+    return new Promise<unknown>((resolve: (value: unknown) => void, reject: (reason?: unknown) => void) => {
+      this.broadcastBlock(block, (err: Error | null, result?: unknown) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  /**
    * Set the maximum block age for transaction acceptance.
    * @param maxBlockAge Maximum block age in seconds
    * @param callback Callback function
@@ -610,6 +741,24 @@ export class Api extends EventEmitter {
       method: 'set_max_block_age',
       params: [maxBlockAge]
     }, callback);
+  }
+
+  /**
+   * Promise-based version of setMaxBlockAge
+   * Sets the maximum block age for transaction acceptance
+   * @param maxBlockAge Maximum block age in seconds
+   * @returns Promise that resolves with the result or rejects with an error
+   */
+  setMaxBlockAgeAsync(maxBlockAge: number): Promise<unknown> {
+    return new Promise<unknown>((resolve: (value: unknown) => void, reject: (reason?: unknown) => void) => {
+      this.setMaxBlockAge(maxBlockAge, (err: Error | null, result?: unknown) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
   }
 
   /**

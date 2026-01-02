@@ -427,6 +427,28 @@ steem.api.signedCall(method, params, account, privateKey, (err, result) => {
 });
 ```
 
+### Using signedCallAsync (Promise-based)
+
+For modern async/await code, use `signedCallAsync`:
+
+```javascript
+try {
+  const result = await steem.api.signedCallAsync(
+    'conveyor.is_email_registered',
+    [{ email: 'user@example.com' }],
+    'your-account',
+    'your-private-key-wif'
+  );
+  
+  console.log('Success:', result);
+} catch (error) {
+  console.error('Error:', error);
+}
+```
+
+This is equivalent to the callback version but uses Promises, making it easier to use with async/await syntax.
+```
+
 ## Best Practices
 
 1. **Always use HTTPS endpoints** for signed calls

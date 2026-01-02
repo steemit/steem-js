@@ -370,7 +370,7 @@ For secure RPC calls that require authentication, use `signedCall`. This method 
 
 #### signedCall
 
-Makes a signed JSON-RPC call to the Steem blockchain. The request is cryptographically signed to authenticate the caller.
+Makes a signed JSON-RPC call to the Steem blockchain. The request is cryptographically signed to authenticate the caller. This is the callback-based version. For Promise-based usage, see `signedCallAsync` below.
 
 ```javascript
 steem.api.signedCall(method, params, account, privateKey, callback);
@@ -404,6 +404,7 @@ steem.config.set({
 const privateKey = '5JLw5dgQAx6rhZEgNN5C2ds1V47RweGshynFSWFbaMohsYsBvE8';
 const account = 'username';
 
+// Using callback style
 steem.api.signedCall(
   'condenser_api.get_account_history',
   [account, -1, 10],
@@ -419,22 +420,22 @@ steem.api.signedCall(
 );
 ```
 
+#### signedCallAsync
+
+Promise-based version of `signedCall` for use with async/await syntax.
+
+```javascript
+steem.api.signedCallAsync(method, params, account, privateKey);
+```
+
+**Returns:** Promise that resolves with the result or rejects with an error.
+
 **Promise Example:**
 
 ```javascript
-// Using Promise wrapper
-function signedCallAsync(method, params, account, privateKey) {
-  return new Promise((resolve, reject) => {
-    steem.api.signedCall(method, params, account, privateKey, (err, result) => {
-      if (err) reject(err);
-      else resolve(result);
-    });
-  });
-}
-
-// Usage with async/await
+// Using signedCallAsync with async/await
 try {
-  const result = await signedCallAsync(
+  const result = await steem.api.signedCallAsync(
     'condenser_api.get_account_history',
     ['username', -1, 10],
     'username',

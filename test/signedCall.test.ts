@@ -152,19 +152,10 @@ describe('SignedCall', () => {
     });
   });
 
-  describe('Promise Wrapper', () => {
-    function signedCallAsync(method: string, params: any[], account: string, privateKey: string): Promise<any> {
-      return new Promise((resolve, reject) => {
-        api.signedCall(method, params, account, privateKey, (err: any, result: any) => {
-          if (err) reject(err);
-          else resolve(result);
-        });
-      });
-    }
-
-    it('should work with Promise wrapper', async () => {
+  describe('signedCallAsync', () => {
+    it('should work with Promise-based signedCallAsync', async () => {
       try {
-        await signedCallAsync(
+        await api.signedCallAsync(
           'condenser_api.get_accounts',
           [['invalid-account']],
           'invalid-account',
@@ -180,7 +171,7 @@ describe('SignedCall', () => {
     it.skip('should work with async/await pattern', async () => {
       // Skip in CI/CD as it requires valid credentials
       try {
-        const result = await signedCallAsync(
+        const result = await api.signedCallAsync(
           'condenser_api.get_accounts',
           [[testAccount]],
           testAccount,
