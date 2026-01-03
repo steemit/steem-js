@@ -26,7 +26,13 @@ export class Signature {
         }
 
         const i = buffer.readUInt8(0);
-        if ((i - 27) !== ((i - 27) & 7)) {
+        // Support both formats: 27-30 (old/legacy) and 31-34 (dsteem compatible)
+        // Check if it's in the old format (27-30) or new format (31-34)
+        const recoveryOld = i - 27;
+        const recoveryNew = i - 31;
+        const isValidOld = recoveryOld >= 0 && recoveryOld <= 3 && (recoveryOld === (recoveryOld & 7));
+        const isValidNew = recoveryNew >= 0 && recoveryNew <= 3 && (recoveryNew === (recoveryNew & 7));
+        if (!isValidOld && !isValidNew) {
             throw new Error('Invalid signature parameter');
         }
 
@@ -86,7 +92,9 @@ export class Signature {
         }
 
         const i = calcPubKeyRecoveryParam(secp256k1, new BN(buf_sha256), ecsignature, privKey.toPublic().Q!);
-        return new Signature(ecsignature.r, ecsignature.s, i + 27);
+        // Use recovery byte 31-34 (instead of 27-30) to be compatible with dsteem
+        // dsteem expects: recovery = byte - 31, so byte = recovery + 31
+        return new Signature(ecsignature.r, ecsignature.s, i + 31);
     }
     
     static isCanonical(r: Buffer, s: Buffer): boolean {

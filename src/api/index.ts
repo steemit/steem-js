@@ -10,6 +10,7 @@ import type { Transport } from './transports/types';
 import type { TransportOptions, JsonRpcRequest } from './transports/types';
 import type { SignedRequest } from './signature-verification';
 import { Auth } from '../auth';
+import type { ApiMethodSignatures } from './types';
 
 interface ApiOptions {
   url?: string;
@@ -32,6 +33,18 @@ export class Api extends EventEmitter {
   private transport: Transport | null = null;
   private options: ApiOptions;
   private __logger: Logger | false = false;
+  
+  // Index signature to support all dynamically generated methods
+  // This allows TypeScript to recognize dynamically added methods
+  // The actual method signatures are provided via ApiMethodSignatures interface
+  [key: string]: unknown;
+  
+  // Explicitly declare commonly used methods for better type checking
+  // These are dynamically added in the constructor, but declared here for TypeScript
+  declare getAccounts: ApiMethodSignatures['getAccounts'];
+  declare getAccountsAsync: ApiMethodSignatures['getAccountsAsync'];
+  declare getAccountsWith: ApiMethodSignatures['getAccountsWith'];
+  declare getAccountsWithAsync: ApiMethodSignatures['getAccountsWithAsync'];
 
   // Patch for all API methods to support both callback and promise styles
   // This is a helper to wrap methods

@@ -155,43 +155,70 @@ export function recoverPubKey(curve: ECInstance, e: BN, signature: ECSignature, 
     }
 
     const n = new BN(curve.n!.toString());
-    const G = curve.g;
-
     const r = signature.r;
     const s = signature.s;
 
     if (r.isNeg() || r.isZero() || !r.lt(n)) throw new Error('Invalid r value');
     if (s.isNeg() || s.isZero() || !s.lt(n)) throw new Error('Invalid s value');
 
-    // A set LSB signifies that the y-coordinate is odd
-    const isYOdd = !!(i & 1);
+    // Try using elliptic's built-in recoverPubKey method
+    // It expects: msg (Buffer), signature ({r: BN, s: BN}), j (recovery param)
+    try {
+        // Convert e (BN) to Buffer
+        const msgBuffer = e.toArrayLike(Buffer, 'be', 32);
+        
+        // Create signature object compatible with elliptic's recoverPubKey
+        // elliptic expects {r: BN, s: BN} format
+        const sigObj = { r: r, s: s };
+        
+        // Use elliptic's built-in method
+        const Q = curve.recoverPubKey(msgBuffer, sigObj, i);
+        return Q;
+    } catch (error) {
+        // Fallback to manual implementation if elliptic's method fails
+        const G = curve.g;
 
-    // The more significant bit specifies whether we should use the
-    // first or second candidate key.
-    const isSecondKey = i >> 1;
+        // A set LSB signifies that the y-coordinate is odd
+        const isYOdd = !!(i & 1);
 
-    // 1.1 Let x = r + jn
-    const x = isSecondKey ? r.add(n) : r;
-    const R = curve.curve.pointFromX(x, isYOdd);
+        // The more significant bit specifies whether we should use the
+        // first or second candidate key.
+        const isSecondKey = i >> 1;
 
-    // 1.4 Check that nR is at infinity
-    const nR = R.mul(n);
-    if (!nR.isInfinity()) throw new Error('nR is not a valid curve point');
+        // 1.1 Let x = r + jn
+        const x = isSecondKey ? r.add(n) : r;
+        // pointFromX expects a hex string (not BN object)
+        // Convert BN to hex string and ensure proper padding
+        const xHex = x.toString(16);
+        // Ensure hex string is properly padded to 64 characters (32 bytes)
+        const xHexPadded = xHex.padStart(64, '0');
+        // pointFromX may also accept a Buffer, but hex string is more reliable
+        let R: ECPoint;
+        try {
+            R = curve.curve.pointFromX(xHexPadded, isYOdd);
+        } catch (error) {
+            // If hex string fails, try with Buffer
+            const xBuffer = x.toArrayLike(Buffer, 'be', 32);
+            R = curve.curve.pointFromX(xBuffer, isYOdd);
+        }
 
-    // Compute -e from e
-    const eNeg = e.neg().mod(n);
+        // 1.4 Check that nR is at infinity
+        const nR = R.mul(n);
+        if (!nR.isInfinity()) throw new Error('nR is not a valid curve point');
 
-    // 1.6.1 Compute Q = r^-1 (sR -  eG)
-    //               Q = r^-1 (sR + -eG)
-    const rInv = r.invm(n);
+        // Compute -e from e
+        const eNeg = e.neg().mod(n);
 
-    const sR = R.mul(s);
-    const eGNeg = G.mul(eNeg);
-    const Q = sR.add(eGNeg).mul(rInv);
+        // 1.6.1 Compute Q = r^-1 (sR -  eG)
+        //               Q = r^-1 (sR + -eG)
+        const rInv = r.invm(n);
 
-    // Validate Q is on curve (elliptic does this automatically)
+        const sR = R.mul(s);
+        const eGNeg = G.mul(eNeg);
+        const Q = sR.add(eGNeg).mul(rInv);
 
-    return Q;
+        return Q;
+    }
 }
 
 /**
@@ -208,12 +235,17 @@ export function recoverPubKey(curve: ECInstance, e: BN, signature: ECSignature, 
 export function calcPubKeyRecoveryParam(curve: ECInstance, e: BN, signature: ECSignature, Q: ECPoint): number {
     for (let i = 0; i < 4; i++) {
         try {
-            // Use elliptic's built-in recovery method
-            const Qprime = curve.recoverPubKey(e, signature, i);
+            // Use our own recoverPubKey function instead of curve.recoverPubKey
+            const Qprime = recoverPubKey(curve, e, signature, i);
 
             // 1.6.2 Verify Q = Q'
-            // Compare points by checking if they are the same point
-            if (Qprime.eq(Q)) {
+            // Compare points by checking coordinates (more reliable than eq method)
+            const Qx = Q.getX().toString(16);
+            const Qy = Q.getY().toString(16);
+            const QprimeX = Qprime.getX().toString(16);
+            const QprimeY = Qprime.getY().toString(16);
+            
+            if (Qx === QprimeX && Qy === QprimeY) {
                 return i;
             }
         } catch (error) {

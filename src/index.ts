@@ -69,4 +69,6 @@ if (typeof window !== 'undefined' || typeof globalThis !== 'undefined') {
 export { steem };
 export * from './crypto';
 // Export Api class for creating multiple instances
-export { Api } from './api'; 
+export { Api } from './api';
+// Export rpc-auth functions for cross-verification
+export { sign as signRequest, validate as validateRequest } from './api/rpc-auth'; 
