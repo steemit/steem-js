@@ -71,4 +71,6 @@ export * from './crypto';
 // Export Api class for creating multiple instances
 export { Api } from './api';
 // Export rpc-auth functions for cross-verification
-export { sign as signRequest, validate as validateRequest } from './api/rpc-auth'; 
+export { sign as signRequest, validate as validateRequest } from './api/rpc-auth';
+// Export protocol types for consumers (e.g. steem-uri)
+export type { Operation, Transaction } from './types'; 
