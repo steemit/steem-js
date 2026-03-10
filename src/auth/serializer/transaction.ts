@@ -135,6 +135,9 @@ function serializeOperationData(bb: ByteBuffer, opType: string, opData: unknown)
         case 'account_create':
             serializeAccountCreate(bb, opData);
             break;
+        case 'account_update':
+            serializeAccountUpdate(bb, opData);
+            break;
         case 'custom_json':
             serializeCustomJson(bb, opData);
             break;
@@ -206,6 +209,56 @@ function serializeAccountCreate(bb: ByteBuffer, data: unknown): void {
     }
     
     writeString(bb, String(dataObj.json_metadata || ''));
+}
+
+/**
+ * Serialize account_update operation.
+ * Format: account, optional owner (1 byte + authority?), optional active, optional posting, memo_key, json_metadata.
+ */
+function serializeAccountUpdate(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.account || ''));
+
+    // Optional authorities: 0 = not present, 1 = present then serialize authority
+    if (dataObj.owner != null && dataObj.owner !== '') {
+        bb.writeUint8(1);
+        serializeAuthority(bb, typeof dataObj.owner === 'object' ? dataObj.owner : { weight_threshold: 1, account_auths: [], key_auths: [] });
+    } else {
+        bb.writeUint8(0);
+    }
+    if (dataObj.active != null && dataObj.active !== '') {
+        bb.writeUint8(1);
+        serializeAuthority(bb, typeof dataObj.active === 'object' ? dataObj.active : { weight_threshold: 1, account_auths: [], key_auths: [] });
+    } else {
+        bb.writeUint8(0);
+    }
+    if (dataObj.posting != null && dataObj.posting !== '') {
+        bb.writeUint8(1);
+        serializeAuthority(bb, typeof dataObj.posting === 'object' ? dataObj.posting : { weight_threshold: 1, account_auths: [], key_auths: [] });
+    } else {
+        bb.writeUint8(0);
+    }
+
+    // memo_key (public key, required)
+    if (typeof dataObj.memo_key === 'string') {
+        const pubKey = PublicKey.fromStringOrThrow(dataObj.memo_key);
+        bb.append(pubKey.toBuffer());
+    } else if (Buffer.isBuffer(dataObj.memo_key)) {
+        bb.append(dataObj.memo_key);
+    } else if (dataObj.memo_key && typeof (dataObj.memo_key as { toBuffer?: () => Buffer }).toBuffer === 'function') {
+        bb.append((dataObj.memo_key as { toBuffer: () => Buffer }).toBuffer());
+    } else {
+        throw new Error('Invalid memo_key format');
+    }
+
+    writeString(
+        bb,
+        typeof dataObj.json_metadata === 'string'
+            ? dataObj.json_metadata
+            : dataObj.json_metadata != null
+              ? JSON.stringify(dataObj.json_metadata)
+              : '',
+    );
 }
 
 /**
