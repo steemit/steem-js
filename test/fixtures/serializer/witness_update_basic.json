@@ -1,0 +1,27 @@
+{
+  "name": "witness_update_basic",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "operations": [
+      [
+        "witness_update",
+        {
+          "block_signing_key": "STM5gzvDurFRmVUUs38TDtTtGVAEz8TcWMt4xLVbxwP2PP8b9q7P4",
+          "fee": "0.000 STEEM",
+          "owner": "initminer",
+          "props": {
+            "account_creation_fee": "0.200 STEEM",
+            "maximum_block_size": 65536,
+            "sbd_interest_rate": 1000
+          },
+          "url": "https://example.com"
+        }
+      ]
+    ],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982
+  },
+  "expected_hex": "614bde71d95f911bf356010b09696e69746d696e65721368747470733a2f2f6578616d706c652e636f6d02699b26170706662df8bcdc97a504b5cca8b2f3a3ee14f3eeececd264b8491d4fc80000000000000003535445454d000000000100e803000000000000000003535445454d000000"
+}
+

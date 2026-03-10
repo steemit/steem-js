@@ -1,0 +1,27 @@
+{
+  "name": "limit_order_create2_basic",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "operations": [
+      [
+        "limit_order_create2",
+        {
+          "amount_to_sell": "1.000 STEEM",
+          "exchange_rate": {
+            "base": "1.000 STEEM",
+            "quote": "1.000 SBD"
+          },
+          "expiration": "2016-03-24T16:05:00",
+          "fill_or_kill": false,
+          "orderid": 123,
+          "owner": "alice"
+        }
+      ]
+    ],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982
+  },
+  "expected_hex": "614bde71d95f911bf356011505616c6963657b000000e80300000000000003535445454d0000e80300000000000003535445454d0000e8030000000000000353424400000000002c10f45600"
+}
+

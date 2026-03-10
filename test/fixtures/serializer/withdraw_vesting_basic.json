@@ -1,0 +1,20 @@
+{
+  "name": "withdraw_vesting_basic",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "operations": [
+      [
+        "withdraw_vesting",
+        {
+          "account": "alice",
+          "vesting_shares": "10.000000 VESTS"
+        }
+      ]
+    ],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982
+  },
+  "expected_hex": "614bde71d95f911bf356010405616c6963658096980000000000065645535453000000"
+}
+

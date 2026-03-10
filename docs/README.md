@@ -1933,6 +1933,35 @@ steem.broadcast.sendAsync({
 });
 ```
 
+### Transaction serialization (binary)
+
+Broadcast and signing use a **binary transaction format** compatible with the Steem protocol (FC-style). The serializer lives in `src/auth/serializer/transaction.ts` and is used internally by `steem.auth.signTransaction` and `steem.broadcast.sendAsync`.
+
+**Usage**
+
+- **For signing / digest**: `steem.auth.transaction.toBuffer(trx)` — returns the buffer that is hashed for the signature. Same as the exported `serializeTransaction(trx)` from `@steemit/steem-js` auth serializer.
+- **Transaction shape**: `trx` must include `ref_block_num`, `ref_block_prefix`, `expiration`, `operations` (array of `[opType, opData]`), and optionally `extensions` and `signatures`.
+
+**Serializer coverage**
+
+All Steem operation types used in `operations` are supported (op type indices 0–54), including:
+
+- **Content & social**: vote, comment, delete_comment, comment_options, custom_json
+- **Accounts & authority**: account_create, account_update, account_update2, account_create_with_delegation, create_claimed_account, request_account_recovery, recover_account, change_recovery_account, reset_account, set_reset_account, decline_voting_rights
+- **Transfers & vesting**: transfer, transfer_to_vesting, withdraw_vesting, set_withdraw_vesting_route, transfer_to_savings, transfer_from_savings, cancel_transfer_from_savings, delegate_vesting_shares
+- **Market & convert**: limit_order_create, limit_order_create2, limit_order_cancel, feed_publish, convert, fill_order
+- **Escrow**: escrow_transfer, escrow_dispute, escrow_release, escrow_approve
+- **Rewards & system**: claim_reward_balance, claim_reward_balance2, comment_reward, liquidity_reward, interest, fill_vesting_withdraw, fill_convert_request, fill_transfer_from_savings
+- **Witness & custom**: pow, pow2, witness_update, witness_set_properties, account_witness_vote, account_witness_proxy, custom, custom_binary
+
+Field order and encoding (assets, authorities, time, extensions) follow the same layout as the C++ FC_REFLECT / [steemutil](https://github.com/steemit/steemutil) protocol. Cross-language fixtures under `test/fixtures/serializer/` are used to keep the JS output aligned with steemutil’s encoder where applicable.
+
+**Compatibility notes**
+
+- Use **STEEM / SBD / VESTS** asset strings (e.g. `"1.000 STEEM"`) for amount fields.
+- Authorities: `owner` / `active` / `posting` use `weight_threshold`, `account_auths`, and `key_auths` (array of `[key, weight]`); public keys as STM… strings.
+- Optional fields (e.g. `owner` in account_update) are encoded with a presence byte where the protocol requires it.
+
 ---
 
 ## Authentication

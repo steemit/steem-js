@@ -1,0 +1,22 @@
+{
+  "name": "transfer_basic",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "operations": [
+      [
+        "transfer",
+        {
+          "amount": "1.000 STEEM",
+          "from": "alice",
+          "memo": "hello",
+          "to": "bob"
+        }
+      ]
+    ],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982
+  },
+  "expected_hex": "614bde71d95f911bf356010205616c69636503626f62e80300000000000003535445454d00000568656c6c6f00"
+}
+

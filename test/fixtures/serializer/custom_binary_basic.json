@@ -1,0 +1,20 @@
+{
+  "name": "custom_binary_basic",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "operations": [
+      [
+        "custom_binary",
+        {
+          "data": "01020304",
+          "id": "test"
+        }
+      ]
+    ],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982
+  },
+  "expected_hex": "614bde71d95f911bf35601230474657374040102030400"
+}
+
