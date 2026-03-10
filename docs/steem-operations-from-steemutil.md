@@ -223,3 +223,87 @@
 
 > 后续在 `steem-js` 的 `transaction.ts` 中补全序列化逻辑时，可直接以此列表为检查清单，确保所有在 `dataObjects` 中出现的 Operation 均有对应的 `case` 与 `serializeXxx` 实现。
 
+---
+
+## steem-js 当前映射与实现覆盖情况
+
+### 1. getOperationTypeIndex 中的 Operation
+
+`src/auth/serializer/transaction.ts` 里的 `getOperationTypeIndex` 定义了可序列化的 operation 类型索引（opType → index）：
+
+- `vote` (0)
+- `comment` (1)
+- `transfer` (2)
+- `transfer_to_vesting` (3)
+- `withdraw_vesting` (4)
+- `limit_order_create` (5)
+- `limit_order_cancel` (6)
+- `feed_publish` (7)
+- `convert` (8)
+- `account_create` (9)
+- `account_update` (10)
+- `witness_update` (11)
+- `account_witness_vote` (12)
+- `account_witness_proxy` (13)
+- `pow` (14)
+- `custom` (15)
+- `delete_comment` (17)
+- `custom_json` (18)
+- `comment_options` (19)
+
+### 2. 已在 serializeOperationData 中实现二进制序列化的 Operation
+
+`serializeOperationData` 当前只对以下 op 有完整实现：
+
+- **comment** → `serializeComment`
+- **vote** → `serializeVote`
+- **transfer** → `serializeTransfer`
+- **account_create** → `serializeAccountCreate`
+- **account_update** → `serializeAccountUpdate`
+- **custom_json** → `serializeCustomJson`
+
+其余在 `getOperationTypeIndex` 中出现的 op（例如 `transfer_to_vesting`、`withdraw_vesting`、`limit_order_create`、`feed_publish`、`convert`、`witness_update`、`account_witness_vote`、`account_witness_proxy`、`pow`、`custom`、`delete_comment`、`comment_options`）**目前仍会在序列化阶段触发 “Operation type XXX serialization not fully implemented”**。
+
+### 3. steem-js Broadcast API (`src/broadcast/operations.ts`) 中的 Operation
+
+`src/broadcast/operations.ts` 的 `operations` 数组列出了通过 `steem.broadcast.xxx` 封装暴露的高频 op：
+
+- `vote`
+- `comment`
+- `transfer`
+- `transfer_to_vesting`
+- `withdraw_vesting`
+- `limit_order_create`
+- `limit_order_cancel`
+- `price`（仅在 broadcast 层表示，用于 `feed_publish.exchange_rate`）
+- `feed_publish`
+- `convert`
+- `account_create`
+- `account_update`
+- `witness_update`
+- `account_witness_vote`
+- `account_witness_proxy`
+- `pow`
+- `custom`
+- `delete_comment`
+- `custom_json`
+- `comment_options`
+
+其中绝大多数都已经与 `getOperationTypeIndex` 对齐，唯独 `price` 只存在于 broadcast 封装中（作为 `feed_publish.exchange_rate` 的结构），不会单独出现在 `operations` 向量的 opType 上。
+
+### 4. 只在 steemutil 中存在、尚未在 steem-js opMap/Broadcast 中显式建模的 Operation
+
+下列 Operation 出现在 `steemutil/protocol/operation.go` 的 `dataObjects` 中，但目前 **既不在 `getOperationTypeIndex` 的 opMap 中，也不在 `src/broadcast/operations.ts` 的高层封装中单独出现**，多为链上回放/通知事件或扩展协议：
+
+- `report_over_production_operation` (`TypeReportOverProduction`)
+- `set_withdraw_vesting_route_operation`（在 steem-js 只作为 type index 存在，尚无 broadcast 封装）
+- 所有 escrow 系列：`escrow_transfer_operation`、`escrow_dispute_operation`、`escrow_release_operation`、`escrow_approve_operation`
+- 提案/治理相关：`create_proposal_operation`、`update_proposal_votes_operation`、`remove_proposal_operation`
+- 账号恢复/安全相关：`request_account_recovery_operation`、`recover_account_operation`、`change_recovery_account_operation`、`reset_account_operation`、`set_reset_account_operation`
+- pow/系统相关：`pow2_operation`、`fill_convert_request_operation`
+- 只读奖励/结算事件：`comment_reward_operation`、`liquidity_reward_operation`、`interest_operation`、`fill_vesting_withdraw_operation`、`fill_order_operation`、`fill_transfer_from_savings_operation`
+- 新版奖励与 token 相关：`claim_reward_balance2_operation`、`vote2_operation`
+
+> 这些 op 主要用于 **区块回放和节点通知**，前端通常不会主动广播，但为了和 steemutil 以及底层协议保持一致，后续在 `transaction.ts` 中补全 serializer 时也应考虑支持（至少保证不会因为解码/重放失败而抛错）。
+
+
