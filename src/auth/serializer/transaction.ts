@@ -106,9 +106,45 @@ function getOperationTypeIndex(opType: string): number {
         'account_witness_proxy': 13,
         'pow': 14,
         'custom': 15,
+        'report_over_production': 16,
         'delete_comment': 17,
         'custom_json': 18,
         'comment_options': 19,
+        'set_withdraw_vesting_route': 20,
+        'limit_order_create2': 21,
+        'claim_account': 22,
+        'create_claimed_account': 23,
+        'request_account_recovery': 24,
+        'recover_account': 25,
+        'change_recovery_account': 26,
+        'escrow_transfer': 27,
+        'escrow_dispute': 28,
+        'escrow_release': 29,
+        'pow2': 30,
+        'escrow_approve': 31,
+        'transfer_to_savings': 32,
+        'transfer_from_savings': 33,
+        'cancel_transfer_from_savings': 34,
+        'custom_binary': 35,
+        'decline_voting_rights': 36,
+        'reset_account': 37,
+        'set_reset_account': 38,
+        'claim_reward_balance': 39,
+        'delegate_vesting_shares': 40,
+        'account_create_with_delegation': 41,
+        'witness_set_properties': 42,
+        'account_update2': 43,
+        'create_proposal': 44,
+        'update_proposal_votes': 45,
+        'remove_proposal': 46,
+        'claim_reward_balance2': 47,
+        'fill_convert_request': 48,
+        'comment_reward': 49,
+        'liquidity_reward': 50,
+        'interest': 51,
+        'fill_vesting_withdraw': 52,
+        'fill_order': 53,
+        'fill_transfer_from_savings': 54,
     };
     
     const index = opMap[opType];
@@ -137,6 +173,33 @@ function serializeOperationData(bb: ByteBuffer, opType: string, opData: unknown)
             break;
         case 'account_update':
             serializeAccountUpdate(bb, opData);
+            break;
+        case 'account_create_with_delegation':
+            serializeAccountCreateWithDelegation(bb, opData);
+            break;
+        case 'create_claimed_account':
+            serializeCreateClaimedAccount(bb, opData);
+            break;
+        case 'account_update2':
+            serializeAccountUpdate2(bb, opData);
+            break;
+        case 'request_account_recovery':
+            serializeRequestAccountRecovery(bb, opData);
+            break;
+        case 'recover_account':
+            serializeRecoverAccount(bb, opData);
+            break;
+        case 'change_recovery_account':
+            serializeChangeRecoveryAccount(bb, opData);
+            break;
+        case 'reset_account':
+            serializeResetAccount(bb, opData);
+            break;
+        case 'set_reset_account':
+            serializeSetResetAccount(bb, opData);
+            break;
+        case 'decline_voting_rights':
+            serializeDeclineVotingRights(bb, opData);
             break;
         case 'custom_json':
             serializeCustomJson(bb, opData);
@@ -259,6 +322,131 @@ function serializeAccountUpdate(bb: ByteBuffer, data: unknown): void {
               ? JSON.stringify(dataObj.json_metadata)
               : '',
     );
+}
+
+/**
+ * Serialize account_create_with_delegation operation.
+ * Fields (see FC_REFLECT): fee, delegation, creator, new_account_name,
+ * owner, active, posting, memo_key, json_metadata, extensions.
+ */
+function serializeAccountCreateWithDelegation(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    serializeAsset(bb, String(dataObj.fee || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.delegation || '0.000 VESTS'));
+    writeString(bb, String(dataObj.creator || ''));
+    writeString(bb, String(dataObj.new_account_name || ''));
+    serializeAuthority(bb, dataObj.owner);
+    serializeAuthority(bb, dataObj.active);
+    serializeAuthority(bb, dataObj.posting);
+    const memoKey = String(dataObj.memo_key || '');
+    const pubKey = PublicKey.fromStringOrThrow(memoKey);
+    bb.append(pubKey.toBuffer());
+    writeString(bb, String(dataObj.json_metadata || ''));
+    serializeExtensions(bb, dataObj.extensions);
+}
+
+/**
+ * Serialize create_claimed_account operation.
+ * Fields: creator, new_account_name, owner, active, posting,
+ * memo_key, json_metadata, extensions.
+ */
+function serializeCreateClaimedAccount(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.creator || ''));
+    writeString(bb, String(dataObj.new_account_name || ''));
+    serializeAuthority(bb, dataObj.owner);
+    serializeAuthority(bb, dataObj.active);
+    serializeAuthority(bb, dataObj.posting);
+    const memoKey = String(dataObj.memo_key || '');
+    const pubKey = PublicKey.fromStringOrThrow(memoKey);
+    bb.append(pubKey.toBuffer());
+    writeString(bb, String(dataObj.json_metadata || ''));
+    serializeExtensions(bb, dataObj.extensions);
+}
+
+/**
+ * Serialize account_update2 operation.
+ * Fields: account, owner, active, posting, memo_key,
+ * json_metadata, posting_json_metadata, extensions.
+ */
+function serializeAccountUpdate2(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.account || ''));
+    serializeAuthority(bb, dataObj.owner);
+    serializeAuthority(bb, dataObj.active);
+    serializeAuthority(bb, dataObj.posting);
+    const memoKey = String(dataObj.memo_key || '');
+    const pubKey = PublicKey.fromStringOrThrow(memoKey);
+    bb.append(pubKey.toBuffer());
+    writeString(bb, String(dataObj.json_metadata || ''));
+    writeString(bb, String(dataObj.posting_json_metadata || ''));
+    serializeExtensions(bb, dataObj.extensions);
+}
+
+/**
+ * Serialize request_account_recovery operation.
+ * Fields: recovery_account, account_to_recover, new_owner_authority, extensions.
+ */
+function serializeRequestAccountRecovery(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.recovery_account || ''));
+    writeString(bb, String(dataObj.account_to_recover || ''));
+    serializeAuthority(bb, dataObj.new_owner_authority);
+    serializeExtensions(bb, dataObj.extensions);
+}
+
+/**
+ * Serialize recover_account operation.
+ * Fields: account_to_recover, new_owner_authority, recent_owner_authority, extensions.
+ */
+function serializeRecoverAccount(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.account_to_recover || ''));
+    serializeAuthority(bb, dataObj.new_owner_authority);
+    serializeAuthority(bb, dataObj.recent_owner_authority);
+    serializeExtensions(bb, dataObj.extensions);
+}
+
+/**
+ * Serialize change_recovery_account operation.
+ * Fields: account_to_recover, new_recovery_account, extensions.
+ */
+function serializeChangeRecoveryAccount(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.account_to_recover || ''));
+    writeString(bb, String(dataObj.new_recovery_account || ''));
+    serializeExtensions(bb, dataObj.extensions);
+}
+
+/**
+ * Serialize reset_account operation.
+ * Fields: reset_account, account_to_reset, new_owner_authority.
+ */
+function serializeResetAccount(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.reset_account || ''));
+    writeString(bb, String(dataObj.account_to_reset || ''));
+    serializeAuthority(bb, dataObj.new_owner_authority);
+}
+
+/**
+ * Serialize set_reset_account operation.
+ * Fields: account, reset_account.
+ */
+function serializeSetResetAccount(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.account || ''));
+    writeString(bb, String(dataObj.reset_account || ''));
+}
+
+/**
+ * Serialize decline_voting_rights operation.
+ * Fields: account, decline.
+ */
+function serializeDeclineVotingRights(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.account || ''));
+    serializeBool(bb, dataObj.decline);
 }
 
 /**
