@@ -273,6 +273,30 @@ function serializeOperationData(bb: ByteBuffer, opType: string, opData: unknown)
         case 'fill_transfer_from_savings':
             serializeFillTransferFromSavings(bb, opData);
             break;
+        case 'pow':
+            serializePow(bb, opData);
+            break;
+        case 'pow2':
+            serializePow2(bb, opData);
+            break;
+        case 'witness_update':
+            serializeWitnessUpdate(bb, opData);
+            break;
+        case 'witness_set_properties':
+            serializeWitnessSetProperties(bb, opData);
+            break;
+        case 'account_witness_vote':
+            serializeAccountWitnessVote(bb, opData);
+            break;
+        case 'account_witness_proxy':
+            serializeAccountWitnessProxy(bb, opData);
+            break;
+        case 'custom':
+            serializeCustom(bb, opData);
+            break;
+        case 'custom_binary':
+            serializeCustomBinary(bb, opData);
+            break;
         case 'custom_json':
             serializeCustomJson(bb, opData);
             break;
@@ -824,6 +848,186 @@ function serializeFillTransferFromSavings(bb: ByteBuffer, data: unknown): void {
     serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
     bb.writeUint32((dataObj.request_id as number) ?? 0);
     writeString(bb, String(dataObj.memo || ''));
+}
+
+/**
+ * Serialize ChainProperties (used in pow, witness_update).
+ * Fields: account_creation_fee (asset string), maximum_block_size (uint32), sbd_interest_rate (uint16).
+ */
+function serializeChainProperties(bb: ByteBuffer, props: unknown): void {
+    const p = (props as Record<string, unknown>) || {};
+    const fee = p.account_creation_fee;
+    if (typeof fee === 'string' && fee.split(' ').length >= 2) {
+        serializeAsset(bb, fee);
+    } else {
+        serializeAsset(bb, '0.000 STEEM');
+    }
+    bb.writeUint32((p.maximum_block_size as number) ?? 0);
+    bb.writeUint16((p.sbd_interest_rate as number) ?? 0);
+}
+
+/**
+ * Serialize POW inner struct (worker, input, signature, work).
+ */
+function serializePOWInner(bb: ByteBuffer, work: unknown): void {
+    const w = (work as Record<string, unknown>) || {};
+    writeString(bb, String(w.worker || ''));
+    writeString(bb, String(w.input || ''));
+    writeString(bb, String(w.signature || ''));
+    writeString(bb, String(w.work || ''));
+}
+
+/**
+ * Serialize pow operation.
+ * Fields: worker_account, block_id, nonce (optional), work (POW), props (ChainProperties).
+ */
+function serializePow(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.worker_account || ''));
+    writeString(bb, String(dataObj.block_id || ''));
+    const nonce = dataObj.nonce;
+    if (nonce !== undefined && nonce !== null) {
+        bb.writeUint8(1);
+        bb.writeUint64(Number(nonce));
+    } else {
+        bb.writeUint8(0);
+    }
+    serializePOWInner(bb, dataObj.work);
+    serializeChainProperties(bb, dataObj.props);
+}
+
+/**
+ * Serialize pow2 operation.
+ * Fields: input, pow_summary (opaque bytes; if string treated as hex).
+ */
+function serializePow2(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.input || ''));
+    const summary = dataObj.pow_summary;
+    let bytes: Buffer;
+    if (typeof summary === 'string') {
+        const hex = summary.startsWith('0x') ? summary.slice(2) : summary;
+        bytes = Buffer.from(hex, 'hex');
+    } else if (Buffer.isBuffer(summary)) {
+        bytes = summary;
+    } else {
+        bytes = Buffer.alloc(0);
+    }
+    bb.writeVarint32(bytes.length);
+    bb.append(bytes);
+}
+
+/**
+ * Serialize witness_update operation.
+ * Fields: owner, url, block_signing_key, props (ChainProperties), fee.
+ */
+function serializeWitnessUpdate(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.owner || ''));
+    writeString(bb, String(dataObj.url || ''));
+    const key = dataObj.block_signing_key;
+    if (typeof key === 'string') {
+        const pubKey = PublicKey.fromStringOrThrow(key);
+        bb.append(pubKey.toBuffer());
+    } else if (Buffer.isBuffer(key)) {
+        bb.append(key);
+    } else if (key && typeof (key as { toBuffer?: () => Buffer }).toBuffer === 'function') {
+        bb.append((key as { toBuffer: () => Buffer }).toBuffer());
+    } else {
+        bb.append(Buffer.alloc(33));
+    }
+    serializeChainProperties(bb, dataObj.props);
+    serializeAsset(bb, String(dataObj.fee || '0.000 STEEM'));
+}
+
+/**
+ * Serialize witness_set_properties operation.
+ * Fields: owner, props (map string -> bytes), extensions.
+ */
+function serializeWitnessSetProperties(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.owner || ''));
+    const props = dataObj.props as Record<string, string> | undefined;
+    const keys = props ? Object.keys(props).sort() : [];
+    bb.writeVarint32(keys.length);
+    for (const k of keys) {
+        writeString(bb, k);
+        const v = props![k];
+        const buf = typeof v === 'string' ? Buffer.from(v, 'utf8') : Buffer.isBuffer(v) ? v : Buffer.alloc(0);
+        bb.writeVarint32(buf.length);
+        bb.append(buf);
+    }
+    serializeExtensions(bb, dataObj.extensions);
+}
+
+/**
+ * Serialize account_witness_vote operation.
+ * Fields: account, witness, approve.
+ */
+function serializeAccountWitnessVote(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.account || ''));
+    writeString(bb, String(dataObj.witness || ''));
+    serializeBool(bb, dataObj.approve);
+}
+
+/**
+ * Serialize account_witness_proxy operation.
+ * Fields: account, proxy.
+ */
+function serializeAccountWitnessProxy(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.account || ''));
+    writeString(bb, String(dataObj.proxy || ''));
+}
+
+/**
+ * Serialize custom operation (required_auths, id, data).
+ * id is uint16 in protocol; data is bytes.
+ */
+function serializeCustom(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    const requiredAuths = Array.isArray(dataObj.required_auths)
+        ? (dataObj.required_auths as string[]).slice().sort()
+        : [];
+    bb.writeVarint32(requiredAuths.length);
+    for (const account of requiredAuths) {
+        writeString(bb, String(account));
+    }
+    bb.writeUint16((dataObj.id as number) ?? 0);
+    const dataBytes = dataObj.data;
+    let buf: Buffer;
+    if (typeof dataBytes === 'string') {
+        const hex = dataBytes.startsWith('0x') ? dataBytes.slice(2) : dataBytes;
+        buf = Buffer.from(hex, 'hex');
+    } else if (Buffer.isBuffer(dataBytes)) {
+        buf = dataBytes;
+    } else {
+        buf = Buffer.alloc(0);
+    }
+    bb.writeVarint32(buf.length);
+    bb.append(buf);
+}
+
+/**
+ * Serialize custom_binary operation.
+ * Fields: id (string), data (bytes).
+ */
+function serializeCustomBinary(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.id || ''));
+    const dataBytes = dataObj.data;
+    let buf: Buffer;
+    if (typeof dataBytes === 'string') {
+        const hex = dataBytes.startsWith('0x') ? dataBytes.slice(2) : dataBytes;
+        buf = Buffer.from(hex, 'hex');
+    } else if (Buffer.isBuffer(dataBytes)) {
+        buf = dataBytes;
+    } else {
+        buf = Buffer.alloc(0);
+    }
+    bb.writeVarint32(buf.length);
+    bb.append(buf);
 }
 
 /**
