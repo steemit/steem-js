@@ -201,6 +201,24 @@ function serializeOperationData(bb: ByteBuffer, opType: string, opData: unknown)
         case 'decline_voting_rights':
             serializeDeclineVotingRights(bb, opData);
             break;
+        case 'transfer_to_vesting':
+            serializeTransferToVesting(bb, opData);
+            break;
+        case 'withdraw_vesting':
+            serializeWithdrawVesting(bb, opData);
+            break;
+        case 'set_withdraw_vesting_route':
+            serializeSetWithdrawVestingRoute(bb, opData);
+            break;
+        case 'transfer_to_savings':
+            serializeTransferToSavings(bb, opData);
+            break;
+        case 'transfer_from_savings':
+            serializeTransferFromSavings(bb, opData);
+            break;
+        case 'cancel_transfer_from_savings':
+            serializeCancelTransferFromSavings(bb, opData);
+            break;
         case 'custom_json':
             serializeCustomJson(bb, opData);
             break;
@@ -448,6 +466,76 @@ function serializeDeclineVotingRights(bb: ByteBuffer, data: unknown): void {
     writeString(bb, String(dataObj.account || ''));
     serializeBool(bb, dataObj.decline);
 }
+
+/**
+ * Serialize transfer_to_vesting operation.
+ * Fields: from, to, amount.
+ */
+function serializeTransferToVesting(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.from || ''));
+    writeString(bb, String(dataObj.to || ''));
+    serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
+}
+
+/**
+ * Serialize withdraw_vesting operation.
+ * Fields: account, vesting_shares.
+ */
+function serializeWithdrawVesting(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.account || ''));
+    serializeAsset(bb, String(dataObj.vesting_shares || '0.000 VESTS'));
+}
+
+/**
+ * Serialize set_withdraw_vesting_route operation.
+ * Fields: from_account, to_account, percent, auto_vest.
+ */
+function serializeSetWithdrawVestingRoute(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.from_account || ''));
+    writeString(bb, String(dataObj.to_account || ''));
+    // percent is uint16
+    bb.writeUint16((dataObj.percent as number) ?? 0);
+    serializeBool(bb, dataObj.auto_vest);
+}
+
+/**
+ * Serialize transfer_to_savings operation.
+ * Fields: from, to, amount, memo.
+ */
+function serializeTransferToSavings(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.from || ''));
+    writeString(bb, String(dataObj.to || ''));
+    serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
+    writeString(bb, String(dataObj.memo || ''));
+}
+
+/**
+ * Serialize transfer_from_savings operation.
+ * Fields: from, request_id, to, amount, memo.
+ */
+function serializeTransferFromSavings(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.from || ''));
+    bb.writeUint32((dataObj.request_id as number) ?? (dataObj.requestID as number) ?? 0);
+    writeString(bb, String(dataObj.to || ''));
+    serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
+    writeString(bb, String(dataObj.memo || ''));
+}
+
+/**
+ * Serialize cancel_transfer_from_savings operation.
+ * Fields: from, request_id.
+ */
+function serializeCancelTransferFromSavings(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.from || ''));
+    bb.writeUint32((dataObj.request_id as number) ?? (dataObj.requestID as number) ?? 0);
+}
+
 
 /**
  * Serialize custom_json operation
