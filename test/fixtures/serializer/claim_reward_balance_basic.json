@@ -1,0 +1,22 @@
+{
+  "name": "claim_reward_balance_basic",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "operations": [
+      [
+        "claim_reward_balance",
+        {
+          "account": "alice",
+          "reward_sbd": "0.500 SBD",
+          "reward_steem": "1.000 STEEM",
+          "reward_vests": "10.000000 VESTS"
+        }
+      ]
+    ],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982
+  },
+  "expected_hex": "614bde71d95f911bf356012705616c696365e80300000000000003535445454d0000f40100000000000003534244000000008096980000000000065645535453000000"
+}
+

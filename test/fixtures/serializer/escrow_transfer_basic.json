@@ -1,0 +1,28 @@
+{
+  "name": "escrow_transfer_basic",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "operations": [
+      [
+        "escrow_transfer",
+        {
+          "agent": "carol",
+          "escrow_expiration": "2016-03-25T16:10:00",
+          "escrow_id": 1,
+          "fee": "0.001 STEEM",
+          "from": "alice",
+          "json_meta": "",
+          "ratification_deadline": "2016-03-24T16:10:00",
+          "sbd_amount": "1.000 SBD",
+          "steem_amount": "0.000 STEEM",
+          "to": "bob"
+        }
+      ]
+    ],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982
+  },
+  "expected_hex": "614bde71d95f911bf356011b05616c69636503626f62e8030000000000000353424400000000000000000000000003535445454d000001000000056361726f6c010000000000000003535445454d0000005811f456d862f55600"
+}
+

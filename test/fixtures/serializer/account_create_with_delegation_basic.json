@@ -1,0 +1,58 @@
+{
+  "name": "account_create_with_delegation_basic",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "operations": [
+      [
+        "account_create_with_delegation",
+        {
+          "active": {
+            "account_auths": [],
+            "key_auths": [
+              null,
+              [
+                "STM8k1f8fvHxLrCTqMdRUJcK2rCE3y7SQBb8PremyadWvVWMeedZy",
+                1
+              ]
+            ],
+            "weight_threshold": 1
+          },
+          "creator": "initminer",
+          "delegation": "0.000000 VESTS",
+          "extensions": [],
+          "fee": "0.000 STEEM",
+          "json_metadata": "",
+          "memo_key": "STM6ppNVEFmvBW4jEkzxXnGKuKuwYjMUrhz2WX1kHeGSchGdWJEDQ",
+          "new_account_name": "alice",
+          "owner": {
+            "account_auths": [],
+            "key_auths": [
+              null,
+              [
+                "STM8k1f8fvHxLrCTqMdRUJcK2rCE3y7SQBb8PremyadWvVWMeedZy",
+                1
+              ]
+            ],
+            "weight_threshold": 1
+          },
+          "posting": {
+            "account_auths": [],
+            "key_auths": [
+              null,
+              [
+                "STM8k1f8fvHxLrCTqMdRUJcK2rCE3y7SQBb8PremyadWvVWMeedZy",
+                1
+              ]
+            ],
+            "weight_threshold": 1
+          }
+        }
+      ]
+    ],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982
+  },
+  "expected_hex": "614bde71d95f911bf3560129000000000000000003535445454d00000000000000000000065645535453000009696e69746d696e657205616c69636501000000000103fb8900a262d51b908846be54fcf04b3a80d12ee749b9446f976b58b220ba4eed010001000000000103fb8900a262d51b908846be54fcf04b3a80d12ee749b9446f976b58b220ba4eed010001000000000103fb8900a262d51b908846be54fcf04b3a80d12ee749b9446f976b58b220ba4eed010002ff0de11ef55b998daf88047f1a00a60ed5dffb0c23c3279f8bd42a733845c5da000000"
+}
+

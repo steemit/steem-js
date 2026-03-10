@@ -297,6 +297,9 @@ function serializeOperationData(bb: ByteBuffer, opType: string, opData: unknown)
         case 'custom_binary':
             serializeCustomBinary(bb, opData);
             break;
+        case 'comment_options':
+            serializeCommentOptions(bb, opData);
+            break;
         case 'custom_json':
             serializeCustomJson(bb, opData);
             break;
@@ -1028,6 +1031,21 @@ function serializeCustomBinary(bb: ByteBuffer, data: unknown): void {
     }
     bb.writeVarint32(buf.length);
     bb.append(buf);
+}
+
+/**
+ * Serialize comment_options operation.
+ * Fields: author, permlink, max_accepted_payout, percent_steem_dollars, allow_votes, allow_curation_rewards, extensions.
+ */
+function serializeCommentOptions(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.author || ''));
+    writeString(bb, String(dataObj.permlink || ''));
+    serializeAsset(bb, String(dataObj.max_accepted_payout || '1000000.000 SBD'));
+    bb.writeUint16((dataObj.percent_steem_dollars as number) ?? 0);
+    serializeBool(bb, dataObj.allow_votes);
+    serializeBool(bb, dataObj.allow_curation_rewards);
+    serializeExtensions(bb, dataObj.extensions);
 }
 
 /**
