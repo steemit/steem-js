@@ -249,6 +249,30 @@ function serializeOperationData(bb: ByteBuffer, opType: string, opData: unknown)
         case 'escrow_approve':
             serializeEscrowApprove(bb, opData);
             break;
+        case 'claim_reward_balance':
+            serializeClaimRewardBalance(bb, opData);
+            break;
+        case 'claim_reward_balance2':
+            serializeClaimRewardBalance2(bb, opData);
+            break;
+        case 'comment_reward':
+            serializeCommentReward(bb, opData);
+            break;
+        case 'liquidity_reward':
+            serializeLiquidityReward(bb, opData);
+            break;
+        case 'interest':
+            serializeInterest(bb, opData);
+            break;
+        case 'fill_vesting_withdraw':
+            serializeFillVestingWithdraw(bb, opData);
+            break;
+        case 'fill_convert_request':
+            serializeFillConvertRequest(bb, opData);
+            break;
+        case 'fill_transfer_from_savings':
+            serializeFillTransferFromSavings(bb, opData);
+            break;
         case 'custom_json':
             serializeCustomJson(bb, opData);
             break;
@@ -707,7 +731,100 @@ function serializeEscrowApprove(bb: ByteBuffer, data: unknown): void {
     serializeBool(bb, dataObj.approve);
 }
 
+/**
+ * Serialize claim_reward_balance operation.
+ * Fields: account, reward_steem, reward_sbd, reward_vests.
+ */
+function serializeClaimRewardBalance(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.account || ''));
+    serializeAsset(bb, String(dataObj.reward_steem || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.reward_sbd || '0.000 SBD'));
+    serializeAsset(bb, String(dataObj.reward_vests || '0.000000 VESTS'));
+}
 
+/**
+ * Serialize claim_reward_balance2 operation.
+ * Fields: account, extensions, reward_tokens (array of asset strings).
+ */
+function serializeClaimRewardBalance2(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.account || ''));
+    serializeExtensions(bb, dataObj.extensions);
+    const tokens = Array.isArray(dataObj.reward_tokens) ? dataObj.reward_tokens : [];
+    bb.writeVarint32(tokens.length);
+    for (const tok of tokens) {
+        serializeAsset(bb, typeof tok === 'string' ? tok : String(tok));
+    }
+}
+
+/**
+ * Serialize comment_reward operation.
+ * Fields: author, permlink, payout.
+ */
+function serializeCommentReward(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.author || ''));
+    writeString(bb, String(dataObj.permlink || ''));
+    serializeAsset(bb, String(dataObj.payout || '0.000 STEEM'));
+}
+
+/**
+ * Serialize liquidity_reward operation.
+ * Fields: owner, payout.
+ */
+function serializeLiquidityReward(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.owner || ''));
+    serializeAsset(bb, String(dataObj.payout || '0.000 STEEM'));
+}
+
+/**
+ * Serialize interest operation.
+ * Fields: owner, interest.
+ */
+function serializeInterest(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.owner || ''));
+    serializeAsset(bb, String(dataObj.interest || '0.000 STEEM'));
+}
+
+/**
+ * Serialize fill_vesting_withdraw operation.
+ * Fields: from_account, to_account, withdrawn, deposited.
+ */
+function serializeFillVestingWithdraw(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.from_account || ''));
+    writeString(bb, String(dataObj.to_account || ''));
+    serializeAsset(bb, String(dataObj.withdrawn || '0.000000 VESTS'));
+    serializeAsset(bb, String(dataObj.deposited || '0.000 STEEM'));
+}
+
+/**
+ * Serialize fill_convert_request operation.
+ * Fields: owner, requestid, amount_in, amount_out.
+ */
+function serializeFillConvertRequest(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.owner || ''));
+    bb.writeUint32((dataObj.requestid as number) ?? 0);
+    serializeAsset(bb, String(dataObj.amount_in || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.amount_out || '0.000 STEEM'));
+}
+
+/**
+ * Serialize fill_transfer_from_savings operation.
+ * Fields: from, to, amount, request_id, memo.
+ */
+function serializeFillTransferFromSavings(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.from || ''));
+    writeString(bb, String(dataObj.to || ''));
+    serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
+    bb.writeUint32((dataObj.request_id as number) ?? 0);
+    writeString(bb, String(dataObj.memo || ''));
+}
 
 /**
  * Serialize custom_json operation
