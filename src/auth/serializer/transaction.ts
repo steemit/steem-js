@@ -219,6 +219,36 @@ function serializeOperationData(bb: ByteBuffer, opType: string, opData: unknown)
         case 'cancel_transfer_from_savings':
             serializeCancelTransferFromSavings(bb, opData);
             break;
+        case 'limit_order_create':
+            serializeLimitOrderCreate(bb, opData);
+            break;
+        case 'limit_order_create2':
+            serializeLimitOrderCreate2(bb, opData);
+            break;
+        case 'limit_order_cancel':
+            serializeLimitOrderCancel(bb, opData);
+            break;
+        case 'feed_publish':
+            serializeFeedPublish(bb, opData);
+            break;
+        case 'convert':
+            serializeConvert(bb, opData);
+            break;
+        case 'fill_order':
+            serializeFillOrder(bb, opData);
+            break;
+        case 'escrow_transfer':
+            serializeEscrowTransfer(bb, opData);
+            break;
+        case 'escrow_dispute':
+            serializeEscrowDispute(bb, opData);
+            break;
+        case 'escrow_release':
+            serializeEscrowRelease(bb, opData);
+            break;
+        case 'escrow_approve':
+            serializeEscrowApprove(bb, opData);
+            break;
         case 'custom_json':
             serializeCustomJson(bb, opData);
             break;
@@ -535,6 +565,148 @@ function serializeCancelTransferFromSavings(bb: ByteBuffer, data: unknown): void
     writeString(bb, String(dataObj.from || ''));
     bb.writeUint32((dataObj.request_id as number) ?? (dataObj.requestID as number) ?? 0);
 }
+
+/**
+ * Serialize limit_order_create operation.
+ * Fields: owner, orderid, amount_to_sell, min_to_receive, fill_or_kill, expiration.
+ */
+function serializeLimitOrderCreate(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.owner || ''));
+    bb.writeUint32((dataObj.orderid as number) ?? 0);
+    serializeAsset(bb, String(dataObj.amount_to_sell || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.min_to_receive || '0.000 STEEM'));
+    serializeBool(bb, dataObj.fill_or_kill);
+    serializeTimePointSec(bb, dataObj.expiration);
+}
+
+/**
+ * Serialize limit_order_create2 operation.
+ * Fields: owner, orderid, amount_to_sell, exchange_rate{base, quote}, fill_or_kill, expiration.
+ */
+function serializeLimitOrderCreate2(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.owner || ''));
+    bb.writeUint32((dataObj.orderid as number) ?? 0);
+    serializeAsset(bb, String(dataObj.amount_to_sell || '0.000 STEEM'));
+    const rate = (dataObj.exchange_rate ?? dataObj.exchangeRate) as Record<string, unknown> | undefined;
+    const base = rate?.base ?? '0.000 STEEM';
+    const quote = rate?.quote ?? '0.000 SBD';
+    serializeAsset(bb, String(base));
+    serializeAsset(bb, String(quote));
+    serializeBool(bb, dataObj.fill_or_kill);
+    serializeTimePointSec(bb, dataObj.expiration);
+}
+
+/**
+ * Serialize limit_order_cancel operation.
+ * Fields: owner, orderid.
+ */
+function serializeLimitOrderCancel(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.owner || ''));
+    bb.writeUint32((dataObj.orderid as number) ?? 0);
+}
+
+/**
+ * Serialize feed_publish operation.
+ * Fields: publisher, exchange_rate{base, quote}.
+ */
+function serializeFeedPublish(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.publisher || ''));
+    const rate = (dataObj.exchange_rate ?? dataObj.exchangeRate) as Record<string, unknown> | undefined;
+    const base = rate?.base ?? '0.000 STEEM';
+    const quote = rate?.quote ?? '0.000 SBD';
+    serializeAsset(bb, String(base));
+    serializeAsset(bb, String(quote));
+}
+
+/**
+ * Serialize convert operation.
+ * Fields: owner, requestid, amount.
+ */
+function serializeConvert(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.owner || ''));
+    bb.writeUint32((dataObj.requestid as number) ?? (dataObj.request_id as number) ?? 0);
+    serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
+}
+
+/**
+ * Serialize fill_order operation (virtual).
+ * Fields: current_owner, current_orderid, current_pays,
+ *         open_owner, open_orderid, open_pays.
+ */
+function serializeFillOrder(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.current_owner || ''));
+    bb.writeUint32((dataObj.current_orderid as number) ?? 0);
+    serializeAsset(bb, String(dataObj.current_pays || '0.000 STEEM'));
+    writeString(bb, String(dataObj.open_owner || ''));
+    bb.writeUint32((dataObj.open_orderid as number) ?? 0);
+    serializeAsset(bb, String(dataObj.open_pays || '0.000 STEEM'));
+}
+
+/**
+ * Serialize escrow_transfer operation.
+ * Fields: from, to, sbd_amount, steem_amount, escrow_id, agent,
+ *         fee, json_meta, ratification_deadline, escrow_expiration.
+ */
+function serializeEscrowTransfer(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.from || ''));
+    writeString(bb, String(dataObj.to || ''));
+    serializeAsset(bb, String(dataObj.sbd_amount || '0.000 SBD'));
+    serializeAsset(bb, String(dataObj.steem_amount || '0.000 STEEM'));
+    bb.writeUint32((dataObj.escrow_id as number) ?? 0);
+    writeString(bb, String(dataObj.agent || ''));
+    serializeAsset(bb, String(dataObj.fee || '0.000 STEEM'));
+    writeString(bb, String(dataObj.json_meta || ''));
+    serializeTimePointSec(bb, dataObj.ratification_deadline);
+    serializeTimePointSec(bb, dataObj.escrow_expiration);
+}
+
+/**
+ * Serialize escrow_dispute operation.
+ * Fields: from, to, who, escrow_id.
+ */
+function serializeEscrowDispute(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.from || ''));
+    writeString(bb, String(dataObj.to || ''));
+    writeString(bb, String(dataObj.who || ''));
+    bb.writeUint32((dataObj.escrow_id as number) ?? 0);
+}
+
+/**
+ * Serialize escrow_release operation.
+ * Fields: from, to, who, escrow_id, sbd_amount, steem_amount.
+ */
+function serializeEscrowRelease(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.from || ''));
+    writeString(bb, String(dataObj.to || ''));
+    writeString(bb, String(dataObj.who || ''));
+    bb.writeUint32((dataObj.escrow_id as number) ?? 0);
+    serializeAsset(bb, String(dataObj.sbd_amount || '0.000 SBD'));
+    serializeAsset(bb, String(dataObj.steem_amount || '0.000 STEEM'));
+}
+
+/**
+ * Serialize escrow_approve operation.
+ * Fields: from, to, agent, who, escrow_id, approve.
+ */
+function serializeEscrowApprove(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.from || ''));
+    writeString(bb, String(dataObj.to || ''));
+    writeString(bb, String(dataObj.agent || ''));
+    writeString(bb, String(dataObj.who || ''));
+    bb.writeUint32((dataObj.escrow_id as number) ?? 0);
+    serializeBool(bb, dataObj.approve);
+}
+
 
 
 /**
