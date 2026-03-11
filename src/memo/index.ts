@@ -69,9 +69,17 @@ export function encode(
     return '#' + bs58.encode(serialized);
 }
 
+/**
+ * Decode an encrypted memo.
+ * @param private_key - Our private key (WIF or PrivateKey)
+ * @param memo - Encrypted memo string (leading #)
+ * @param expectedRecipientPubKey - If we are the sender, optionally verify the memo's 'to' matches this (prevents wrong-recipient decryption)
+ * @returns Decrypted memo with leading #, or original string on failure
+ */
 export function decode(
     private_key: string | PrivateKey | null,
-    memo: string
+    memo: string,
+    expectedRecipientPubKey?: string | PublicKey
 ): string {
     if (!memo || typeof memo !== 'string') {
         return memo;
@@ -98,7 +106,23 @@ export function decode(
 
         const { from, to, nonce, check, encrypted } = memoData;
         const pubkey = privateKey.toPublicKey().toString();
-        const otherpub = pubkey === from.toString() ? to : from;
+        let otherpub: PublicKey;
+
+        if (pubkey === from.toString()) {
+            otherpub = to;
+            if (expectedRecipientPubKey !== undefined) {
+                const expected = typeof expectedRecipientPubKey === 'string'
+                    ? PublicKey.fromString(expectedRecipientPubKey)
+                    : expectedRecipientPubKey;
+                if (!expected || otherpub.toString() !== expected.toString()) {
+                    throw new Error('Memo encrypted for unexpected recipient');
+                }
+            }
+        } else if (pubkey === to.toString()) {
+            otherpub = from;
+        } else {
+            throw new Error('Memo not encrypted for this key');
+        }
 
         const decrypted = Aes.decrypt(privateKey, otherpub, nonce, encrypted, check);
 
