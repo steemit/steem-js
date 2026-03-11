@@ -181,7 +181,11 @@ export async function validate(
     throw new Error('Invalid timestamp');
   }
 
-  if (Date.now() - timestamp > 60 * 1000) {
+  const now = Date.now();
+  const timeDiff = Math.abs(now - timestamp);
+  const SIGNATURE_VALIDITY_MS = 60 * 1000;
+  const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
+  if (timeDiff > SIGNATURE_VALIDITY_MS + MAX_CLOCK_SKEW_MS) {
     throw new Error('Signature expired');
   }
 
