@@ -1,4 +1,4 @@
-import { PrivateKey } from './ecc/src/key_private';
+import { PrivateKey, constantTimeCompare } from './ecc/src/key_private';
 import { PublicKey } from './ecc/src/key_public';
 import { sha256 } from './ecc/src/hash';
 import { getConfig } from '../config';
@@ -82,7 +82,7 @@ export const Auth: Auth = {
             let newChecksum = sha256(privKey);
             newChecksum = sha256(newChecksum);
             newChecksum = newChecksum.slice(0, 4);
-            if (checksum.toString() === newChecksum.toString()) {
+            if (constantTimeCompare(checksum, Buffer.from(newChecksum))) {
                 isWif = true;
             }
         } catch {

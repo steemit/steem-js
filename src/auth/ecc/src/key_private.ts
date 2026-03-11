@@ -12,6 +12,22 @@ type ECPoint = ReturnType<typeof secp256k1.g.mul>;
 
 const G = secp256k1.g;
 const n = new BN(secp256k1.n!.toString());
+
+/**
+ * Constant-time buffer comparison to prevent timing attacks.
+ * Returns true only if a.length === b.length and a[i] === b[i] for all i.
+ */
+export function constantTimeCompare(a: Buffer | Uint8Array, b: Buffer | Uint8Array): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+        result |= a[i] ^ b[i];
+    }
+    return result === 0;
+}
+
 export class PrivateKey {
     d: BN;
     public_key?: PublicKey;
@@ -68,7 +84,7 @@ export class PrivateKey {
         let new_checksum = hash.sha256(private_key);
         new_checksum = hash.sha256(new_checksum);
         new_checksum = new_checksum.slice(0, 4);
-        if (checksum.toString() !== new_checksum.toString()) {
+        if (!constantTimeCompare(checksum, Buffer.from(new_checksum))) {
             throw new Error('Invalid WIF key (checksum miss-match)');
         }
 
