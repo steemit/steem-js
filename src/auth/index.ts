@@ -77,6 +77,10 @@ export const Auth: Auth = {
         let isWif = false;
         try {
             const bufWif = Buffer.from(bs58.decode(privWif));
+            // Valid WIF: 1 byte version + 32 bytes key + 4 bytes checksum = 37 bytes
+            if (bufWif.length !== 37) {
+                return false;
+            }
             const privKey = bufWif.slice(0, -4);
             const checksum = bufWif.slice(-4);
             let newChecksum = sha256(privKey);
