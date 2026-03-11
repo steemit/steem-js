@@ -110,6 +110,10 @@ function createUmdConfig(minified = false) {
         if (noblePackages.some(pkg => warning.source?.includes(pkg) || (warning.message && warning.message.includes(pkg)))) {
           return;
         }
+        // node:undici is Node built-in; only loaded at runtime when httpsOptions is set (never in browser)
+        if (warning.message?.includes('node:undici') || warning.id === 'node:undici') {
+          return;
+        }
       }
       // Filter out "Missing global variable names" warnings for @noble packages (they are bundled by commonjs plugin)
       if (warning.code === 'MISSING_GLOBAL_NAME' && warning.message?.includes('@noble/')) {
@@ -181,6 +185,10 @@ export default [
       if (warning.code === 'UNRESOLVED_IMPORT') {
         const noblePackages = ['@noble/hashes', '@noble/ciphers'];
         if (noblePackages.some(pkg => warning.source?.includes(pkg) || (warning.message && warning.message.includes(pkg)))) {
+          return;
+        }
+        // node:undici is Node built-in; only loaded at runtime when httpsOptions is set
+        if (warning.message?.includes('node:undici') || warning.id === 'node:undici') {
           return;
         }
       }
@@ -307,6 +315,10 @@ var utilExports = typeof globalThis !== 'undefined' ? (globalThis.utilExports ||
       if (warning.code === 'UNRESOLVED_IMPORT') {
         const noblePackages = ['@noble/hashes', '@noble/ciphers'];
         if (noblePackages.some(pkg => warning.source?.includes(pkg) || (warning.message && warning.message.includes(pkg)))) {
+          return;
+        }
+        // node:undici is Node built-in; only loaded at runtime when httpsOptions is set (never in browser)
+        if (warning.message?.includes('node:undici') || warning.id === 'node:undici') {
           return;
         }
       }
