@@ -32,22 +32,28 @@ export class Broadcast {
             // Prepare the transaction (fetch global props, block header, etc.)
             const transaction = await (broadcastMethods._prepareTransaction as (this: Broadcast, transaction: { operations: unknown[]; extensions?: unknown[] }) => Promise<unknown>).call(this, tx);
 
-            // Debug: Print transaction, digest, and hex before signing (if debug enabled)
+            // Debug: Print transaction info (full details only in development to avoid leaking sensitive data)
             const { debug } = await import('../utils/debug');
             if (debug.isEnabled('transaction')) {
-                const { transaction: transactionSerializer } = await import('../auth/serializer');
-                const { getConfig } = await import('../config');
-                // sha256 is already imported at the top
-                
-                const buf = transactionSerializer.toBuffer(transaction);
-                const chainId = Buffer.from((getConfig().get('chain_id') as string | undefined) || '', 'hex');
-                const digest = Buffer.from(sha256(Buffer.concat([chainId, buf])));
-                
-                debug.transaction('\n=== Transaction Debug Info (before signing) ===');
-                debug.transaction('Transaction:', JSON.stringify(transaction, null, 2));
-                debug.transaction('Transaction.toHex():', buf.toString('hex'));
-                debug.transaction('Digest (sha256(chain_id + transaction)):', digest.toString('hex'));
-                debug.transaction('===============================================\n');
+                const isDev = process.env.NODE_ENV === 'development';
+                if (isDev) {
+                    const { transaction: transactionSerializer } = await import('../auth/serializer');
+                    const { getConfig } = await import('../config');
+                    const buf = transactionSerializer.toBuffer(transaction);
+                    const chainId = Buffer.from((getConfig().get('chain_id') as string | undefined) || '', 'hex');
+                    const digest = Buffer.from(sha256(Buffer.concat([chainId, buf])));
+                    debug.transaction('\n=== Transaction Debug Info (before signing) ===');
+                    debug.transaction('Transaction:', JSON.stringify(transaction, null, 2));
+                    debug.transaction('Transaction.toHex():', buf.toString('hex'));
+                    debug.transaction('Digest (sha256(chain_id + transaction)):', digest.toString('hex'));
+                    debug.transaction('===============================================\n');
+                } else {
+                    const tx = transaction as { operations?: unknown[]; ref_block_num?: number };
+                    debug.transaction('Transaction signed:', {
+                        operations: tx.operations?.length ?? 0,
+                        ref_block_num: tx.ref_block_num
+                    });
+                }
             }
 
             // Ensure privKeys is always an array for signTransaction
