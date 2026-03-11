@@ -13,7 +13,12 @@ export interface EncryptedMemo {
 export class Serializer {
     static fromBuffer(buffer: Buffer): EncryptedMemo {
         const bb = ByteBuffer.fromBinary(buffer.toString('binary'), ByteBuffer.LITTLE_ENDIAN);
-        
+
+        // Require at least 66 bytes for two 33-byte public keys before reading
+        if (bb.remaining() < 66) {
+            throw new Error('Invalid memo: insufficient data for public keys');
+        }
+
         // Read public keys
         const fromKey = PublicKey.fromBuffer(bb.readBytes(33).toBuffer());
         const toKey = PublicKey.fromBuffer(bb.readBytes(33).toBuffer());
