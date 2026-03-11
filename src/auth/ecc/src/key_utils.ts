@@ -2,9 +2,6 @@ import { PrivateKey } from './key_private';
 import * as hash from './hash';
 import secureRandom from 'secure-random';
 
-// hash for .25 second
-const HASH_POWER_MILLS = 250;
-
 let entropyPos = 0;
 let entropyCount = 0;
 const entropyArray = secureRandom.randomBuffer(101);
@@ -21,31 +18,19 @@ export function addEntropy(...ints: number[]): void {
 }
 
 /**
- * A weak random number generator can run out of entropy.  This should ensure even the worst random number implementation will be reasonably safe.
- * @param entropy string entropy of at least 32 bytes
+ * Cryptographically secure 32-byte random buffer.
+ * Optionally mix in caller-provided entropy (e.g. from browser) via one-shot hash.
+ * @param entropy optional string entropy of at least 32 bytes to mix in
  */
-export function random32ByteBuffer(entropy: string = browserEntropy()): Buffer {
-    if (typeof entropy !== 'string') {
-        throw new Error("string required for entropy");
+export function random32ByteBuffer(entropy?: string): Buffer {
+    const randomPart = secureRandom.randomBuffer(32);
+
+    if (entropy != null && typeof entropy === 'string' && entropy.length >= 32) {
+        const entropySlice = Buffer.from(entropy.slice(0, 32), 'utf8');
+        return hash.sha256(Buffer.concat([randomPart, entropySlice])) as Buffer;
     }
 
-    if (entropy.length < 32) {
-        throw new Error("expecting at least 32 bytes of entropy");
-    }
-
-    const start_t = Date.now();
-
-    while (Date.now() - start_t < HASH_POWER_MILLS) {
-        entropy = hash.sha256(entropy).toString('hex');
-    }
-
-    const hash_array: Buffer[] = [];
-    hash_array.push(Buffer.from(entropy));
-
-    // Hashing for 1 second may help if the computer is low on entropy (this method may be called back-to-back).
-    hash_array.push(secureRandom.randomBuffer(32));
-
-    return hash.sha256(Buffer.concat(hash_array)) as Buffer;
+    return randomPart as Buffer;
 }
 
 export function get_random_key(entropy?: string): PrivateKey {
