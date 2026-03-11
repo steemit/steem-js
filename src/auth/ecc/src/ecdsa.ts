@@ -250,19 +250,22 @@ export function calcPubKeyRecoveryParam(curve: ECInstance, e: BN, signature: ECS
             }
         } catch (error) {
             // try next value
-            console.debug(`Recovery attempt ${i} failed:`, (error as Error).message);
+            if (process.env.NODE_ENV === 'development') {
+                console.debug(`Recovery attempt ${i} failed:`, (error as Error).message);
+            }
         }
     }
 
-    // Additional debugging
-    console.debug('All recovery attempts failed. Signature:', {
-        r: signature.r.toString(16),
-        s: signature.s.toString(16)
-    });
-    console.debug('Expected public key:', {
-        x: Q.getX().toString(16),
-        y: Q.getY().toString(16)
-    });
+    if (process.env.NODE_ENV === 'development') {
+        console.debug('All recovery attempts failed. Signature:', {
+            r: signature.r.toString(16),
+            s: signature.s.toString(16)
+        });
+        console.debug('Expected public key:', {
+            x: Q.getX().toString(16),
+            y: Q.getY().toString(16)
+        });
+    }
 
     throw new Error('Unable to find valid recovery factor');
 } 
