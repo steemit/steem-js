@@ -4,8 +4,7 @@ import { PublicKey } from './key_public';
 import { sha256, sha512 } from './hash';
 import ByteBuffer from 'bytebuffer';
 import Long from 'long';
-
-let uniqueNonceEntropy: number | null = null;
+import { randomBytes } from '../../../crypto/random-bytes';
 
 function sha512Buffer(data: string | Buffer): Buffer {
     const result = sha512(data);
@@ -14,12 +13,9 @@ function sha512Buffer(data: string | Buffer): Buffer {
 
 export class Aes {
     static uniqueNonce(): string {
-        if (uniqueNonceEntropy === null) {
-            uniqueNonceEntropy = Math.floor(Math.random() * 0xFFFF);
-        }
-        let long = Long.fromNumber(Date.now());
-        const entropy = ++uniqueNonceEntropy % 0xFFFF;
-        long = long.shiftLeft(16).or(Long.fromNumber(entropy));
+        const now = Date.now() >>> 0; // low 32 bits of ms
+        const randomPart = randomBytes(4).readUInt32BE(0);
+        const long = Long.fromNumber(now, true).shiftLeft(32).or(Long.fromNumber(randomPart, true));
         return long.toString();
     }
 
