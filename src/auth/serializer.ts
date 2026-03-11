@@ -49,20 +49,13 @@ export class Serializer {
         bb.append(memo.from.toBuffer());
         bb.append(memo.to.toBuffer());
         
-        // Write nonce (uint64) - handle both string and number
+        // Write nonce (uint64) - must be string representing unsigned 64-bit integer
         let nonceLong: Long;
         if (typeof memo.nonce === 'string') {
-            // Use Long.fromString with unsigned flag for large numbers
             try {
                 nonceLong = Long.fromString(memo.nonce, true, 10); // unsigned, base 10
             } catch {
-                // Fallback: try as number if string parsing fails
-                const num = Number(memo.nonce);
-                if (!isNaN(num) && isFinite(num)) {
-                    nonceLong = Long.fromNumber(num, true); // unsigned
-                } else {
-                    throw new Error(`Invalid nonce format: ${memo.nonce}`);
-                }
+                throw new Error(`Invalid nonce format: ${memo.nonce}. Must be a string representing an unsigned 64-bit integer.`);
             }
         } else {
             nonceLong = Long.fromNumber(memo.nonce, true); // unsigned
