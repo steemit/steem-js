@@ -6,7 +6,6 @@ import * as broadcast from './broadcast';
 import * as formatter from './formatter';
 import * as memo from './memo';
 import * as operations from './operations';
-import * as serializer from './serializer';
 import * as utils from './utils';
 // Import buffer module for browser builds to expose Buffer globally
 import { Buffer as BufferPolyfill } from 'buffer';
@@ -22,7 +21,6 @@ const steem = {
   formatter,
   memo,
   operations,
-  serializer,
   utils,
   version: '__VERSION__',
   config: {
