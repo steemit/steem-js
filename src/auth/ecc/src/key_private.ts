@@ -4,7 +4,6 @@ import BN from 'bn.js';
 import base58 from 'bs58';
 import * as hash from './hash';
 import { PublicKey } from './key_public';
-import { debug } from '../../../utils/debug';
 
 // Use elliptic types directly
 // ECPoint is a point on the elliptic curve
@@ -28,11 +27,8 @@ export class PrivateKey {
         if (!Buffer.isBuffer(buf)) {
             throw new Error("Expecting parameter to be a Buffer type");
         }
-        if (32 !== buf.length) {
-            debug.warn(`WARN: Expecting 32 bytes, instead got ${buf.length}, stack trace:`, new Error().stack);
-        }
-        if (buf.length === 0) {
-            throw new Error("Empty buffer");
+        if (buf.length !== 32) {
+            throw new Error(`Invalid private key buffer: expected 32 bytes, got ${buf.length}`);
         }
         return new PrivateKey(new BN(buf));
     }
