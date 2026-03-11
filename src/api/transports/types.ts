@@ -8,6 +8,14 @@ export interface TransportOptions {
    */
   websocket?: string;
   transport?: string | unknown;
+  /**
+   * HTTPS/TLS options (Node.js only; browser fetch does not support custom CA).
+   * When set, requests use undici Agent with these options for certificate verification.
+   */
+  httpsOptions?: {
+    rejectUnauthorized?: boolean;
+    ca?: string | Buffer | string[];
+  };
   [key: string]: unknown;
 }
 
