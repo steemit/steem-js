@@ -29,7 +29,8 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "audit": "pnpm audit --audit-level=moderate"
   },
   "keywords": [
     "steem",
