@@ -65,12 +65,13 @@ export class Signature {
         }
 
         const d = privKey.d;
-        let ecsignature: ECSignature;
+        let ecsignature: ECSignature | undefined;
         let nonce = 0;
+        const MAX_NONCE_ATTEMPTS = 1000;
 
         // Match old-steem-js behavior: find canonical signature (lenR === 32 && lenS === 32)
         // Based on C++ is_fc_canonical logic
-        while (true) {
+        while (nonce < MAX_NONCE_ATTEMPTS) {
             ecsignature = ecdsaSign(secp256k1, buf_sha256, d, nonce++);
             const rBa = ecsignature.r.toArrayLike(Buffer, 'be', 32);
             const sBa = ecsignature.s.toArrayLike(Buffer, 'be', 32);
@@ -89,6 +90,10 @@ export class Signature {
             if (nonce % 10 === 0) {
                 console.debug("WARN: " + nonce + " attempts to find canonical signature");
             }
+        }
+
+        if (nonce >= MAX_NONCE_ATTEMPTS || ecsignature === undefined) {
+            throw new Error('Failed to find canonical signature after maximum attempts');
         }
 
         const i = calcPubKeyRecoveryParam(secp256k1, new BN(buf_sha256), ecsignature, privKey.toPublic().Q!);
