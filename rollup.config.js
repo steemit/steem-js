@@ -45,13 +45,13 @@ function createUmdConfig(minified = false) {
     })
   ];
 
-  // Add terser for minified version
+  // Add terser for minified version (production: drop console to avoid leaking info)
   if (minified) {
     plugins.push(terser({
       compress: {
-        drop_console: false, // Keep console.log for debugging
+        drop_console: true,
         drop_debugger: true,
-        pure_funcs: ['console.debug'] // Remove console.debug calls
+        pure_funcs: ['console.log', 'console.info', 'console.debug']
       },
       mangle: {
         reserved: ['steem'] // Don't mangle the global name
