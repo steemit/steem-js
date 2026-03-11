@@ -59,21 +59,40 @@ export class PrivateKey {
      * @return {string} Wallet Import Format (still a secret, Not encrypted)
      */
     static fromWif(private_wif: string): PrivateKey {
-        const private_wif_buffer = Buffer.from(base58.decode(private_wif));
+        if (!private_wif || typeof private_wif !== 'string') {
+            throw new Error('Invalid WIF: empty or not a string');
+        }
+
+        let private_wif_buffer: Buffer;
+        try {
+            private_wif_buffer = Buffer.from(base58.decode(private_wif));
+        } catch {
+            throw new Error('Invalid WIF: failed to decode base58');
+        }
+
+        // Valid WIF: 1 byte version + 32 bytes key + 4 bytes checksum = 37 bytes
+        if (private_wif_buffer.length !== 37) {
+            throw new Error(
+                `Invalid WIF: expected 37 bytes, got ${private_wif_buffer.length}`
+            );
+        }
+
         const version = private_wif_buffer.readUInt8(0);
-        if (version !== 0x80) throw new Error(`Expected version ${0x80}, instead got ${version}`);
-        // checksum includes the version
-        const private_key = private_wif_buffer.slice(0, -4);
-        const checksum = private_wif_buffer.slice(-4);
-        let new_checksum = hash.sha256(private_key);
+        if (version !== 0x80) {
+            throw new Error(`Invalid WIF: expected version 0x80, got 0x${version.toString(16)}`);
+        }
+
+        const private_key = private_wif_buffer.slice(1, 33);
+        const checksum = private_wif_buffer.slice(33);
+
+        let new_checksum = hash.sha256(Buffer.concat([Buffer.from([0x80]), private_key]));
         new_checksum = hash.sha256(new_checksum);
         new_checksum = new_checksum.slice(0, 4);
         if (checksum.toString() !== new_checksum.toString()) {
             throw new Error('Invalid WIF key (checksum miss-match)');
         }
 
-        private_key.writeUInt8(0x80, 0);
-        return PrivateKey.fromBuffer(private_key.slice(1));
+        return PrivateKey.fromBuffer(private_key);
     }
 
     toWif(): string {
