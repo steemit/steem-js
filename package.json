@@ -22,7 +22,8 @@
   "unpkg": "dist/index.umd.js",
   "jsdelivr": "dist/index.umd.js",
   "scripts": {
-    "build": "rollup -c",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "pnpm run clean && rollup -c",
     "dev": "rollup -c -w",
     "test": "vitest run",
     "test:watch": "vitest watch",
