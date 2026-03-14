@@ -542,6 +542,107 @@ describe('Transaction Serializer', () => {
     });
   });
 
+  describe('comment_options extensions (beneficiaries)', () => {
+    const baseTx = {
+      ref_block_num: 100,
+      ref_block_prefix: 1234567890,
+      expiration: '2016-03-23T22:41:21',
+      operations: [
+        ['comment_options', {
+          author: 'alice',
+          permlink: 'test-post',
+          max_accepted_payout: '1000000.000 SBD',
+          percent_steem_dollars: 10000,
+          allow_votes: true,
+          allow_curation_rewards: true,
+          extensions: [] as unknown[]
+        }]
+      ],
+      extensions: [] as unknown[]
+    };
+
+    it('should serialize comment_options with empty extensions', () => {
+      const serialized = serializeTransaction(baseTx);
+      expect(serialized).toBeDefined();
+      expect(Buffer.isBuffer(serialized)).toBe(true);
+      expect(serialized.length).toBeGreaterThan(0);
+    });
+
+    it('should serialize comment_options with beneficiaries extension and sort by account', () => {
+      const txWithExt = {
+        ...baseTx,
+        operations: [
+          ['comment_options', {
+            ...(baseTx.operations[0] as [string, Record<string, unknown>])[1],
+            extensions: [
+              [0, {
+                beneficiaries: [
+                  { account: 'b', weight: 100 },
+                  { account: 'a', weight: 200 }
+                ]
+              }]
+            ]
+          }]
+        ]
+      };
+      const serialized = serializeTransaction(txWithExt);
+      expect(serialized).toBeDefined();
+      expect(Buffer.isBuffer(serialized)).toBe(true);
+      expect(serialized.length).toBeGreaterThan((serializeTransaction(baseTx) as Buffer).length);
+      const hex = serialized.toString('hex');
+      const idxA = hex.indexOf('0161');
+      const idxB = hex.indexOf('0162');
+      expect(idxA).toBeGreaterThan(-1);
+      expect(idxB).toBeGreaterThan(-1);
+      expect(idxA).toBeLessThan(idxB);
+    });
+
+    it('should produce same serialization regardless of input beneficiary order', () => {
+      const extensionsA = [
+        [0, { beneficiaries: [{ account: 'a', weight: 200 }, { account: 'b', weight: 100 }] }]
+      ];
+      const extensionsB = [
+        [0, { beneficiaries: [{ account: 'b', weight: 100 }, { account: 'a', weight: 200 }] }]
+      ];
+      const txA = {
+        ...baseTx,
+        operations: [
+          ['comment_options', {
+            ...(baseTx.operations[0] as [string, Record<string, unknown>])[1],
+            extensions: extensionsA
+          }]
+        ]
+      };
+      const txB = {
+        ...baseTx,
+        operations: [
+          ['comment_options', {
+            ...(baseTx.operations[0] as [string, Record<string, unknown>])[1],
+            extensions: extensionsB
+          }]
+        ]
+      };
+      const serializedA = serializeTransaction(txA);
+      const serializedB = serializeTransaction(txB);
+      expect(serializedA.toString('hex')).toBe(serializedB.toString('hex'));
+    });
+
+    it('should handle empty beneficiaries array in extension', () => {
+      const tx = {
+        ...baseTx,
+        operations: [
+          ['comment_options', {
+            ...(baseTx.operations[0] as [string, Record<string, unknown>])[1],
+            extensions: [[0, { beneficiaries: [] }]]
+          }]
+        ]
+      };
+      const serialized = serializeTransaction(tx);
+      expect(serialized).toBeDefined();
+      expect(Buffer.isBuffer(serialized)).toBe(true);
+    });
+  });
+
   describe('transaction digest (from Go test)', () => {
     it('should calculate digest matching Go implementation', () => {
       // Test from steemutil/transaction/signed_transaction_test.go

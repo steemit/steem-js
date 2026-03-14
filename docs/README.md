@@ -1724,6 +1724,8 @@ steem.broadcast.commentOptionsAsync(wif, author, permlink, maxAcceptedPayout, pe
 });
 ```
 
+The `extensions` parameter supports the beneficiaries extension (tag 0). Pass an array of `[tag, value]`, e.g. `[[0, { beneficiaries: [{ account: 'foo', weight: 1000 }, { account: 'bar', weight: 5000 }] }]]`. Beneficiaries are automatically sorted by account name before serialization to comply with the Steem protocol.
+
 ### Convert
 
 ```javascript
