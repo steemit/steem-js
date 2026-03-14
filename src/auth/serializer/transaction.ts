@@ -1045,7 +1045,7 @@ function serializeCommentOptions(bb: ByteBuffer, data: unknown): void {
     bb.writeUint16((dataObj.percent_steem_dollars as number) ?? 0);
     serializeBool(bb, dataObj.allow_votes);
     serializeBool(bb, dataObj.allow_curation_rewards);
-    serializeExtensions(bb, dataObj.extensions);
+    serializeCommentOptionsExtensions(bb, dataObj.extensions);
 }
 
 /**
@@ -1133,7 +1133,7 @@ function serializeAuthority(bb: ByteBuffer, auth: unknown): void {
  *
  * Format: int64 amount (little-endian) + uint8 precision + 7-byte symbol (UTF-8, null-padded).
  *
- * This helper is reused across all operations中涉及资产字段的地方，例如：
+ * This helper is reused for asset fields across all operations, e.g.
  * - amount / vesting_shares / reward_* / *_pays
  */
 function serializeAsset(bb: ByteBuffer, amount: string): void {
@@ -1157,7 +1157,7 @@ function serializeAsset(bb: ByteBuffer, amount: string): void {
 
 /**
  * Write a string using ByteBuffer's writeVString method.
- * 所有字符串字段统一通过该 helper 序列化，避免直接到处调用 ByteBuffer API。
+ * All string fields are serialized through this helper to avoid calling ByteBuffer API directly everywhere.
  */
 function writeString(bb: ByteBuffer, str: string): void {
     bb.writeVString(str);
@@ -1166,8 +1166,8 @@ function writeString(bb: ByteBuffer, str: string): void {
 /**
  * Serialize a time_point_sec-style field.
  *
- * 接受 ISO 字符串 / Date / 秒级数字，最终写入 uint32（自 epoch 起的秒数）。
- * 常用于 proposal start/end、escrow_deadline 等字段。
+ * Accepts ISO string / Date / seconds number; writes uint32 (seconds since epoch).
+ * Used for proposal start/end, escrow_deadline, and similar fields.
  */
 function serializeTimePointSec(bb: ByteBuffer, value: unknown): void {
     let seconds: number;
@@ -1178,7 +1178,7 @@ function serializeTimePointSec(bb: ByteBuffer, value: unknown): void {
     } else if (value instanceof Date) {
         seconds = Math.floor(value.getTime() / 1000);
     } else if (typeof value === 'number') {
-        // 这里假定已是秒级时间戳
+        // Assume value is already in seconds
         seconds = value;
     } else {
         seconds = 0;
@@ -1188,21 +1188,54 @@ function serializeTimePointSec(bb: ByteBuffer, value: unknown): void {
 
 /**
  * Serialize a generic bool flag as uint8(0/1).
- * 后续在多处 optional / approve / decline 字段可统一复用。
+ * Reused for optional / approve / decline and similar fields.
  */
 function serializeBool(bb: ByteBuffer, value: unknown): void {
     bb.writeUint8(value ? 1 : 0);
 }
 
 /**
- * Serialize a future_extensions / extensions 风格字段。
+ * Serialize comment_options extensions (flat_set<comment_options_extension>).
+ * Used only for comment_options operation. Supports tag 0 (comment_payout_beneficiaries).
+ * Beneficiaries are sorted alphabetically by account name before encoding to satisfy Steem protocol.
+ * Other extension tags are skipped; only tag 0 is serialized.
+ */
+function serializeCommentOptionsExtensions(bb: ByteBuffer, extensions: unknown): void {
+    if (!Array.isArray(extensions) || extensions.length === 0) {
+        bb.writeVarint32(0);
+        return;
+    }
+    // Only serialize tag 0 (comment_payout_beneficiaries); skip unknown tags
+    const supported = extensions.filter((ext): ext is [number, { beneficiaries?: Array<{ account: string; weight: number }> }] => {
+        const tag = Array.isArray(ext) && ext.length >= 1 ? Number(ext[0]) : -1;
+        return tag === 0;
+    });
+    bb.writeVarint32(supported.length);
+    for (const ext of supported) {
+        const tag = ext[0];
+        const value = ext[1];
+        bb.writeVarint32(tag);
+        if (tag === 0) {
+            const beneficiaries = Array.isArray(value?.beneficiaries) ? value.beneficiaries.slice() : [];
+            beneficiaries.sort((a, b) => String(a.account).localeCompare(String(b.account)));
+            bb.writeVarint32(beneficiaries.length);
+            for (const b of beneficiaries) {
+                writeString(bb, String(b.account ?? ''));
+                bb.writeUint16(Number(b.weight) & 0xffff);
+            }
+        }
+    }
+}
+
+/**
+ * Serialize a future_extensions / extensions-style field.
  *
- * 目前大多数链上交易中 extensions 仍为空集合，协议格式是：
+ * For most on-chain transactions extensions are still an empty set. Protocol format:
  * - varint32 length
- * - 后续按约定序列化各元素（当前实现仅支持空或简单 JSON 字符串）
+ * - then each element serialized per convention (current implementation supports empty only).
  *
- * 为兼容现有使用场景，这里暂时只写入长度，忽略实际内容；当需要支持
- * 具体 extension 类型时，可以在保持签名兼容性的前提下扩展实现。
+ * To stay compatible with existing usage, we only write length 0 and ignore content here;
+ * when supporting specific extension types, extend this after verification.
  */
 function serializeExtensions(bb: ByteBuffer, extensions: unknown): void {
     if (!Array.isArray(extensions) || extensions.length === 0) {
@@ -1210,9 +1243,9 @@ function serializeExtensions(bb: ByteBuffer, extensions: unknown): void {
         return;
     }
 
-    // 协议上 extensions 是 future_extensions，目前主网基本为 0。
-    // 为避免序列化出与 C++ 节点不兼容的数据，这里保守起见仍写入 0。
-    // 如果未来需要支持非空 extensions，可在测试验证后放开以下逻辑：
+    // Protocol-wise extensions are future_extensions; on mainnet they are typically 0.
+    // To avoid serializing data incompatible with C++ nodes, we still write 0 conservatively.
+    // To support non-empty extensions in the future, enable the logic below after tests:
     //
     // bb.writeVarint32(extensions.length);
     // for (const ext of extensions) {
