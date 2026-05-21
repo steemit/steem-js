@@ -2233,6 +2233,7 @@ MIT
 
 - **[SignedCall Examples](./signedCall-examples.md)** - Comprehensive guide for authenticated API calls
 - **[Signature Verification Examples](./signature-verification-examples.md)** - Complete guide for verifying signatures
+- **[Changelog](../CHANGELOG.md)** - Release notes (v1.0.16 routing changes)
 - **[Refactoring History](./refactoring-2025.md)** - Technical details about the 2025 modernization
 
 ## Contributing

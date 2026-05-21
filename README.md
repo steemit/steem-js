@@ -13,6 +13,8 @@ A modern JavaScript/TypeScript library for interacting with the Steem blockchain
 
 **[API routing (condenser_api vs database_api)](./docs/README.md#api-routing)** - How RPC namespaces map to current Steem nodes (v1.0.16+)
 
+**[📋 Changelog](./CHANGELOG.md)** - Version history and breaking changes
+
 **[🔧 Refactoring Details](./docs/refactoring-2025.md)** - Technical details about the 2025 modernization
 
 ## 🚀 Quick Start
