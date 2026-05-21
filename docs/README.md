@@ -2,6 +2,8 @@
 
 Steem.js is a JavaScript/TypeScript library for interacting with the Steem blockchain. This documentation provides complete API reference and usage examples.
 
+> **v1.0.16+:** Most `steem.api` read helpers call **`condenser_api`** on the node; see [API routing](#api-routing) for namespaces, removed methods, and modern `database_api` `list_*` / `find_*` usage.
+
 ## Table of Contents
 
 - [Installation](#installation)
@@ -10,8 +12,8 @@ Steem.js is a JavaScript/TypeScript library for interacting with the Steem block
 - [JSON-RPC](#json-rpc)
     - [Signed RPC Calls](#signed-rpc-calls)
     - [Signature Verification](#signature-verification)
-- [Database API](#database-api)
-    - [Subscriptions](#subscriptions)
+- [API routing](#api-routing)
+- [Read API methods](#read-api-methods)
     - [Tags](#tags)
     - [Blocks and Transactions](#blocks-and-transactions)
     - [Global Properties](#global-properties)
@@ -380,7 +382,7 @@ steem.api.signedCall(method, params, account, privateKey, callback);
 
 | Parameter | Data Type | Description |
 |---------|--------|-----------|
-| method | string | The RPC method name to call |
+| method | string | Full RPC method name (e.g. `condenser_api.get_account_history`) |
 | params | array | Parameters for the RPC method |
 | account | string | The account name making the request |
 | privateKey | string | Private key (WIF format) for signing |
@@ -496,41 +498,46 @@ const isValid = signatureVerification.verifyMessageSignature(message, signature,
 
 ---
 
-## Database API
+## API routing
 
-### Subscriptions
+Steem nodes expose multiple JSON-RPC plugin namespaces. steem-js maps each `steem.api.*` helper to a namespace in `src/api/methods.ts`.
 
-#### Set Subscribe Callback
+### How requests are sent
 
-```javascript
-steem.api.setSubscribeCallback(callback, clearFilter, function(err, result) {
-  console.log(err, result);
-});
-```
+| Style | Example | Wire format (HTTP) |
+|-------|---------|-------------------|
+| Generated helper | `steem.api.getAccountsAsync(['ned'])` | JSON-RPC `call` with `['condenser_api', 'get_accounts', [['ned']]]` |
+| Explicit namespace | `steem.api.call('condenser_api.get_accounts', [['ned']])` | JSON-RPC method `condenser_api.get_accounts` |
 
-#### Set Pending Transaction Callback
+As of **v1.0.16**, legacy read helpers (`get_accounts`, `get_content`, discussions, witnesses, …) use **`condenser_api`**, matching current [steem](https://github.com/steemit/steem) full nodes. Methods that remain on the modern **`database_api`** plugin include `get_config`, `get_dynamic_global_properties`, `get_transaction_hex`, `get_required_signatures`, `get_potential_signatures`, `verify_authority`, `verify_account_authority`, `get_order_book`, `get_witness_schedule`, `get_active_witnesses`, `get_feed_history`, and `find_change_recovery_account_requests`.
 
-```javascript
-steem.api.setPendingTransactionCallback(cb, function(err, result) {
-  console.log(err, result);
-});
-```
+### Modern `database_api` (`list_*` / `find_*`)
 
-#### Set Block Applied Callback
+The node's native `database_api` plugin uses different method names and object-shaped parameters (e.g. `database_api.find_accounts` with `{ accounts: ['user'] }`). Those are **not** exposed as camelCase helpers; call them with:
 
 ```javascript
-steem.api.setBlockAppliedCallback(cb, function(err, result) {
-  console.log(err, result);
-});
+await steem.api.callAsync('database_api.find_accounts', [{ accounts: ['initminer'] }]);
 ```
 
-#### Cancel All Subscriptions
+### Removed helpers (v1.0.16)
 
-```javascript
-steem.api.cancelAllSubscriptions(function(err, result) {
-  console.log(err, result);
-});
-```
+These `steem.api.*` methods were removed from the library because they are not implemented on current Steem nodes:
+
+- WebSocket subscriptions: `setSubscribeCallback`, `setPendingTransactionCallback`, `setBlockAppliedCallback`, `cancelAllSubscriptions`
+- Categories: `getTrendingCategories`, `getBestCategories`, `getActiveCategories`, `getRecentCategories`
+- Discussions: `getDiscussionsByTrending30`, `getDiscussionsByPayout`
+- Account: `getAccountNotifications`, `getAccountReputation`, `getAccountBandwidth`, `getAccountBandwidthByType`, `getAccountBandwidthByTypeAndTime`
+- Market / mining: `getLiquidityQueue`, `getMinerQueue`
+- Escrow: `getEscrowByFrom`, `getEscrowByTo`, `getEscrowByAgent`
+- Proposed transactions: `getProposedTransactions`, `getProposedTransaction`, and related `getProposedTransactionApprovals*` variants
+
+Use `getEscrow` / `condenser_api` or `database_api.list_escrows` / `find_escrows` where applicable.
+
+---
+
+## Read API methods
+
+The sections below document `steem.api` helpers for reading chain state. Unless noted, calls are routed to **`condenser_api`** on the node.
 
 ### Tags
 
@@ -689,9 +696,6 @@ steem.api.getDiscussionsByActiveAsync(query);
 // By cashout time
 steem.api.getDiscussionsByCashoutAsync(query);
 
-// By payout amount
-steem.api.getDiscussionsByPayoutAsync(query);
-
 // By votes
 steem.api.getDiscussionsByVotesAsync(query);
 
@@ -796,6 +800,8 @@ steem.api.getStateAsync("/trending/collorchallenge");
 ```
 
 ### Global Properties
+
+`getConfig`, `getDynamicGlobalProperties`, `getFeedHistory`, and `getWitnessSchedule` use **`database_api`** on the node. `getChainProperties`, `getHardforkVersion`, and `getNextScheduledHardfork` use **`condenser_api`**.
 
 #### Get Config
 
@@ -1139,47 +1145,6 @@ steem.api.getRecoveryRequestAsync(account).then(function(result) {
 });
 ```
 
-#### Get Account Bandwidth
-
-Get the bandwidth of the `account`. The bandwidth is the limit of data that can be uploaded to the blockchain. To have bigger bandwidth - power up your Steem.
-
-```javascript
-steem.api.getAccountBandwidthAsync(account, bandwidthType).then(function(data) {
-  console.log(data);
-});
-```
-
-**Parameter Description:**
-
-| Parameter | Data Type | Description |
-|---------|--------|-----------|
-| account | string | A Steem username |
-| bandwidthType | number | This is a value from an enumeration of predefined values. '1' is for the "Forum" bandwidth, and '2' is for "Market" bandwidth |
-
-**Call Example:**
-
-```javascript
-const forumBandwidthType = 1;
-const marketBandwidthType = 2;
-
-steem.api.getAccountBandwidthAsync("username", forumBandwidthType).then(function(data) {
-  console.log(data);
-});
-```
-
-**Return Example:**
-
-```javascript
-{
-  id: 23638,
-  account: 'username',
-  type: 'forum',
-  average_bandwidth: 260815714,
-  lifetime_bandwidth: '125742000000',
-  last_bandwidth_update: '2018-02-07T22:30:42'
-}
-```
-
 #### Get Account Reputations
 
 Gets the reputation points of `limit` accounts with names most similar to `lowerBoundName`.
@@ -1242,13 +1207,7 @@ steem.api.getOpenOrdersAsync(owner).then(function(result) {
 });
 ```
 
-#### Get Liquidity Queue
-
-```javascript
-steem.api.getLiquidityQueueAsync(startAccount, limit).then(function(result) {
-  console.log(result);
-});
-```
+`getOrderBook` uses **`database_api`** on the node; `getMarketOrderBook` uses **`market_history_api`**.
 
 #### Get Market History Buckets
 
@@ -1294,6 +1253,8 @@ steem.api.getPotentialSignaturesAsync(trx).then(function(result) {
 
 #### Verify Authority
 
+Uses **`database_api`** on the node.
+
 ```javascript
 steem.api.verifyAuthorityAsync(trx).then(function(result) {
   console.log(result);
@@ -1301,6 +1262,8 @@ steem.api.verifyAuthorityAsync(trx).then(function(result) {
 ```
 
 #### Verify Account Authority
+
+Uses **`database_api`** on the node.
 
 ```javascript
 steem.api.verifyAccountAuthorityAsync(nameOrId, signers).then(function(result) {
@@ -1480,14 +1443,6 @@ steem.api.getWitnessScheduleAsync().then(function(data) {
   max_runner_witnesses: 1,
   hardfork_required_witnesses: 17
 }
-```
-
-#### Get Miner Queue
-
-```javascript
-steem.api.getMinerQueueAsync().then(function(result) {
-  console.log(result);
-});
 ```
 
 ---
@@ -2278,6 +2233,7 @@ MIT
 
 - **[SignedCall Examples](./signedCall-examples.md)** - Comprehensive guide for authenticated API calls
 - **[Signature Verification Examples](./signature-verification-examples.md)** - Complete guide for verifying signatures
+- **[Changelog](../CHANGELOG.md)** - Release notes (v1.0.16 routing changes)
 - **[Refactoring History](./refactoring-2025.md)** - Technical details about the 2025 modernization
 
 ## Contributing
@@ -2286,4 +2242,4 @@ Contributions are welcome! Please check the project's GitHub repository for more
 
 ---
 
-*This documentation is based on Steem.js v1.0.4. For updates, please refer to the latest version documentation.*
+*Documentation reflects Steem.js v1.0.16 (API routing aligned with steemit/steem condenser_api / database_api plugins).*

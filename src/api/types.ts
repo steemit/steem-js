@@ -1,6 +1,6 @@
 /**
- * Type definitions for dynamically generated API methods
- * These types provide TypeScript support for all API methods
+ * Type definitions for dynamically generated API methods.
+ * Runtime routing (condenser_api vs database_api) is defined in methods.ts; see docs/README.md#api-routing.
  */
 
 // Base callback type

@@ -370,3 +370,21 @@ returnType: Promise<any>
 3. **Modern Standard**: Aligns with ethers.js and modern SDKs
 4. **Simpler Code**: No external Promise library needed
 5. **Better Performance**: Native Promise is optimized by JavaScript engines
+
+## 11. API RPC routing (v1.0.16)
+
+### 11.1 Problem
+
+`src/api/methods.ts` historically registered most helpers under `database_api`. Modern [steem](https://github.com/steemit/steem) nodes implement legacy read methods on the **`condenser_api`** plugin and expose a separate **`database_api`** with `list_*` / `find_*` methods. Calling `get_accounts` via `database_api` fails at runtime.
+
+### 11.2 Changes
+
+- **51 methods** moved from `api: 'database_api'` to `api: 'condenser_api'` (e.g. `get_accounts`, `get_content`, discussions).
+- **12 methods** remain on `database_api` (e.g. `get_config`, `verify_authority`, `find_change_recovery_account_requests`).
+- **30 methods** removed from the registry (subscriptions, categories, proposed-transaction getters, etc.)—not present on current nodes.
+
+### 11.3 Usage notes
+
+- High-level helpers: `steem.api.getAccountsAsync()` (unchanged API surface).
+- New-style node APIs: `steem.api.callAsync('database_api.find_accounts', [{ accounts: ['user'] }])`.
+- See [API routing](./README.md#api-routing) in the main documentation.

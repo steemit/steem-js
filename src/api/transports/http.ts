@@ -135,6 +135,10 @@ export class HttpTransport extends BaseTransport {
     return this.nonRetriableOperations.includes(method);
   }
 
+  /**
+   * POST JSON-RPC to the node. Body uses method `call` with params [api, methodName, args]
+   * for backwards compatibility with steemd; alternatively use Api.call('plugin.method', …).
+   */
   send(api: string, data: { id?: number; method: string; params: unknown[] }, callback?: (err: Error | null, result?: unknown, attempt?: number) => void) {
     if (typeof callback !== 'function') {
       callback = () => {};
