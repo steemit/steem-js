@@ -1,3 +1,18 @@
+/**
+ * Registry of JSON-RPC methods exposed as steem.api.* helpers.
+ *
+ * Each entry's `api` field is the Steem node plugin namespace sent on the wire
+ * (legacy HTTP transport uses JSON-RPC `call` with [api, method, params]).
+ *
+ * Routing policy (aligned with steemit/steem):
+ * - condenser_api: legacy read helpers (get_accounts, get_content, discussions, …)
+ * - database_api: chain/validation APIs still on the modern database_api plugin
+ * - follow_api, network_broadcast_api, market_history_api, etc.: other plugins
+ *
+ * Methods removed from this list in v1.0.16 are no longer served by current nodes
+ * (e.g. websocket subscriptions, category listings, proposed-transaction getters).
+ */
+
 interface ApiMethod {
   api: string;
   method: string;

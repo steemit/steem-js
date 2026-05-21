@@ -69,6 +69,7 @@ export class Api extends EventEmitter {
     this._setLogger(options);
     this.options = options;
 
+    // Register steem.api.* from src/api/methods.ts; each call uses method.api as the RPC namespace.
     methods.forEach(method => {
       const methodName = method.method_name || camelCase(method.method);
       const methodParams = method.params || [];
@@ -207,6 +208,11 @@ export class Api extends EventEmitter {
     return this.transport.stop();
   }
 
+  /**
+   * Send a JSON-RPC request via the active transport.
+   * HTTP uses the legacy `call` wrapper: params are [apiNamespace, methodName, args].
+   * @param api Plugin namespace (e.g. condenser_api, database_api)
+   */
   send(api: string, data: unknown, callback: unknown) {
     let cb = callback as (err: Error | null, result?: unknown) => void;
     if (this.__logger) {
@@ -775,7 +781,8 @@ export class Api extends EventEmitter {
   }
 
   /**
-   * Verify transaction authority.
+   * Verify transaction authority (database_api.verify_authority on the node).
+   * Prefer verifyAuthorityAsync; dynamically generated helpers also exist from methods.ts.
    * @param trx Transaction object to verify
    * @param callback Optional callback function
    * @returns Promise with verification result if no callback provided
@@ -810,7 +817,7 @@ export class Api extends EventEmitter {
   }
 
   /**
-   * Verify account authority.
+   * Verify account authority (database_api.verify_account_authority on the node).
    * @param nameOrId Account name or ID
    * @param signers Array of signer public keys
    * @param callback Optional callback function
@@ -863,8 +870,8 @@ export function signTransaction(trx: unknown, keys: string[]) {
   return api.signTransaction(trx, keys);
 }
 
+/** @deprecated Use `api.verifyAuthority` / `verifyAuthorityAsync` on the Api instance instead. */
 export function verifyAuthority(..._args: unknown[]) {
-  // Implementation would go here
   return false;
 }
 

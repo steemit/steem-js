@@ -11,6 +11,8 @@ A modern JavaScript/TypeScript library for interacting with the Steem blockchain
 
 **[👉 Complete API Documentation](./docs/README.md)** - Comprehensive guide with all methods, examples, and usage patterns
 
+**[API routing (condenser_api vs database_api)](./docs/README.md#api-routing)** - How RPC namespaces map to current Steem nodes (v1.0.16+)
+
 **[🔧 Refactoring Details](./docs/refactoring-2025.md)** - Technical details about the 2025 modernization
 
 ## 🚀 Quick Start
@@ -65,6 +67,7 @@ await steem.broadcast.voteAsync(postingWif, 'voter', 'author', 'permlink', 10000
 
 ## ✨ Key Features
 
+- **🔗 Correct RPC routing** - Legacy read APIs use `condenser_api`; chain/validation APIs use `database_api` (v1.0.16+, aligned with [steem](https://github.com/steemit/steem))
 - **🔒 Type Safety** - Full TypeScript support with complete type definitions
 - **⚡ Modern** - ES modules, async/await, modern cryptography libraries
 - **🌐 Universal** - Works in Node.js, browsers, and bundlers
@@ -102,7 +105,7 @@ This is a complete modernization of the original steem-js library:
 
 ```
 src/
-├── api/          # Blockchain API client (HTTP)
+├── api/          # Blockchain API client (HTTP; methods.ts → condenser_api / database_api / …)
 ├── auth/         # Authentication and key management
 ├── broadcast/    # Transaction broadcasting
 ├── crypto/       # Cryptographic utilities

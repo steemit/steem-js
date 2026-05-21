@@ -4,6 +4,10 @@
 
 This document describes the type definitions for the `Api` class's dynamically generated methods.
 
+## RPC routing
+
+Helpers such as `getAccounts()` are defined in `src/api/methods.ts`. Each entry sets the Steem plugin namespace (`condenser_api`, `database_api`, …) used by `Api.send()`. As of v1.0.16, most legacy read methods route through `condenser_api`; only chain/validation methods remain on `database_api`. New-style node APIs (`list_accounts`, `find_accounts`, …) are not generated as camelCase helpers—use `api.call('database_api.find_accounts', [args])` instead.
+
 ## Problem
 
 The `Api` class dynamically generates methods at runtime based on the `methods.ts` configuration. TypeScript cannot automatically infer these methods, causing type errors when trying to use them (e.g., `api.getAccounts()`).

@@ -6,6 +6,8 @@ This document provides comprehensive examples for using `signedCall` in Steem.js
 
 `signedCall` is used for making authenticated JSON-RPC calls to the Steem blockchain. It cryptographically signs requests to prove account ownership and access private or restricted data.
 
+Pass the full RPC method name (e.g. `condenser_api.get_account_history`). Legacy read methods use the **`condenser_api`** namespace on current nodes; see [API routing](./README.md#api-routing) in the main docs.
+
 ## Basic Setup
 
 ```javascript
@@ -282,6 +284,7 @@ class SecureSignedClient {
 
   async secureCall(method, params) {
     // Additional security checks
+    // Prefer condenser_api.* for legacy reads; database_api.* for config/validation and list/find APIs.
     if (!method.startsWith('condenser_api.') && !method.startsWith('database_api.')) {
       throw new Error('Only condenser_api and database_api methods are allowed');
     }
