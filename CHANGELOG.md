@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.17] - 2026-05-22
+
+### Fixed
+
+- Patch **`bytebuffer@5.0.1`** (via `pnpm.patchedDependencies`) to use `Buffer.alloc` / `Buffer.from` instead of deprecated `new Buffer()`, eliminating Node.js **DEP0005** warnings when bundling or loading the library on Node 20+.
+
 ## [1.0.16] - 2026-05-21
 
 ### Fixed
