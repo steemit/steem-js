@@ -1,0 +1,329 @@
+diff --git a/.npmignore b/.npmignore
+deleted file mode 100644
+index 590fb83169e46a5cacced43f32d76109572a814c..0000000000000000000000000000000000000000
+diff --git a/dist/bytebuffer-node.js b/dist/bytebuffer-node.js
+index 93a7c46d8127010a6579fa9beea215e0410ecb13..bd7ca21850666e1a6c79331d943df682f84bfdbd 100644
+--- a/dist/bytebuffer-node.js
++++ b/dist/bytebuffer-node.js
+@@ -60,7 +60,7 @@ module.exports = (function() {
+          * @type {!Buffer}
+          * @expose
+          */
+-        this.buffer = capacity === 0 ? EMPTY_BUFFER : new Buffer(capacity);
++        this.buffer = capacity === 0 ? EMPTY_BUFFER : Buffer.alloc(capacity);
+ 
+         /**
+          * Absolute read/write offset.
+@@ -185,7 +185,7 @@ module.exports = (function() {
+      * @type {!Buffer}
+      * @inner
+      */
+-    var EMPTY_BUFFER = new Buffer(0);
++    var EMPTY_BUFFER = Buffer.alloc(0);
+ 
+     /**
+      * String.fromCharCode reference for compile-time renaming.
+@@ -354,7 +354,7 @@ module.exports = (function() {
+             k = 0,
+             b;
+         if (buffer instanceof Uint8Array) { // Extract bytes from Uint8Array
+-            b = new Buffer(buffer.length);
++            b = Buffer.alloc(buffer.length);
+             if (memcpy) { // Fast
+                 memcpy(b, 0, buffer.buffer, buffer.byteOffset, buffer.byteOffset + buffer.length);
+             } else { // Slow
+@@ -363,7 +363,7 @@ module.exports = (function() {
+             }
+             buffer = b;
+         } else if (buffer instanceof ArrayBuffer) { // Convert ArrayBuffer to Buffer
+-            b = new Buffer(buffer.byteLength);
++            b = Buffer.alloc(buffer.byteLength);
+             if (memcpy) { // Fast
+                 memcpy(b, 0, buffer, 0, buffer.byteLength);
+             } else { // Slow
+@@ -376,7 +376,7 @@ module.exports = (function() {
+         } else if (!(buffer instanceof Buffer)) { // Create from octets if it is an error, otherwise fail
+             if (Object.prototype.toString.call(buffer) !== "[object Array]")
+                 throw TypeError("Illegal buffer");
+-            buffer = new Buffer(buffer);
++            buffer = Buffer.from(buffer);
+         }
+         bb = new ByteBuffer(0, littleEndian, noAssert);
+         if (buffer.length > 0) { // Avoid references to more than one EMPTY_BUFFER
+@@ -2320,7 +2320,7 @@ module.exports = (function() {
+     ByteBufferPrototype.clone = function(copy) {
+         var bb = new ByteBuffer(0, this.littleEndian, this.noAssert);
+         if (copy) {
+-            var buffer = new Buffer(this.buffer.length);
++            var buffer = Buffer.alloc(this.buffer.length);
+             this.buffer.copy(buffer);
+             bb.buffer = buffer;
+         } else {
+@@ -2364,7 +2364,7 @@ module.exports = (function() {
+             this.limit = 0;
+             return this;
+         }
+-        var buffer = new Buffer(len);
++        var buffer = Buffer.alloc(len);
+         this.buffer.copy(buffer, 0, begin, end);
+         this.buffer = buffer;
+         if (this.markedOffset >= 0) this.markedOffset -= begin;
+@@ -2603,7 +2603,7 @@ module.exports = (function() {
+         if (len <= 0) return this; // Nothing to prepend
+         var diff = len - offset;
+         if (diff > 0) { // Not enough space before offset, so resize + move
+-            var buffer = new Buffer(this.buffer.length + diff);
++            var buffer = Buffer.alloc(this.buffer.length + diff);
+             this.buffer.copy(buffer, len, offset, this.buffer.length);
+             this.buffer = buffer;
+             this.offset += diff;
+@@ -2691,7 +2691,7 @@ module.exports = (function() {
+                 throw RangeError("Illegal capacity: 0 <= "+capacity);
+         }
+         if (this.buffer.length < capacity) {
+-            var buffer = new Buffer(capacity);
++            var buffer = Buffer.alloc(capacity);
+             this.buffer.copy(buffer);
+             this.buffer = buffer;
+         }
+@@ -2790,7 +2790,7 @@ module.exports = (function() {
+                 throw RangeError("Illegal range: 0 <= "+offset+" <= "+limit+" <= "+this.buffer.length);
+         }
+         if (forceCopy) {
+-            var buffer = new Buffer(limit - offset);
++            var buffer = Buffer.alloc(limit - offset);
+             this.buffer.copy(buffer, 0, offset, limit);
+             return buffer;
+         } else {
+@@ -2896,7 +2896,7 @@ module.exports = (function() {
+      * @expose
+      */
+     ByteBuffer.fromBase64 = function(str, littleEndian) {
+-        return ByteBuffer.wrap(new Buffer(str, "base64"), littleEndian);
++        return ByteBuffer.wrap(Buffer.from(str, "base64"), littleEndian);
+         return bb;
+     };
+ 
+@@ -2952,7 +2952,7 @@ module.exports = (function() {
+      * @expose
+      */
+     ByteBuffer.fromBinary = function(str, littleEndian) {
+-        return ByteBuffer.wrap(new Buffer(str, "binary"), littleEndian);
++        return ByteBuffer.wrap(Buffer.from(str, "binary"), littleEndian);
+         return bb;
+     };
+ 
+@@ -3185,7 +3185,7 @@ module.exports = (function() {
+                 throw TypeError("Illegal str: Length not a multiple of 2");
+         }
+         var bb = new ByteBuffer(0, littleEndian, true);
+-        bb.buffer = new Buffer(str, "hex");
++        bb.buffer = Buffer.from(str, "hex");
+         bb.limit = bb.buffer.length;
+         return bb;
+     };
+@@ -3429,7 +3429,7 @@ module.exports = (function() {
+             if (typeof str !== 'string')
+                 throw TypeError("Illegal str: Not a string");
+         var bb = new ByteBuffer(0, littleEndian, noAssert);
+-        bb.buffer = new Buffer(str, "utf8");
++        bb.buffer = Buffer.from(str, "utf8");
+         bb.limit = bb.buffer.length;
+         return bb;
+     };
+diff --git a/src/bytebuffer.js b/src/bytebuffer.js
+index c2a988857565c872abc2ff5b2d5ab230cb5956b7..fc4ada925f314c67ce1c09ff6f03f580009ed5c0 100644
+--- a/src/bytebuffer.js
++++ b/src/bytebuffer.js
+@@ -32,7 +32,7 @@ var ByteBuffer = function(capacity, littleEndian, noAssert) {
+      * @type {!Buffer}
+      * @expose
+      */
+-    this.buffer = capacity === 0 ? EMPTY_BUFFER : new Buffer(capacity);
++    this.buffer = capacity === 0 ? EMPTY_BUFFER : Buffer.alloc(capacity);
+     //? } else {
+     
+     /**
+diff --git a/src/encodings/base64.js b/src/encodings/base64.js
+index 85f394a049dac8479d16094352b393b18a67d52e..99a69193e0b4e821380a789440b7ff7a04a390c1 100644
+--- a/src/encodings/base64.js
++++ b/src/encodings/base64.js
+@@ -46,7 +46,7 @@ ByteBufferPrototype.toBase64 = function(begin, end) {
+  */
+ ByteBuffer.fromBase64 = function(str, littleEndian) {
+     //? if (NODE) {
+-    return ByteBuffer.wrap(new Buffer(str, "base64"), littleEndian);
++    return ByteBuffer.wrap(Buffer.from(str, "base64"), littleEndian);
+     //? } else {
+     if (typeof str !== 'string')
+         throw TypeError("str");
+diff --git a/src/encodings/binary.js b/src/encodings/binary.js
+index e6a9de6052bd8b5374aafc3f53a7101fb6889263..817e12fa0d64a2cd4e54afe35f4dc44c4e9512b7 100644
+--- a/src/encodings/binary.js
++++ b/src/encodings/binary.js
+@@ -49,7 +49,7 @@ ByteBufferPrototype.toBinary = function(begin, end) {
+  */
+ ByteBuffer.fromBinary = function(str, littleEndian) {
+     //? if (NODE) {
+-    return ByteBuffer.wrap(new Buffer(str, "binary"), littleEndian);
++    return ByteBuffer.wrap(Buffer.from(str, "binary"), littleEndian);
+     //? } else {
+     if (typeof str !== 'string')
+         throw TypeError("str");
+diff --git a/src/encodings/hex.js b/src/encodings/hex.js
+index 1f58d360a12a5ba50ac6909d35ff5fdbd9d864d6..f3b33f9832ac950aa2699cbc059c6f8941f87480 100644
+--- a/src/encodings/hex.js
++++ b/src/encodings/hex.js
+@@ -51,7 +51,7 @@ ByteBuffer.fromHex = function(str, littleEndian, noAssert) {
+     }
+     //? if (NODE) {
+     var bb = new ByteBuffer(0, littleEndian, true);
+-    bb.buffer = new Buffer(str, "hex");
++    bb.buffer = Buffer.from(str, "hex");
+     bb.limit = bb.buffer.length;
+     //? } else {
+     var k = str.length,
+diff --git a/src/encodings/utf8.js b/src/encodings/utf8.js
+index d79ce10e0d72bfca223fba54d1d2e6fbf477df97..ecba23a1c660e2d462a9f89e0ab8efbf54c62eb3 100644
+--- a/src/encodings/utf8.js
++++ b/src/encodings/utf8.js
+@@ -52,7 +52,7 @@ ByteBuffer.fromUTF8 = function(str, littleEndian, noAssert) {
+             throw TypeError("Illegal str: Not a string");
+     //? if (NODE) {
+     var bb = new ByteBuffer(0, littleEndian, noAssert);
+-    bb.buffer = new Buffer(str, "utf8");
++    bb.buffer = Buffer.from(str, "utf8");
+     bb.limit = bb.buffer.length;
+     //? } else {
+     var bb = new ByteBuffer(utfx.calculateUTF16asUTF8(stringSource(str), true)[1], littleEndian, noAssert),
+diff --git a/src/helpers.js b/src/helpers.js
+index c28c6a79c986a5413e217ab591a27be8fc47296e..10cbec12bc69047e35c4dda6e450164afe4ad6c0 100644
+--- a/src/helpers.js
++++ b/src/helpers.js
+@@ -5,7 +5,7 @@
+  * @type {!Buffer}
+  * @inner
+  */
+-var EMPTY_BUFFER = new Buffer(0);
++var EMPTY_BUFFER = Buffer.alloc(0);
+ //? } else {
+ 
+ /**
+diff --git a/src/methods/clone.js b/src/methods/clone.js
+index 131c3cfb2d9726514ba0c2eb90359ca5f78061f3..4236c9d5babcfeff8e772a9a759004a964524e77 100644
+--- a/src/methods/clone.js
++++ b/src/methods/clone.js
+@@ -9,7 +9,7 @@ ByteBufferPrototype.clone = function(copy) {
+     var bb = new ByteBuffer(0, this.littleEndian, this.noAssert);
+     if (copy) {
+         //? if (NODE) {
+-        var buffer = new Buffer(this.buffer.length);
++        var buffer = Buffer.alloc(this.buffer.length);
+         this.buffer.copy(buffer);
+         bb.buffer = buffer;
+         //? } else {
+diff --git a/src/methods/compact.js b/src/methods/compact.js
+index 693e44456493ed8458c9598e09b7def808b50023..9453ff929f4505a21c0094cd1d853132f543489e 100644
+--- a/src/methods/compact.js
++++ b/src/methods/compact.js
+@@ -26,7 +26,7 @@ ByteBufferPrototype.compact = function(begin, end) {
+         return this;
+     }
+     //? if (NODE) {
+-    var buffer = new Buffer(len);
++    var buffer = Buffer.alloc(len);
+     this.buffer.copy(buffer, 0, begin, end);
+     this.buffer = buffer;
+     //? } else if (DATAVIEW) {
+diff --git a/src/methods/prepend.js b/src/methods/prepend.js
+index 14c233e9e1802c6cc3b3cee11749e1f40e8b526f..c641a73ad811676b6110d52115f237c12acf2f29 100644
+--- a/src/methods/prepend.js
++++ b/src/methods/prepend.js
+@@ -33,7 +33,7 @@ ByteBufferPrototype.prepend = function(source, encoding, offset) {
+     var diff = len - offset;
+     if (diff > 0) { // Not enough space before offset, so resize + move
+         //? if (NODE) {
+-        var buffer = new Buffer(this.buffer.length + diff);
++        var buffer = Buffer.alloc(this.buffer.length + diff);
+         this.buffer.copy(buffer, len, offset, this.buffer.length);
+         this.buffer = buffer;
+         //? } else if (DATAVIEW) {
+diff --git a/src/methods/resize.js b/src/methods/resize.js
+index 4a50563ae6b1cbe8a349b982fd860bcdc1cc0403..84542cff12f1bb0f1971d4b85f5f15d3655ec873 100644
+--- a/src/methods/resize.js
++++ b/src/methods/resize.js
+@@ -15,7 +15,7 @@ ByteBufferPrototype.resize = function(capacity) {
+     }
+     //? if (NODE) {
+     if (this.buffer.length < capacity) {
+-        var buffer = new Buffer(capacity);
++        var buffer = Buffer.alloc(capacity);
+         this.buffer.copy(buffer);
+         this.buffer = buffer;
+     }
+diff --git a/src/methods/static/wrap.js b/src/methods/static/wrap.js
+index 798362a71b3a5fa1dd551cc0c1c7a81e8e158b2e..c5780e20472a48369a7eb076949ad4cbc03b81ef 100644
+--- a/src/methods/static/wrap.js
++++ b/src/methods/static/wrap.js
+@@ -58,7 +58,7 @@ ByteBuffer.wrap = function(buffer, encoding, littleEndian, noAssert) {
+         k = 0,
+         b;
+     if (buffer instanceof Uint8Array) { // Extract bytes from Uint8Array
+-        b = new Buffer(buffer.length);
++        b = Buffer.alloc(buffer.length);
+         if (memcpy) { // Fast
+             memcpy(b, 0, buffer.buffer, buffer.byteOffset, buffer.byteOffset + buffer.length);
+         } else { // Slow
+@@ -67,7 +67,7 @@ ByteBuffer.wrap = function(buffer, encoding, littleEndian, noAssert) {
+         }
+         buffer = b;
+     } else if (buffer instanceof ArrayBuffer) { // Convert ArrayBuffer to Buffer
+-        b = new Buffer(buffer.byteLength);
++        b = Buffer.alloc(buffer.byteLength);
+         if (memcpy) { // Fast
+             memcpy(b, 0, buffer, 0, buffer.byteLength);
+         } else { // Slow
+@@ -80,7 +80,7 @@ ByteBuffer.wrap = function(buffer, encoding, littleEndian, noAssert) {
+     } else if (!(buffer instanceof Buffer)) { // Create from octets if it is an error, otherwise fail
+         if (Object.prototype.toString.call(buffer) !== "[object Array]")
+             throw TypeError("Illegal buffer");
+-        buffer = new Buffer(buffer);
++        buffer = Buffer.from(buffer);
+     }
+     bb = new ByteBuffer(0, littleEndian, noAssert);
+     if (buffer.length > 0) { // Avoid references to more than one EMPTY_BUFFER
+diff --git a/src/methods/toBuffer.js b/src/methods/toBuffer.js
+index cf3492c5e9a32c6a6e9c4d178cf64c2ea158a3cc..4c663c2cf5974aece4dad4d8071f12d5232085ef 100644
+--- a/src/methods/toBuffer.js
++++ b/src/methods/toBuffer.js
+@@ -18,7 +18,7 @@ ByteBufferPrototype.toBuffer = function(forceCopy) {
+     }
+     //? if (NODE) {
+     if (forceCopy) {
+-        var buffer = new Buffer(limit - offset);
++        var buffer = Buffer.alloc(limit - offset);
+         this.buffer.copy(buffer, 0, offset, limit);
+         return buffer;
+     } else {
+diff --git a/tests/suite.js b/tests/suite.js
+index 213322782a8269b9763bb5d225032d6b5600ff53..491f003107810f8a5b2fca775e5dfb2d4154cc71 100644
+--- a/tests/suite.js
++++ b/tests/suite.js
+@@ -126,7 +126,7 @@ function makeSuite(ByteBuffer) {
+     
+     if (type === Buffer) {
+         suite.wrap.Buffer = function(test) {
+-            var buf = new Buffer(1);
++            var buf = Buffer.alloc(1);
+             buf[0] = 0x01;
+             var bb = ByteBuffer.wrap(buf);
+             test.strictEqual(bb.capacity(), 1);
+@@ -270,7 +270,7 @@ function makeSuite(ByteBuffer) {
+             ByteBuffer.fromDebug('00 01 02<03>00'),
+             ByteBuffer.fromDebug('00|'),
+             ByteBuffer.fromDebug('<04>'),
+-            type === Buffer ? new Buffer(0) : new ArrayBuffer(0),
++            type === Buffer ? Buffer.alloc(0) : new ArrayBuffer(0),
+             new Uint8Array(0),
+             '05'
+         ];

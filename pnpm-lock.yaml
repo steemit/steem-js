@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  bytebuffer@5.0.1:
+    hash: e2zmp44yacn7j34a34ohbecevi
+    path: patches/bytebuffer@5.0.1.patch
+
 importers:
 
   .:
@@ -22,7 +27,7 @@ importers:
         version: 6.0.0
       bytebuffer:
         specifier: ^5.0.1
-        version: 5.0.1
+        version: 5.0.1(patch_hash=e2zmp44yacn7j34a34ohbecevi)
       create-hash:
         specifier: ^1.2.0
         version: 1.2.0
@@ -2506,7 +2511,7 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
-  bytebuffer@5.0.1:
+  bytebuffer@5.0.1(patch_hash=e2zmp44yacn7j34a34ohbecevi):
     dependencies:
       long: 3.2.0
 
