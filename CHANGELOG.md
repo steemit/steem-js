@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.19] - 2026-05-24
+
+### Fixed
+
+- Align **`account_update`** authority types with Steem **`fc::flat_map`** JSON: broadcast **`key_auths`** / **`account_auths`** as **`[key, weight]`** pair arrays (not object maps), matching `fc::from_variant` in `fc/container/flat.hpp` (#538).
+- Coerce mistaken object-map authority input into pair arrays before signing and broadcast.
+
+### Added
+
+- Export **`AuthorityWeightPair`**; document protocol shapes on **`ChainAuthority`** and **`AccountUpdatePayload`**.
+- Binary serializer accepts pair arrays and object maps for authority maps; parity test for normalized vs raw transaction bytes.
+
 ## [1.0.18] - 2026-05-23
 
 ### Fixed

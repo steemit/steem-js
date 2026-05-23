@@ -375,8 +375,9 @@ function serializeAccountCreate(bb: ByteBuffer, data: unknown): void {
 }
 
 /**
- * Serialize account_update operation.
- * Format: account, optional owner (1 byte + authority?), optional active, optional posting, memo_key, json_metadata.
+ * Serialize account_update_operation (steem_operations.hpp).
+ * JSON fields: account, owner/active/posting (authority objects), memo_key, json_metadata (string).
+ * Optional authorities use a presence byte before serializeAuthority.
  */
 function serializeAccountUpdate(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
@@ -1082,7 +1083,27 @@ function serializeCustomJson(bb: ByteBuffer, data: unknown): void {
 }
 
 /**
- * Serialize Authority
+ * Read authority map fields for binary packing (on-wire sorted flat_map).
+ * JSON-RPC uses fc::flat_map → array of [key, weight] pairs; object maps are accepted
+ * here only so callers that forgot to normalize still sign the intended keys.
+ */
+function authorityMapEntries(raw: unknown): [string, number][] {
+    if (Array.isArray(raw)) {
+        return raw
+            .filter((entry): entry is [unknown, unknown] => Array.isArray(entry) && entry.length >= 2)
+            .map(([key, weight]) => [String(key), Number(weight)] as [string, number])
+            .filter(([, weight]) => Number.isFinite(weight));
+    }
+    if (raw && typeof raw === 'object') {
+        return Object.entries(raw as Record<string, number>)
+            .map(([key, weight]) => [String(key), Number(weight)] as [string, number])
+            .filter(([, weight]) => Number.isFinite(weight));
+    }
+    return [];
+}
+
+/**
+ * Serialize steem::protocol::authority (weight_threshold + sorted account/key flat_maps).
  */
 function serializeAuthority(bb: ByteBuffer, auth: unknown): void {
     if (Array.isArray(auth)) {
@@ -1095,43 +1116,26 @@ function serializeAuthority(bb: ByteBuffer, auth: unknown): void {
     bb.writeUint32((authObj.weight_threshold as number) || 1);
     
     // Account auths (map<string, uint16>)
-    const accountAuths = (Array.isArray(authObj.account_auths) ? authObj.account_auths : []) as unknown[][];
-    // Maps in Steem serialization are sorted by key
-    const accountAuthsArray = accountAuths as unknown[][];
-    accountAuthsArray.sort((a: unknown[], b: unknown[]) => {
-      const aKey = Array.isArray(a) && a[0] ? String(a[0]) : '';
-      const bKey = Array.isArray(b) && b[0] ? String(b[0]) : '';
-      return aKey.localeCompare(bKey);
-    });
+    const accountAuths = authorityMapEntries(authObj.account_auths).sort((a, b) =>
+        a[0].localeCompare(b[0])
+    );
     
     bb.writeVarint32(accountAuths.length);
-    for (const authEntry of accountAuths) {
-        if (Array.isArray(authEntry) && authEntry.length >= 2) {
-            writeString(bb, String(authEntry[0]));
-            bb.writeUint16(authEntry[1] as number);
-        }
+    for (const [account, weight] of accountAuths) {
+        writeString(bb, account);
+        bb.writeUint16(weight);
     }
     
     // Key auths (map<public_key, uint16>)
-    const keyAuths = (Array.isArray(authObj.key_auths) ? authObj.key_auths : []) as unknown[][];
-    // Maps in Steem serialization are sorted by key (public key string)
-    // But serialized as bytes. Usually sorting by string representation of public key works.
-    const keyAuthsArray = keyAuths as unknown[][];
-    keyAuthsArray.sort((a: unknown[], b: unknown[]) => {
-      const aKey = Array.isArray(a) && a[0] ? String(a[0]) : '';
-      const bKey = Array.isArray(b) && b[0] ? String(b[0]) : '';
-      return aKey.localeCompare(bKey);
-    });
+    const keyAuths = authorityMapEntries(authObj.key_auths).sort((a, b) =>
+        a[0].localeCompare(b[0])
+    );
     
     bb.writeVarint32(keyAuths.length);
-    for (const keyAuth of keyAuths) {
-        if (Array.isArray(keyAuth) && keyAuth.length >= 2) {
-            const keyStr = String(keyAuth[0]);
-            const weight = keyAuth[1] as number;
+    for (const [keyStr, weight] of keyAuths) {
         const pubKey = PublicKey.fromStringOrThrow(keyStr);
         bb.append(pubKey.toBuffer());
         bb.writeUint16(weight);
-        }
     }
 }
 

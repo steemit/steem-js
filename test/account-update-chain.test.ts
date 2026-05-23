@@ -54,7 +54,7 @@ describe('account_update chain-safe JSON (steem protocol parity)', () => {
   });
 
   describe('sanitizeAccountUpdatePayload', () => {
-    it('accepts legacy flat_map JSON arrays for key_auths', () => {
+    it('outputs fc::flat_map JSON as pair arrays (not object maps)', () => {
       const sanitized = sanitizeAccountUpdatePayload(validAccountUpdatePayload);
       expect(sanitized.owner.key_auths).toEqual([[VALID_OWNER_KEY, 1]]);
       expect(sanitized.json_metadata).toBe('{}');
@@ -69,7 +69,7 @@ describe('account_update chain-safe JSON (steem protocol parity)', () => {
       ).toThrow(/Invalid owner authority/);
     });
 
-    it('normalizes account_auths object map to pair array (FC flat_map JSON form)', () => {
+    it('normalizes mistaken object-map account_auths to pair arrays', () => {
       const sanitized = sanitizeAccountUpdatePayload({
         ...validAccountUpdatePayload,
         owner: {
@@ -79,6 +79,18 @@ describe('account_update chain-safe JSON (steem protocol parity)', () => {
         },
       });
       expect(sanitized.owner.account_auths).toEqual([['bob', 1]]);
+    });
+
+    it('normalizes mistaken object-map key_auths to pair arrays', () => {
+      const sanitized = sanitizeAccountUpdatePayload({
+        ...validAccountUpdatePayload,
+        owner: {
+          weight_threshold: 1,
+          account_auths: [],
+          key_auths: { [VALID_OWNER_KEY]: 1 },
+        },
+      });
+      expect(sanitized.owner.key_auths).toEqual([[VALID_OWNER_KEY, 1]]);
     });
   });
 
@@ -120,6 +132,17 @@ describe('account_update chain-safe JSON (steem protocol parity)', () => {
       const buf = serializeTransaction(tx);
       expect(buf.length).toBeGreaterThan(0);
     });
+
+    it('tuple-shaped broadcast JSON and normalized payload produce identical binary', () => {
+      const tx = {
+        ...txHeader,
+        operations: [['account_update', validAccountUpdatePayload]],
+      };
+      const normalized = normalizeTransactionForBroadcast(tx);
+      const bufRaw = serializeTransaction(tx);
+      const bufNorm = serializeTransaction(normalized);
+      expect(Buffer.compare(bufRaw, bufNorm)).toBe(0);
+    });
   });
 
   describe('signTransaction returns broadcast-safe operations', () => {
@@ -145,7 +168,11 @@ describe('account_update chain-safe JSON (steem protocol parity)', () => {
       const payload = signed.operations[0][1];
       expect(typeof payload.json_metadata).toBe('string');
       expect(payload.json_metadata).toBe('{"profile":{"name":"alice"}}');
-      expect(payload.owner).toEqual(validAccountUpdatePayload.owner);
+      expect(payload.owner).toEqual({
+        weight_threshold: 1,
+        account_auths: [],
+        key_auths: [[VALID_OWNER_KEY, 1]],
+      });
     });
 
     it('signature bytes match normalized transaction (re-sign produces same digest input)', () => {
@@ -191,7 +218,7 @@ describe('account_update chain-safe JSON (steem protocol parity)', () => {
       expect(normalizeOperationForBroadcast(op)).toEqual(op);
     });
 
-    it('returns tuple with sanitized account_update payload', () => {
+    it('returns tuple with sanitized account_update payload (fc::flat_map pair arrays)', () => {
       const op = normalizeOperationForBroadcast([
         'account_update',
         {
@@ -201,6 +228,9 @@ describe('account_update chain-safe JSON (steem protocol parity)', () => {
       ]) as [string, Record<string, unknown>];
       expect(op[0]).toBe('account_update');
       expect(op[1].json_metadata).toBe('{"x":1}');
+      const owner = op[1].owner as { key_auths: unknown };
+      expect(Array.isArray(owner.key_auths)).toBe(true);
+      expect(owner.key_auths).toEqual([[VALID_OWNER_KEY, 1]]);
     });
   });
 });

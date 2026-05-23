@@ -15,7 +15,12 @@ export {
   normalizeAuthoritySource,
   resolveAuthorityForSerialize,
 } from './account-update-chain';
-export type { ChainAuthority, AccountUpdatePayload, OperationTuple } from './account-update-chain';
+export type {
+  AuthorityWeightPair,
+  ChainAuthority,
+  AccountUpdatePayload,
+  OperationTuple,
+} from './account-update-chain';
 
 export interface KeyPair {
     privateKey: string;

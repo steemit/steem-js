@@ -1,6 +1,6 @@
 {
   "name": "@steemit/steem-js",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Steem blockchain JavaScript/TypeScript library",
   "type": "module",
   "main": "dist/index.cjs",
