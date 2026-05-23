@@ -1,6 +1,7 @@
 import ByteBuffer from 'bytebuffer';
 // import Long from 'long'; // Unused import - Long is used via ByteBuffer
 import { PublicKey } from '../ecc/src/key_public';
+import { resolveAuthorityForSerialize } from '../account-update-chain';
 
 /**
  * Serialize a transaction to binary format for Steem blockchain
@@ -384,19 +385,19 @@ function serializeAccountUpdate(bb: ByteBuffer, data: unknown): void {
     // Optional authorities: 0 = not present, 1 = present then serialize authority
     if (dataObj.owner != null && dataObj.owner !== '') {
         bb.writeUint8(1);
-        serializeAuthority(bb, typeof dataObj.owner === 'object' ? dataObj.owner : { weight_threshold: 1, account_auths: [], key_auths: [] });
+        serializeAuthority(bb, resolveAuthorityForSerialize(dataObj.owner, 'owner'));
     } else {
         bb.writeUint8(0);
     }
     if (dataObj.active != null && dataObj.active !== '') {
         bb.writeUint8(1);
-        serializeAuthority(bb, typeof dataObj.active === 'object' ? dataObj.active : { weight_threshold: 1, account_auths: [], key_auths: [] });
+        serializeAuthority(bb, resolveAuthorityForSerialize(dataObj.active, 'active'));
     } else {
         bb.writeUint8(0);
     }
     if (dataObj.posting != null && dataObj.posting !== '') {
         bb.writeUint8(1);
-        serializeAuthority(bb, typeof dataObj.posting === 'object' ? dataObj.posting : { weight_threshold: 1, account_auths: [], key_auths: [] });
+        serializeAuthority(bb, resolveAuthorityForSerialize(dataObj.posting, 'posting'));
     } else {
         bb.writeUint8(0);
     }
@@ -1084,6 +1085,12 @@ function serializeCustomJson(bb: ByteBuffer, data: unknown): void {
  * Serialize Authority
  */
 function serializeAuthority(bb: ByteBuffer, auth: unknown): void {
+    if (Array.isArray(auth)) {
+        throw new Error('Invalid authority: expected object, got array');
+    }
+    if (auth == null || typeof auth !== 'object') {
+        throw new Error('Invalid authority: expected object');
+    }
     const authObj = auth as Record<string, unknown>;
     bb.writeUint32((authObj.weight_threshold as number) || 1);
     
