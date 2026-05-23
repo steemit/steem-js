@@ -5,6 +5,17 @@ import { getConfig } from '../config';
 import bs58 from 'bs58';
 import { Signature } from './ecc/src/signature';
 import { transaction, signed_transaction } from './serializer';
+import { normalizeTransactionForBroadcast } from './account-update-chain';
+
+export {
+  normalizeOperationForBroadcast,
+  normalizeTransactionForBroadcast,
+  normalizeChainJsonMetadata,
+  sanitizeAccountUpdatePayload,
+  normalizeAuthoritySource,
+  resolveAuthorityForSerialize,
+} from './account-update-chain';
+export type { ChainAuthority, AccountUpdatePayload, OperationTuple } from './account-update-chain';
 
 export interface KeyPair {
     privateKey: string;
@@ -137,9 +148,12 @@ export const Auth: Auth = {
             ));
         }
 
+        const trxObj = trx as Record<string, unknown>;
+        const normalizedTrx = normalizeTransactionForBroadcast(trxObj);
+
         const chainId = (getConfig().get('chain_id') as string | undefined) || '';
         const cid = Buffer.from(chainId, 'hex');
-        const buf = transaction.toBuffer(trx as unknown);
+        const buf = transaction.toBuffer(normalizedTrx);
 
         for (const key of keys) {
             const sig = Signature.signBuffer(Buffer.concat([cid, buf]), key);
@@ -148,8 +162,7 @@ export const Auth: Auth = {
             signatures.push(sig.toBuffer().toString('hex'));
         }
 
-        const trxObj = trx as Record<string, unknown>;
-        return signed_transaction.toObject(Object.assign(trxObj, { signatures }));
+        return signed_transaction.toObject(Object.assign({}, normalizedTrx, { signatures }));
     }
 };
 
