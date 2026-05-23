@@ -16,6 +16,10 @@ export interface Account {
   // Add other account properties as needed
 }
 
+/**
+ * steem::protocol::authority (condenser JSON).
+ * account_auths / key_auths are fc::flat_map → array of [key, weight] pairs, not object maps.
+ */
 export interface Authority {
   weight_threshold: number;
   account_auths: [string, number][];

@@ -1,15 +1,40 @@
 /**
- * Chain-safe JSON normalization for account_update operations.
- * Matches steem::protocol::account_update_operation and authority (FC_REFLECT).
- * Broadcast via JSON-RPC uses fc::from_variant; malformed shapes cause bad_cast_exception.
+ * Chain-safe JSON normalization for `account_update` operations.
+ *
+ * Protocol types (steem/libraries/protocol):
+ * - `authority` — weight_threshold (uint32), account_auths / key_auths (fc::flat_map)
+ * - `account_update_operation` — account, optional owner/active/posting, memo_key, json_metadata (string)
+ *
+ * JSON-RPC (`condenser_api.broadcast_transaction` → fc::from_variant):
+ * - `authority` is a variant_object, not a bare key_auths array.
+ * - `fc::flat_map` serializes as an array of [key, weight] pairs (see fc/container/flat.hpp),
+ *   not a JSON object `{ "key": weight }` — object maps cause bad_cast_exception.
+ * - `json_metadata` must be a string (protocol `string`), not a parsed JSON object.
+ *
+ * Binary signing (transaction digest) uses the same logical fields; the serializer packs
+ * flat_maps as sorted on-wire maps (see serializeAuthority in serializer/transaction.ts).
  */
 
+/** One entry in an fc::flat_map after JSON (de)serialization: [key, weight]. */
+export type AuthorityWeightPair = [string, number];
+
+/**
+ * `steem::protocol::authority` as returned by condenser / required for broadcast JSON.
+ * account_auths: flat_map<account_name_type, uint16>
+ * key_auths: flat_map<public_key_type, uint16> (keys are "STM..." strings in JSON)
+ */
 export type ChainAuthority = {
   weight_threshold: number;
-  account_auths: [string, number][];
-  key_auths: [string, number][];
+  /** FC flat_map JSON: `[["account", weight], ...]` */
+  account_auths: AuthorityWeightPair[];
+  /** FC flat_map JSON: `[["STM...", weight], ...]` */
+  key_auths: AuthorityWeightPair[];
 };
 
+/**
+ * `steem::protocol::account_update_operation` payload for JSON broadcast and signing.
+ * Operation tuple form: `["account_update", AccountUpdatePayload]`.
+ */
 export type AccountUpdatePayload = {
   account: string;
   owner: ChainAuthority;
@@ -21,7 +46,10 @@ export type AccountUpdatePayload = {
 
 export type OperationTuple = [string, Record<string, unknown>];
 
-/** Steem broadcast JSON requires json_metadata to be a string (not object/array). */
+/**
+ * Coerce `json_metadata` to protocol `string` (FC string field).
+ * Node rejects object/array variants with bad_cast when broadcasting.
+ */
 export function normalizeChainJsonMetadata(value: unknown): string {
   if (typeof value === 'string') return value;
   if (value == null) return '';
@@ -30,37 +58,41 @@ export function normalizeChainJsonMetadata(value: unknown): string {
   return String(value);
 }
 
-function toAuthPairs(raw: unknown): [string, number][] {
+/**
+ * Parse fc::flat_map JSON (pair array) or mistaken object-map input into pair arrays.
+ * Broadcast output always uses pair arrays per fc::from_variant(flat_map).
+ */
+function toAuthPairs(raw: unknown): AuthorityWeightPair[] {
   if (Array.isArray(raw)) {
     return raw
       .filter((entry): entry is [unknown, unknown] => Array.isArray(entry) && entry.length >= 2)
-      .map(([key, weight]) => [String(key), Number(weight)] as [string, number])
+      .map(([key, weight]) => [String(key), Number(weight)] as AuthorityWeightPair)
       .filter(([, weight]) => Number.isFinite(weight));
   }
   if (raw && typeof raw === 'object') {
     return Object.entries(raw as Record<string, number>)
-      .map(([key, weight]) => [String(key), Number(weight)] as [string, number])
+      .map(([key, weight]) => [String(key), Number(weight)] as AuthorityWeightPair)
       .filter(([, weight]) => Number.isFinite(weight));
   }
   return [];
 }
 
-function toKeyAuthPairs(raw: unknown): [string, number][] {
+function toKeyAuthPairs(raw: unknown): AuthorityWeightPair[] {
   if (Array.isArray(raw)) {
     return raw
       .filter((entry): entry is [unknown, unknown] => Array.isArray(entry) && entry.length >= 2)
-      .map(([key, weight]) => [String(key), Number(weight)] as [string, number])
+      .map(([key, weight]) => [String(key), Number(weight)] as AuthorityWeightPair)
       .filter(([key, weight]) => key.startsWith('STM') && Number.isFinite(weight));
   }
   if (raw && typeof raw === 'object') {
     return Object.entries(raw as Record<string, number>)
-      .map(([key, weight]) => [String(key), Number(weight)] as [string, number])
+      .map(([key, weight]) => [String(key), Number(weight)] as AuthorityWeightPair)
       .filter(([key, weight]) => key.startsWith('STM') && Number.isFinite(weight));
   }
   return [];
 }
 
-/** Normalize API authority data (handles object-maps and malformed arrays). */
+/** Normalize API authority data (get_accounts-style input; accepts pair arrays or object maps). */
 export function normalizeAuthoritySource(source: unknown): ChainAuthority {
   if (Array.isArray(source) || !source || typeof source !== 'object') {
     return { weight_threshold: 1, account_auths: [], key_auths: [] };
@@ -90,7 +122,10 @@ function sanitizeAuthority(value: unknown, field: string): ChainAuthority {
   return { weight_threshold, account_auths, key_auths };
 }
 
-/** Coerce account_update operation payload to chain-safe JSON (for signing and broadcast). */
+/**
+ * Coerce account_update operation payload to protocol JSON shape for signing and broadcast.
+ * Emits fc::flat_map fields as pair arrays, not object maps.
+ */
 export function sanitizeAccountUpdatePayload(payload: Record<string, unknown>): AccountUpdatePayload {
   return {
     account: String(payload.account || ''),
