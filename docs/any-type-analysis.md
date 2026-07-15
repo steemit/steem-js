@@ -138,6 +138,12 @@ signTransaction(trx: Transaction, keys: string[]): Transaction
 - `src/auth/serializer/transaction.ts`: Multiple functions
 - `src/broadcast/index.ts`: Multiple functions
 
+> **Update (1.0.20):** `verifyTransaction(transaction: unknown, publicKey: string):
+> boolean` and the re-exported `serializeTransaction(trx: unknown): Buffer` were
+> added to `src/auth/index.ts` as typed named exports. They remain `unknown`-typed
+> (consistent with `signTransaction`'s current `any`) until the broader typing
+> pass described here is applied; they do not add new `any` usage.
+
 #### 2.2 API Response Types
 **Location**: `src/api/index.ts`, `src/formatter/index.ts`
 

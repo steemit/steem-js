@@ -508,7 +508,125 @@ function useMessageAuthSystem() {
 useMessageAuthSystem();
 ```
 
-## Error Handling
+## 6. Transaction Signature Verification
+
+`steem.auth.verifyTransaction(signedTx, publicKey)` verifies that a transaction's
+signatures were produced by the given public key. Unlike the message/RPC-request
+verification above, this operates at the **transaction** level: it reconstructs
+the exact digest `sha256(chain_id ‖ serializeTransaction(trx))` that
+`signTransaction` signs over, then checks each signature against it.
+
+> **Why this matters:** a relay or wallet server can prove a client-submitted
+> transaction was signed by the claimed account's key *before* forwarding it to
+> the chain — closing a defense-in-depth gap that transaction-shape validation
+> alone cannot cover.
+
+### Basic Sign-and-Verify Round-Trip
+
+```javascript
+import { steem } from '@steemit/steem-js';
+
+const wif = '5JLw5dgQAx6rhZEgNN5C2ds1V47RweGshynFSWFbaMohsYsBvE8';
+const publicKey = steem.auth.wifToPublic(wif);
+
+const tx = {
+  ref_block_num: 123,
+  ref_block_prefix: 456789,
+  expiration: '2026-07-10T00:00:00',
+  operations: [['transfer', {
+    from: 'alice', to: 'bob', amount: '1.000 STEEM', memo: ''
+  }]],
+  extensions: [],
+};
+
+// Client signs the transaction locally
+const signedTx = steem.auth.signTransaction(tx, [wif]);
+
+// Server (or same process) verifies it against the public key
+const isValid = steem.auth.verifyTransaction(signedTx, publicKey);
+console.log(isValid ? '✅ Valid signature' : '❌ Invalid signature');
+// => ✅ Valid signature
+```
+
+### Server-Side Verification (Relay Service)
+
+This is the primary security use case: a wallet/relay server receives a
+signed transaction from a client and must independently confirm the signer
+before broadcasting.
+
+```javascript
+import { steem } from '@steemit/steem-js';
+
+/**
+ * Verify a client-submitted transaction before relaying it to the chain.
+ *
+ * @param {object} signedTx  - Transaction signed by the client (has .signatures)
+ * @param {string} publicKey - The STM... public key the server expects the
+ *                             account to sign with (e.g. fetched from get_accounts).
+ * @returns {boolean} true if the signature is cryptographically valid.
+ */
+function verifyClientTransaction(signedTx, publicKey) {
+  if (!signedTx || !Array.isArray(signedTx.signatures) || signedTx.signatures.length === 0) {
+    console.error('❌ Transaction has no signatures');
+    return false;
+  }
+
+  const isValid = steem.auth.verifyTransaction(signedTx, publicKey);
+  if (!isValid) {
+    console.error('❌ Signature does not match the claimed public key');
+    return false;
+  }
+
+  console.log('✅ Transaction signed by the claimed key — safe to relay');
+  return true;
+}
+
+// Usage in a relay route:
+//   const account = await steem.api.getAccountsAsync([username]);
+//   const expectedPubKey = account[0].active.key_auths[0][0];
+//   if (!verifyClientTransaction(clientSignedTx, expectedPubKey)) {
+//     return res.status(403).json({ error: 'Invalid signature' });
+//   }
+//   await steem.broadcast.sendAsync(clientSignedTx);
+```
+
+### Rejected Cases
+
+```javascript
+// 1. Wrong public key
+const wrongPub = steem.auth.wifToPublic('5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3');
+console.log(steem.auth.verifyTransaction(signedTx, wrongPub)); // false
+
+// 2. Tampered transaction (operation changed after signing)
+const tampered = JSON.parse(JSON.stringify(signedTx));
+tampered.operations[0][1].amount = '999.000 STEEM';
+console.log(steem.auth.verifyTransaction(tampered, publicKey)); // false
+
+// 3. Missing signatures entirely
+const unsigned = { ...tx };
+console.log(steem.auth.verifyTransaction(unsigned, publicKey)); // false
+```
+
+### Building the Digest Manually with serializeTransaction
+
+For advanced use cases (e.g. verifying with a custom crypto stack), the binary
+serializer is exported as `steem.auth.serializeTransaction(trx)` so you can
+reconstruct the signing digest yourself:
+
+```javascript
+import { steem } from '@steemit/steem-js';
+import { sha256 } from '@noble/hashes/sha2';
+
+// The digest signTransaction signs over:
+const buf = steem.auth.serializeTransaction(tx); // Buffer (binary transaction)
+const chainId = Buffer.alloc(32, 0);             // mainnet chain_id (all-zero)
+const digest = Buffer.from(sha256(Buffer.concat([chainId, buf])));
+console.log('Signing digest:', digest.toString('hex')); // 32-byte hex
+```
+
+> **Note:** `serializeTransaction` does **not** include the `signatures` field in
+> its output when the input lacks one — matching `signTransaction`, which
+> serializes the transaction body *before* attaching signatures.
 
 ### Common Verification Errors
 
