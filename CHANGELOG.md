@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.20] - 2026-07-15
+
+### Fixed
+
+- **`steem.auth.verifyTransaction`** now verifies signatures against the correct binary digest `sha256(chain_id ‖ serializeTransaction(normalizedTrx))`, mirroring `signTransaction`'s digest exactly. Previously it verified against `Buffer.from(JSON.stringify(transaction))`, which never matched the signed digest and caused it to return `false` for every legitimately-signed transaction — making the function unusable. The `signatures` field is excluded from the digest (matching signing-time behavior, since `signTransaction` serializes before attaching signatures).
+
+### Added
+
+- Export **`serializeTransaction`** from `steem.auth` so downstream apps (e.g. wallet relay services) can reconstruct the signing digest themselves for server-side signature verification. Type declarations are emitted automatically by the TypeScript build.
+
+### Docs
+
+- Update the Authentication and Transaction serialization sections in `docs/README.md` with `verifyTransaction` / `serializeTransaction` entries and runnable examples.
+- Add a **"Transaction Signature Verification"** section to `docs/signature-verification-examples.md`, covering the sign→verify round-trip, the server-side relay verification use case, rejected cases, and manual digest construction.
+
 ## [1.0.19] - 2026-05-24
 
 ### Fixed

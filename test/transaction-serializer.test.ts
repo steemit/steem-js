@@ -676,22 +676,29 @@ describe('Transaction Serializer', () => {
       const wif = '5JLw5dgQAx6rhZEgNN5C2ds1V47RweGshynFSWFbaMohsYsBvE8';
       
       // Import auth module
-      const { signTransaction, wifToPublic } = await import('../src/auth');
-      
+      const { signTransaction, wifToPublic, verifyTransaction } = await import('../src/auth');
+
       // Sign the transaction
       const signedTx = signTransaction(tx, [wif]);
-      
+
       // Verify signatures were added
       expect(signedTx.signatures).toBeDefined();
       expect(signedTx.signatures.length).toBe(1);
       expect(typeof signedTx.signatures[0]).toBe('string');
-      
+
       // Get public key from WIF
       const publicKey = wifToPublic(wif);
       expect(publicKey).toBeDefined();
-      
-      // Note: Full verification would require implementing verifyTransaction with correct digest
-      // For now, we verify that signing produces valid signatures
+
+      // Now verify the signature against the correct binary digest
+      // sha256(chain_id || serializeTransaction(trx)). Previously verifyTransaction
+      // validated against JSON.stringify(trx) and always returned false.
+      const isValid = verifyTransaction(signedTx, publicKey);
+      expect(isValid).toBe(true);
+
+      // A different (wrong) public key must be rejected
+      const otherPub = wifToPublic('5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3');
+      expect(verifyTransaction(signedTx, otherPub)).toBe(false);
     });
   });
 

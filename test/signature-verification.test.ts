@@ -362,4 +362,96 @@ describe('Signature Verification', () => {
       expect(signatureVerification.isSignatureExpired('')).toBe(true);
     });
   });
+
+  describe('Transaction Signature Verification (verifyTransaction)', () => {
+    it('should verify a transaction signed by the matching key', () => {
+      const tx = {
+        ref_block_num: 123,
+        ref_block_prefix: 456789,
+        expiration: '2026-07-10T00:00:00',
+        operations: [['transfer', {
+          from: 'alice', to: 'bob', amount: '1.000 STEEM', memo: ''
+        }]],
+        extensions: [],
+      };
+
+      const signedTx = auth.signTransaction(tx, [testPrivateKey]);
+      expect(signedTx.signatures).toHaveLength(1);
+
+      // Correct public key → valid
+      expect(auth.verifyTransaction(signedTx, testPublicKey)).toBe(true);
+    });
+
+    it('should reject a transaction when verified with the wrong public key', () => {
+      const tx = {
+        ref_block_num: 1,
+        ref_block_prefix: 2,
+        expiration: '2026-07-10T00:00:00',
+        operations: [['vote', {
+          voter: 'alice', author: 'bob', permlink: 'post', weight: 10000
+        }]],
+        extensions: [],
+      };
+
+      const signedTx = auth.signTransaction(tx, [testPrivateKey]);
+      const wrongPub = auth.wifToPublic('5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3');
+
+      expect(auth.verifyTransaction(signedTx, wrongPub)).toBe(false);
+    });
+
+    it('should reject a tampered transaction', () => {
+      const tx = {
+        ref_block_num: 1,
+        ref_block_prefix: 2,
+        expiration: '2026-07-10T00:00:00',
+        operations: [['transfer', {
+          from: 'alice', to: 'bob', amount: '1.000 STEEM', memo: ''
+        }]],
+        extensions: [],
+      };
+
+      const signedTx = auth.signTransaction(tx, [testPrivateKey]) as {
+        operations: unknown[]; signatures: string[];
+      };
+
+      // Tamper with the operation AFTER signing — signature no longer matches the digest
+      signedTx.operations = [['transfer', {
+        from: 'alice', to: 'bob', amount: '999.000 STEEM', memo: ''
+      }]];
+
+      expect(auth.verifyTransaction(signedTx, testPublicKey)).toBe(false);
+    });
+
+    it('should return false for a transaction without signatures', () => {
+      const unsignedTx = {
+        ref_block_num: 1,
+        ref_block_prefix: 2,
+        expiration: '2026-07-10T00:00:00',
+        operations: [['transfer', {
+          from: 'alice', to: 'bob', amount: '1.000 STEEM', memo: ''
+        }]],
+        extensions: [],
+      };
+
+      expect(auth.verifyTransaction(unsignedTx, testPublicKey)).toBe(false);
+    });
+
+    it('should export serializeTransaction as a function returning a Buffer', () => {
+      expect(typeof auth.serializeTransaction).toBe('function');
+
+      const tx = {
+        ref_block_num: 1,
+        ref_block_prefix: 2,
+        expiration: '2026-07-10T00:00:00',
+        operations: [['transfer', {
+          from: 'alice', to: 'bob', amount: '1.000 STEEM', memo: ''
+        }]],
+        extensions: [],
+      };
+
+      const buf = auth.serializeTransaction(tx);
+      expect(Buffer.isBuffer(buf)).toBe(true);
+      expect(buf.length).toBeGreaterThan(0);
+    });
+  });
 });

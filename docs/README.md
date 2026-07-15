@@ -1896,7 +1896,12 @@ Broadcast and signing use a **binary transaction format** compatible with the St
 
 **Usage**
 
-- **For signing / digest**: `steem.auth.transaction.toBuffer(trx)` — returns the buffer that is hashed for the signature. Same as the exported `serializeTransaction(trx)` from `@steemit/steem-js` auth serializer.
+- **For signing / digest**: `steem.auth.serializeTransaction(trx)` — returns the `Buffer` that is hashed for the signature. This is the public API for the binary serializer; `steem.auth.transaction.toBuffer(trx)` is the equivalent internal entry point.
+
+```javascript
+// The public serializer (preferred for app code):
+const buf = steem.auth.serializeTransaction(trx); // Buffer
+```
 - **Transaction shape**: `trx` must include `ref_block_num`, `ref_block_prefix`, `expiration`, `operations` (array of `[opType, opData]`), and optionally `extensions` and `signatures`.
 
 **Serializer coverage**
@@ -1967,8 +1972,84 @@ steem.auth.wifToPublic(privWif);
 
 ### Sign Transaction
 
+Signs a transaction with the provided private keys. The signature is computed
+over the digest `sha256(chain_id ‖ serializeTransaction(normalizedTrx))`, where
+`chain_id` comes from the configured chain (default all-zero for mainnet).
+
+- **`trx`** — transaction object: `ref_block_num`, `ref_block_prefix`,
+  `expiration`, `operations` (array of `[opType, opData]`), and `extensions`.
+- **`keys`** — array of WIF private keys used to sign.
+- Returns a transaction object with a `signatures` array appended.
+
 ```javascript
-steem.auth.signTransaction(trx, keys);
+const wif = '5JLw5dgQAx6rhZEgNN5C2ds1V47RweGshynFSWFbaMohsYsBvE8';
+const tx = {
+  ref_block_num: 123,
+  ref_block_prefix: 456789,
+  expiration: '2026-07-10T00:00:00',
+  operations: [['transfer', {
+    from: 'alice', to: 'bob', amount: '1.000 STEEM', memo: ''
+  }]],
+  extensions: [],
+};
+
+const signedTx = steem.auth.signTransaction(tx, [wif]);
+console.log(signedTx.signatures); // ['1f23...']  (hex signatures)
+```
+
+> **Note:** the `signatures` field is **not** part of the signed digest. Signing
+> serializes the transaction *before* attaching signatures, so the digest covers
+> only the unsigned transaction body.
+
+### Verify Transaction
+
+Verifies that a signed transaction's signatures were produced by the given
+public key. The digest is reconstructed exactly as `signTransaction` computes
+it: `sha256(chain_id ‖ serializeTransaction(normalizedTrx))`. Returns `true` if
+any signature is valid for `publicKey`, otherwise `false`.
+
+- **`transaction`** — a signed transaction object (must contain a `signatures`
+  array). The `signatures` field is stripped before digest calculation, so it
+  does not matter how many signatures are present.
+- **`publicKey`** — the `STM…` public key to verify against.
+- Returns `boolean`.
+
+```javascript
+const publicKey = steem.auth.wifToPublic(wif);
+
+// Round-trip: a correctly-signed tx verifies against its signing key
+const isValid = steem.auth.verifyTransaction(signedTx, publicKey);
+console.log(isValid); // true
+
+// A different public key is rejected
+const wrongPub = steem.auth.wifToPublic('5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3');
+console.log(steem.auth.verifyTransaction(signedTx, wrongPub)); // false
+```
+
+> **Security use case:** a relay/wallet server can call `verifyTransaction` on a
+> client-submitted transaction to prove — *before* forwarding it to the chain —
+> that it was signed by a key belonging to the claimed account. This closes a
+> defense-in-depth gap where the server previously could only check transaction
+> shape, not cryptographic authenticity.
+
+### Serialize Transaction
+
+Serializes a transaction to its **binary** form (FC-style), returning a `Buffer`.
+This is the same serializer used internally by `signTransaction`, so the output
+matches the Steem node's transaction wire format byte-for-byte. Downstream apps
+can use it to reconstruct the signing digest themselves.
+
+- **`trx`** — transaction object (same shape as `signTransaction`'s `trx`).
+- Returns `Buffer`.
+
+```javascript
+import { sha256 } from '@noble/hashes/sha2';
+
+// Build the exact digest signTransaction signs over:
+const buf = steem.auth.serializeTransaction(tx); // Buffer
+const chainId = Buffer.alloc(32, 0); // mainnet chain_id (all-zero)
+const digest = Buffer.from(sha256(Buffer.concat([chainId, buf])));
+console.log(digest.toString('hex')); // 32-byte digest
 ```
 
 ---

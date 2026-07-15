@@ -207,16 +207,33 @@ export const verifySignature = (message: string, signature: string, publicKey: s
     }
 };
 
+// Serialize a transaction to its binary form for digest calculation.
+// Alias for transaction.toBuffer() so verifyTransaction mirrors signTransaction's
+// serialization path exactly (signTransaction calls transaction.toBuffer at line 161).
+const serializeTrx = (trx: unknown): Buffer => transaction.toBuffer(trx);
+
 export const verifyTransaction = (transaction: unknown, publicKey: string): boolean => {
     try {
         const pub = PublicKey.fromString(publicKey);
         if (!pub) return false;
-        const serialized = Buffer.from(JSON.stringify(transaction));
         const trx = transaction as { signatures?: string[] };
         if (!trx.signatures || !Array.isArray(trx.signatures)) return false;
+        // Reconstruct the exact digest signTransaction signs over:
+        //   Buffer.concat([chain_id, transaction.toBuffer(normalizedTrx)])
+        // signatures are NOT part of the signed digest — signTransaction serializes
+        // BEFORE attaching signatures — so strip them before serializing, otherwise
+        // serializeTransaction() would emit the signatures array and change the digest.
+        const normalizedTrx = normalizeTransactionForBroadcast(trx as Record<string, unknown>);
+        // Build a copy without the signatures key, so serializeTransaction() does not
+        // emit the signatures array into the digest (signTransaction serializes pre-signature).
+        const trxWithoutSigs: Record<string, unknown> = { ...normalizedTrx };
+        delete trxWithoutSigs.signatures;
+        const chainId = (getConfig().get('chain_id') as string | undefined) || '';
+        const cid = Buffer.from(chainId, 'hex');
+        const buf = serializeTrx(trxWithoutSigs);
         return trx.signatures.some((sig: string) => {
             const signature = Signature.fromHex(sig);
-            return signature.verifyBuffer(serialized, pub);
+            return signature.verifyBuffer(Buffer.concat([cid, buf]), pub);
         });
     } catch {
         return false;
@@ -241,4 +258,8 @@ export const getPrivateKey = (seed: string): string => {
 };
 
 // Add stub for test compatibility
-export const signTransaction = Auth.signTransaction.bind(Auth); 
+export const signTransaction = Auth.signTransaction.bind(Auth);
+
+// Export the binary transaction serializer so downstream apps can reconstruct
+// the signing digest sha256(chain_id || serializeTransaction(trx)) themselves.
+export { serializeTransaction } from './serializer/transaction';
