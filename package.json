@@ -86,10 +86,5 @@
     "elliptic": "^6.6.1",
     "long": "^5.2.3",
     "retry": "^0.13.1"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "bytebuffer@5.0.1": "patches/bytebuffer@5.0.1.patch"
-    }
   }
 }
