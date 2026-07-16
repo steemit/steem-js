@@ -174,7 +174,7 @@ export function recoverPubKey(curve: ECInstance, e: BN, signature: ECSignature, 
         // Use elliptic's built-in method
         const Q = curve.recoverPubKey(msgBuffer, sigObj, i);
         return Q;
-    } catch (error) {
+    } catch {
         // Fallback to manual implementation if elliptic's method fails
         const G = curve.g;
 
@@ -196,7 +196,7 @@ export function recoverPubKey(curve: ECInstance, e: BN, signature: ECSignature, 
         let R: ECPoint;
         try {
             R = curve.curve.pointFromX(xHexPadded, isYOdd);
-        } catch (error) {
+        } catch {
             // If hex string fails, try with Buffer
             const xBuffer = x.toArrayLike(Buffer, 'be', 32);
             R = curve.curve.pointFromX(xBuffer, isYOdd);

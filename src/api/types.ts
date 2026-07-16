@@ -35,7 +35,12 @@ type ApiMethodWithAsync<TResult = unknown> = (
 /**
  * Type definitions for all API methods
  * This interface provides type safety for dynamically generated methods
+ *
+ * Return types use `any` pending a dedicated typing effort that mirrors the
+ * C++ node's condenser_api FC_REFLECT structs (extended_account,
+ * extended_dynamic_global_properties, discussion, etc.).
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface ApiMethodSignatures {
   // ===== Commonly used methods with explicit types =====
   
@@ -163,3 +168,4 @@ export interface ApiMethodSignatures {
     | ApiMethodWithAsync
     | unknown;
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
