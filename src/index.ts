@@ -71,4 +71,16 @@ export { Api } from './api';
 // Export rpc-auth functions for cross-verification
 export { sign as signRequest, validate as validateRequest } from './api/rpc-auth';
 // Export protocol types for consumers (e.g. steem-uri)
-export type { Operation, Transaction } from './types'; 
+export type { Operation, Transaction } from './types';
+export type {
+  ExtendedAccount,
+  DynamicGlobalProperties,
+  Discussion,
+  SignedBlock,
+  FollowApiObject,
+  ActiveVote,
+  AppliedOperation,
+  AccountHistoryEntry,
+  Manabar,
+  BeneficiaryRoute,
+} from './types/protocol'; 
