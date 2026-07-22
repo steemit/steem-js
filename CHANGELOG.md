@@ -5,6 +5,22 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-07-22
+
+### Added
+
+- **Precise TypeScript return types** for the 7 explicitly-typed RPC methods (`getAccounts`, `getAccountHistory`, `getDynamicGlobalProperties`, `getContent`, `getFollowers`, `getBlock`, `getConfig`), mirroring the Steem C++ node's `condenser_api` / `database_api` / `follow_api` `FC_REFLECT` serialization structs. New protocol interfaces (`ExtendedAccount`, `DynamicGlobalProperties`, `Discussion`, `SignedBlock`, `FollowApiObject`, `AppliedOperation`, `AccountHistoryEntry`, `Manabar`, `BeneficiaryRoute`, `ActiveVote`) are exported from the main entry so downstream consumers (wallet, condenser) can opt into precise typing (#542). Type-only change; no runtime behavior change.
+- **`prepublishOnly` npm hook** runs `clean && rollup -c` before `npm publish`, preventing accidental empty-package publishes (since `files` only ships `dist`, which is gitignored and built at publish time).
+
+### Fixed
+
+- **Apply the bytebuffer `new Buffer()` patch** by migrating `patchedDependencies` to `pnpm-workspace.yaml`. pnpm 10+ no longer reads the `pnpm` field from `package.json`, so the bytebuffer@5.0.1 patch (landed in 1.0.17) was silently **not** applied, causing build/runtime regressions on Node 20+ (#540).
+- **Remove dead `key_utils` module** that imported the undeclared `secure-random` package; its functionality is already covered by `src/crypto/random-bytes.ts` (Web Crypto API). Also resolve all 44 lint warnings (#541).
+
+### Docs
+
+- Remove the outdated **"Under Construction / do not use in production"** banner from `README.md`: the 2025 rewrite has reached release readiness, the 1.0.20 `verifyTransaction` fix is verified end-to-end, and downstream projects (wallet, condenser) already depend on this package in production.
+
 ## [1.0.20] - 2026-07-15
 
 ### Fixed
