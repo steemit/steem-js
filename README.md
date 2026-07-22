@@ -1,7 +1,5 @@
 # Steem.js
 
-> ⚠️ Under Construction: This SDK is currently under active development.  Do not use it in the production environment.
-
 A modern JavaScript/TypeScript library for interacting with the Steem blockchain. Complete refactoring with TypeScript, modern tooling, and improved security.
 
 [![npm version](https://img.shields.io/npm/v/@steemit/steem-js.svg)](https://www.npmjs.com/package/@steemit/steem-js)
