@@ -31,7 +31,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "format": "prettier --write \"src/**/*.ts\"",
-    "audit": "pnpm audit --audit-level=moderate"
+    "audit": "pnpm audit --audit-level=moderate",
+    "prepublishOnly": "pnpm run build"
   },
   "keywords": [
     "steem",
