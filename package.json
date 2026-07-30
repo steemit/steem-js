@@ -1,6 +1,6 @@
 {
   "name": "@steemit/steem-js",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Steem blockchain JavaScript/TypeScript library",
   "type": "module",
   "main": "dist/index.cjs",
@@ -81,7 +81,7 @@
   "dependencies": {
     "@noble/ciphers": "^2.0.1",
     "@noble/hashes": "^2.0.1",
-    "bn.js": "^5.2.2",
+    "bn.js": "^5.2.3",
     "bs58": "^6.0.0",
     "bytebuffer": "^5.0.1",
     "create-hash": "^1.2.0",

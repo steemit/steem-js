@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-07-29
+
+### Security
+
+- **Bump `bn.js` to remediate the infinite-loop DoS** ([CVE-2026-2739](https://github.com/advisories/GHSA-378v-28hj-76wf), Dependabot #259 / #260): `maskn(0)` corrupts a `BN`'s internal state, so later `toString()` / `divmod()` calls hang the process. Two copies were affected and both ship inside the published `dist` bundles: the direct dependency (raised to `^5.2.3`, resolving to 5.2.5) and the transitive copy pulled in by `elliptic` (refreshed to 4.12.5). No code path in this package calls `maskn`, so the advisory was not reachable from `steem.auth` itself, but downstream consumers receive `BN` instances through `ECSignature`.
+
 ## [1.1.0] - 2026-07-22
 
 ### Added
