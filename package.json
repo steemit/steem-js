@@ -41,6 +41,9 @@
   ],
   "author": "hightouch",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20.19.0"
   },
