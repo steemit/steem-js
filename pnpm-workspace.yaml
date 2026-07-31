@@ -20,8 +20,8 @@ overrides:
   'flatted': '3.4.3'
   # picomatch glob-matching bug (alert #275)
   'picomatch@4': '4.0.4'
-  # postcss XSS (alert #281)
-  'postcss': '8.5.10'
+  # postcss sourceMappingURL path traversal / arbitrary file read (alerts #281/#291/#292)
+  'postcss': '8.5.25'
   # glob command injection (alert #256)
   'glob@10': '10.5.0'
 

@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2026-07-31
+
+### Security
+
+Dependency-only release remediating 20 Dependabot alerts. None of the changes affect runtime behavior; all fixes are confined to `package.json` / `pnpm-workspace.yaml` / `pnpm-lock.yaml`. Only `bn.js` (already handled in 1.1.1) ships inside the published `dist` bundles — every package below is a **dev/build/test-only** dependency and does not reach downstream consumers.
+
+- **Bump `vitest` to `^3.2.6`** (Dependabot #283, critical): when the Vitest UI server is listening, an arbitrary file could be read and executed. Resolves to 3.2.7; `@vitest/coverage-v8` bumped in lockstep (#545).
+- **Pin `vite` to `^7.3.5`** (Dependabot #278 / #279 / #280 / #284 / #285): five dev-server vulnerabilities — arbitrary file read via WebSocket, `server.fs.deny` bypass (queries + Windows alternate paths), path traversal in optimized-deps `.map` handling, and `launch-editor` NTLMv2 hash disclosure via UNC paths. `vite` was previously transitive via vitest; added as an explicit devDependency pinned to ^7.3.5 (resolves to 7.3.6) (#544).
+- **Bump `rollup` to `^4.59.0`** (Dependabot #264, high): arbitrary file write via path traversal. Resolves to 4.62.3 (#546).
+- **Override vulnerable transitive dependencies** (Dependabot #256 / #268 / #269 / #270 / #271 / #273 / #275 / #281 / #282 / #286 / #287 / #288 / #289): pinned `minimatch`, `brace-expansion`, `js-yaml`, `serialize-javascript`, `flatted`, `picomatch`, `postcss`, and `glob` to fixed versions via `overrides` in `pnpm-workspace.yaml` (pnpm v11 no longer reads `pnpm.overrides` from `package.json`). The `serialize-javascript` override moves `@rollup/plugin-terser`'s copy from 6.0.2 to 7.0.5; the minified UMD output is verified identical in behavior (#547).
+- **Raise `postcss` override to `8.5.25`** (Dependabot #291 / #292, high): two further `sourceMappingURL` advisories (arbitrary file read / path traversal) were published after #547 landed with 8.5.10. The override now pins to 8.5.25, covering fix versions 8.5.12 and 8.5.18.
+
 ## [1.1.1] - 2026-07-29
 
 ### Security
