@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-08-16
+
+### Security
+
+- **Replace `elliptic` with `@noble/curves` for all secp256k1 point operations** ([CVE-2025-14505](https://github.com/advisories/GHSA-848j-6mx2-7j84), #550): elliptic's ECDSA signing incorrectly truncates the RFC 6979 nonce when an interim value has leading zeros, making affected signatures susceptible to cryptanalysis, and **no upstream fix exists** (last release 6.6.1, Nov 2024). This package never called elliptic's signing path, so it was not directly exploitable, but the advisory cannot be resolved by an upgrade. The dependency is removed entirely, along with its transitive chain (`hmac-drbg`, `brorand`, `@types/elliptic`). See `docs/refactoring-2025.md` section 12 for the full migration record.
+
+### Changed
+
+- Only the low-level point-arithmetic layer was swapped. The hand-written RFC 6979 deterministic nonce generation, the canonical-signature retry loop (`is_fc_canonical`), low-S normalization and the dsteem-compatible recovery byte (31–34) are unchanged, and **all signatures are bit-identical to 1.1.2**, verified against a pre-migration vector set (25 signatures / 5 keys / transaction signing / child-key derivation / ECDH shared secrets). Verification also covered the Go cross-language serializer vectors and the UMD bundle in a simulated browser context.
+- `@noble/hashes` raised to `^2.3.0`, aligned with `@noble/curves` 2.3.0's own requirement (single instance in the lockfile, no duplication).
+- **`PublicKey.Q` is now a `@noble/curves` point** instead of an elliptic point: `mul`→`multiply`, `getX()`→`x`, `encode('array', b)`→`toBytes(b)`, `isInfinity()`→`is0()`. The high-level `steem.auth.*` API surface is unaffected; consumers using string keys (WIF / `STM…` public keys) see no change.
+- Add `publishConfig.access: "public"` so the scoped package can no longer be accidentally published as restricted.
+
+### Fixed
+
+- **Latent bug in the manual public-key recovery fallback** (#550): `-e` was computed as `e.neg().mod(n)`, which yields a *negative* scalar (bn.js `mod` keeps the dividend's sign) and would be rejected by noble-curves' scalar range checks. Now uses `umod()`. The bug was unreachable before because elliptic's built-in `recoverPubKey` always succeeded first.
+- Clean stale entries (`elliptic`, `brorand`, `asn1.js`, `diffie-hellman`, `miller-rabin`, `browserify-sign`) from rollup's circular-dependency warning filter — none remain in the dependency tree.
+
 ## [1.1.2] - 2026-07-31
 
 ### Security

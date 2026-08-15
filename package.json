@@ -1,12 +1,15 @@
 {
   "name": "@steemit/steem-js",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Steem blockchain JavaScript/TypeScript library",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "browser": "dist/index.umd.js",
   "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
