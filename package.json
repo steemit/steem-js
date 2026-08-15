@@ -60,7 +60,6 @@
     "@types/bn.js": "^5.2.0",
     "@types/bytebuffer": "^5.0.49",
     "@types/debug": "^4.1.12",
-    "@types/elliptic": "^6.4.18",
     "@types/node": "^20.11.24",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
@@ -81,14 +80,14 @@
   },
   "dependencies": {
     "@noble/ciphers": "^2.0.1",
-    "@noble/hashes": "^2.0.1",
+    "@noble/curves": "^2.3.0",
+    "@noble/hashes": "^2.3.0",
     "bn.js": "^5.2.3",
     "bs58": "^6.0.0",
     "bytebuffer": "^5.0.1",
     "create-hash": "^1.2.0",
     "create-hmac": "^1.1.7",
     "crypto-js": "^4.2.0",
-    "elliptic": "^6.6.1",
     "long": "^5.2.3",
     "retry": "^0.13.1"
   }

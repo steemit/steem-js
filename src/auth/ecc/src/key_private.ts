@@ -1,16 +1,8 @@
-import { ec as EC } from 'elliptic';
-const secp256k1 = new EC('secp256k1');
 import BN from 'bn.js';
 import base58 from 'bs58';
 import * as hash from './hash';
 import { PublicKey } from './key_public';
-
-// Use elliptic types directly
-// ECPoint is a point on the elliptic curve
-type ECPoint = ReturnType<typeof secp256k1.g.mul>;
-
-const G = secp256k1.g;
-const n = new BN(secp256k1.n!.toString());
+import { type ECPoint, G, N_BN, bnToBigint, coordToBuffer } from './curve';
 
 /**
  * Constant-time buffer comparison to prevent timing attacks.
@@ -127,7 +119,9 @@ export class PrivateKey {
      * @return {Point}
      */
     toPublicKeyPoint(): ECPoint {
-        return G.mul(this.d);
+        // Reduce d modulo n first: noble multiply() rejects out-of-range
+        // scalars, while elliptic silently wrapped them.
+        return G.multiply(bnToBigint(this.d.mod(N_BN)));
     }
 
     toPublic(): PublicKey {
@@ -152,8 +146,8 @@ export class PrivateKey {
         }
         
         // ECDH: shared_secret = private_key * public_key_point
-        const P = pubKey.Q.mul(this.d);
-        const S = P.getX().toArrayLike(Buffer, 'be', 32);
+        const P = pubKey.Q.multiply(bnToBigint(this.d.mod(N_BN)));
+        const S = coordToBuffer(P.x);
         
         // SHA512 used in ECIES
         return hash.sha512(S);
@@ -165,7 +159,7 @@ export class PrivateKey {
         offset = hash.sha256(offset) as Buffer;
         const c = new BN(offset);
 
-        if (c.gte(n)) {
+        if (c.gte(N_BN)) {
             throw new Error("Child offset went out of bounds, try again");
         }
 

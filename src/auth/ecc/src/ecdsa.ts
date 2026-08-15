@@ -3,16 +3,10 @@ import enforce from './enforce_types';
 import BN from 'bn.js';
 import ECSignature from './ecsignature';
 
-import { ec as EC } from 'elliptic';
-
-// Use elliptic types directly
-type ECInstance = EC;
-// ECPoint is a point on the elliptic curve
-// Using the actual type from elliptic library's point interface
-type ECPoint = ReturnType<ECInstance['g']['mul']>;
+import { type ECPoint, G, CURVE_N, N_BN, bnToBigint, bigintToBn, pointFromX } from './curve';
 
 // https://tools.ietf.org/html/rfc6979#section-3.2
-function deterministicGenerateK(curve: ECInstance, hash: Buffer, d: BN, checkSig: (k: BN) => boolean, nonce?: number): BN {
+function deterministicGenerateK(hash: Buffer, d: BN, checkSig: (k: BN) => boolean, nonce?: number): BN {
     enforce('Buffer', hash);
     enforce(BN as { new(...args: unknown[]): unknown }, d);
 
@@ -52,7 +46,7 @@ function deterministicGenerateK(curve: ECInstance, hash: Buffer, d: BN, checkSig
     let T = new BN(v);
 
     // Step H3, repeat until T is within the interval [1, n - 1] and passes the supplied check
-    while ((T.isNeg() || T.isZero()) || (T.gte(new BN(curve.n!.toString()))) || !checkSig(T)) {
+    while ((T.isNeg() || T.isZero()) || (T.gte(N_BN)) || !checkSig(T)) {
         k = crypto.HmacSHA256(Buffer.concat([v, Buffer.from([0])]) as Buffer, k);
         v = crypto.HmacSHA256(v, k);
 
@@ -66,21 +60,20 @@ function deterministicGenerateK(curve: ECInstance, hash: Buffer, d: BN, checkSig
     return T;
 }
 
-export function sign(curve: ECInstance, hash: Buffer, d: BN, nonce?: number): ECSignature {
+export function sign(hash: Buffer, d: BN, nonce?: number): ECSignature {
     const e = new BN(hash);
-    const n = new BN(curve.n!.toString());
-    const G = curve.g;
+    const n = N_BN;
 
     let r: BN | undefined;
     let s: BN | undefined;
 
-    deterministicGenerateK(curve, hash, d, function (k) {
+    deterministicGenerateK(hash, d, function (k) {
         // find canonically valid signature
-        const Q = G.mul(k);
+        const Q = G.multiply(bnToBigint(k));
 
-        if (Q.isInfinity()) return false;
+        if (Q.is0()) return false;
 
-        const tempR = new BN(Q.getX().toString()).mod(n);
+        const tempR = bigintToBn(Q.x % CURVE_N);
         if (tempR.isZero()) return false;
 
         const tempS = k.invm(n).mul(e.add(d.mul(tempR))).mod(n);
@@ -101,15 +94,13 @@ export function sign(curve: ECInstance, hash: Buffer, d: BN, nonce?: number): EC
     return new ECSignature(r, finalS);
 }
 
-export function verify(curve: ECInstance, hash: Buffer, signature: ECSignature, Q: ECPoint): boolean {
+export function verify(signature: ECSignature, hash: Buffer, Q: ECPoint): boolean {
     const e = new BN(hash);
-    return verifyRaw(curve, e, signature, Q);
+    return verifyRaw(e, signature, Q);
 }
 
-function verifyRaw(curve: ECInstance, e: BN, signature: ECSignature, Q: ECPoint): boolean {
-    const n = new BN(curve.n!.toString());
-    const G = curve.g;
-
+function verifyRaw(e: BN, signature: ECSignature, Q: ECPoint): boolean {
+    const n = N_BN;
     const r = signature.r;
     const s = signature.s;
 
@@ -125,17 +116,15 @@ function verifyRaw(curve: ECInstance, e: BN, signature: ECSignature, Q: ECPoint)
     const u1 = e.mul(c).mod(n);
     const u2 = r.mul(c).mod(n);
 
-    // 1.4.5 Compute R = (xR, yR) = u1G + u2Q
-    const R = G.mul(u1).add(Q.mul(u2));
+    // 1.4.5 Compute R = (xR, yR) = u1G + u2Q via double-scalar
+    // multiplication (non-secret scalars)
+    const R = G.mulAddUnsafe(bnToBigint(u1), Q, bnToBigint(u2));
 
     // 1.4.5 (cont.) Enforce R is not at infinity
-    if (R.isInfinity()) return false;
+    if (R.is0()) return false;
 
-    // 1.4.6 Convert the field element R.x to an integer
-    const xR = new BN(R.getX().toString());
-
-    // 1.4.7 Set v = xR mod n
-    const v = xR.mod(n);
+    // 1.4.6/1.4.7 Convert the field element R.x to an integer mod n
+    const v = bigintToBn(R.x % CURVE_N);
 
     // 1.4.8 If v = r, output "valid", and if v != r, output "invalid"
     return v.eq(r);
@@ -149,76 +138,49 @@ function verifyRaw(curve: ECInstance, e: BN, signature: ECSignature, Q: ECPoint)
  *
  * http://www.secg.org/download/aid-780/sec1-v2.pdf
  */
-export function recoverPubKey(curve: ECInstance, e: BN, signature: ECSignature, i: number): ECPoint {
+export function recoverPubKey(e: BN, signature: ECSignature, i: number): ECPoint {
     if ((i & 3) !== i) {
-      throw new Error('Recovery param is more than two bits');
+        throw new Error('Recovery param is more than two bits');
     }
 
-    const n = new BN(curve.n!.toString());
+    const n = N_BN;
     const r = signature.r;
     const s = signature.s;
 
     if (r.isNeg() || r.isZero() || !r.lt(n)) throw new Error('Invalid r value');
     if (s.isNeg() || s.isZero() || !s.lt(n)) throw new Error('Invalid s value');
 
-    // Try using elliptic's built-in recoverPubKey method
-    // It expects: msg (Buffer), signature ({r: BN, s: BN}), j (recovery param)
-    try {
-        // Convert e (BN) to Buffer
-        const msgBuffer = e.toArrayLike(Buffer, 'be', 32);
-        
-        // Create signature object compatible with elliptic's recoverPubKey
-        // elliptic expects {r: BN, s: BN} format
-        const sigObj = { r: r, s: s };
-        
-        // Use elliptic's built-in method
-        const Q = curve.recoverPubKey(msgBuffer, sigObj, i);
-        return Q;
-    } catch {
-        // Fallback to manual implementation if elliptic's method fails
-        const G = curve.g;
+    // A set LSB signifies that the y-coordinate is odd
+    const isYOdd = !!(i & 1);
 
-        // A set LSB signifies that the y-coordinate is odd
-        const isYOdd = !!(i & 1);
+    // The more significant bit specifies whether we should use the
+    // first or second candidate key.
+    const isSecondKey = i >> 1;
 
-        // The more significant bit specifies whether we should use the
-        // first or second candidate key.
-        const isSecondKey = i >> 1;
+    // 1.1 Let x = r + jn
+    const x = isSecondKey ? r.add(n) : r;
+    const R = pointFromX(bnToBigint(x), isYOdd);
+    // nR = O holds by construction: secp256k1 has cofactor 1, so every
+    // on-curve point built here has order n. (Replaces the explicit nR
+    // check of the elliptic-based implementation, which noble-curves
+    // cannot express because multiply() rejects scalars >= n.)
 
-        // 1.1 Let x = r + jn
-        const x = isSecondKey ? r.add(n) : r;
-        // pointFromX expects a hex string (not BN object)
-        // Convert BN to hex string and ensure proper padding
-        const xHex = x.toString(16);
-        // Ensure hex string is properly padded to 64 characters (32 bytes)
-        const xHexPadded = xHex.padStart(64, '0');
-        // pointFromX may also accept a Buffer, but hex string is more reliable
-        let R: ECPoint;
-        try {
-            R = curve.curve.pointFromX(xHexPadded, isYOdd);
-        } catch {
-            // If hex string fails, try with Buffer
-            const xBuffer = x.toArrayLike(Buffer, 'be', 32);
-            R = curve.curve.pointFromX(xBuffer, isYOdd);
-        }
+    // Compute -e from e
+    // umod (not mod): bn.js mod keeps the sign of the dividend, which
+    // would feed a negative scalar into the point multiplication.
+    const eNeg = e.neg().umod(n);
 
-        // 1.4 Check that nR is at infinity
-        const nR = R.mul(n);
-        if (!nR.isInfinity()) throw new Error('nR is not a valid curve point');
+    // 1.6.1 Compute Q = r^-1 (sR - eG)
+    //               Q = r^-1 (sR + -eG)
+    const rInv = r.invm(n);
 
-        // Compute -e from e
-        const eNeg = e.neg().mod(n);
+    // multiplyUnsafe is used throughout: recovery involves non-secret
+    // scalars and -e mod n may be zero, which multiply() rejects.
+    const sR = R.multiplyUnsafe(bnToBigint(s));
+    const eGNeg = G.multiplyUnsafe(bnToBigint(eNeg));
+    const Q = sR.add(eGNeg).multiplyUnsafe(bnToBigint(rInv));
 
-        // 1.6.1 Compute Q = r^-1 (sR -  eG)
-        //               Q = r^-1 (sR + -eG)
-        const rInv = r.invm(n);
-
-        const sR = R.mul(s);
-        const eGNeg = G.mul(eNeg);
-        const Q = sR.add(eGNeg).mul(rInv);
-
-        return Q;
-    }
+    return Q;
 }
 
 /**
@@ -232,40 +194,19 @@ export function recoverPubKey(curve: ECInstance, e: BN, signature: ECSignature, 
  * This function simply tries all four cases and returns the value
  * that resulted in a successful pubkey recovery.
  */
-export function calcPubKeyRecoveryParam(curve: ECInstance, e: BN, signature: ECSignature, Q: ECPoint): number {
+export function calcPubKeyRecoveryParam(e: BN, signature: ECSignature, Q: ECPoint): number {
     for (let i = 0; i < 4; i++) {
         try {
-            // Use our own recoverPubKey function instead of curve.recoverPubKey
-            const Qprime = recoverPubKey(curve, e, signature, i);
+            const Qprime = recoverPubKey(e, signature, i);
 
             // 1.6.2 Verify Q = Q'
-            // Compare points by checking coordinates (more reliable than eq method)
-            const Qx = Q.getX().toString(16);
-            const Qy = Q.getY().toString(16);
-            const QprimeX = Qprime.getX().toString(16);
-            const QprimeY = Qprime.getY().toString(16);
-            
-            if (Qx === QprimeX && Qy === QprimeY) {
+            if (Q.equals(Qprime)) {
                 return i;
             }
-        } catch (error) {
+        } catch {
             // try next value
-            if (process.env.NODE_ENV === 'development') {
-                console.debug(`Recovery attempt ${i} failed:`, (error as Error).message);
-            }
         }
     }
 
-    if (process.env.NODE_ENV === 'development') {
-        console.debug('All recovery attempts failed. Signature:', {
-            r: signature.r.toString(16),
-            s: signature.s.toString(16)
-        });
-        console.debug('Expected public key:', {
-            x: Q.getX().toString(16),
-            y: Q.getY().toString(16)
-        });
-    }
-
     throw new Error('Unable to find valid recovery factor');
-} 
+}

@@ -121,7 +121,7 @@ function createUmdConfig(minified = false) {
       }
       // Filter out circular dependency warnings from third-party libraries (not our code issues)
       if (warning.code === 'CIRCULAR_DEPENDENCY') {
-        const thirdPartyLibs = ['readable-stream', 'brorand', 'elliptic', 'asn1.js', 'diffie-hellman', 'miller-rabin', 'browserify-sign', 'assert'];
+        const thirdPartyLibs = ['readable-stream', 'assert'];
         if (thirdPartyLibs.some(lib => warning.message?.includes(lib))) {
           return;
         }
@@ -194,7 +194,7 @@ export default [
       }
       // Filter out circular dependency warnings from third-party libraries (not our code issues)
       if (warning.code === 'CIRCULAR_DEPENDENCY') {
-        const thirdPartyLibs = ['readable-stream', 'brorand', 'elliptic', 'asn1.js', 'diffie-hellman', 'miller-rabin', 'browserify-sign', 'assert'];
+        const thirdPartyLibs = ['readable-stream', 'assert'];
         if (thirdPartyLibs.some(lib => warning.message?.includes(lib))) {
           return;
         }
@@ -328,7 +328,7 @@ var utilExports = typeof globalThis !== 'undefined' ? (globalThis.utilExports ||
       }
       // Filter out circular dependency warnings from third-party libraries (not our code issues)
       if (warning.code === 'CIRCULAR_DEPENDENCY') {
-        const thirdPartyLibs = ['readable-stream', 'brorand', 'elliptic', 'asn1.js', 'diffie-hellman', 'miller-rabin', 'browserify-sign', 'assert'];
+        const thirdPartyLibs = ['readable-stream', 'assert'];
         if (thirdPartyLibs.some(lib => warning.message?.includes(lib))) {
           return;
         }

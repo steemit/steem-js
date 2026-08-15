@@ -183,17 +183,18 @@ Ensures signature R and S values meet blockchain requirements, preventing signat
 
 ```typescript
 // ✅ Recommended (direct use of modern libraries)
+// See section 12: elliptic was replaced by @noble/curves in 2026.
 import BN from 'bn.js';
-import { ec as EC } from 'elliptic';
+import { secp256k1, type ECPoint, G, N_BN, bnToBigint } from './curve';
 
-const secp256k1 = new EC('secp256k1');
-const bigNum = new BN(buffer);
+const point = G.multiply(bnToBigint(new BN(buffer)));
 
 // ❌ Deprecated (old libraries and shim layers)
 // import BigInteger from 'bigi';
 // import ecurve from 'ecurve';
 // import bigi from '../../../utils/bigi-shim';
 // import ecurve from '../../../utils/ecurve-shim';
+// import { ec as EC } from 'elliptic'; // removed in 2026, see section 12
 ```
 
 ### 7.2 Testing and Validation
@@ -388,3 +389,60 @@ returnType: Promise<any>
 - High-level helpers: `steem.api.getAccountsAsync()` (unchanged API surface).
 - New-style node APIs: `steem.api.callAsync('database_api.find_accounts', [{ accounts: ['user'] }])`.
 - See [API routing](./README.md#api-routing) in the main documentation.
+
+## 12. Replace `elliptic` with `@noble/curves` (2026, PR #550)
+
+### 12.1 Objectives
+
+Remove the `elliptic` dependency entirely. [CVE-2025-14505](https://github.com/advisories/GHSA-848j-6mx2-7j84) (incorrect truncation of the RFC 6979 nonce when its interim value has leading zeros, enabling cryptanalysis of affected signatures) has **no upstream fix**: the last elliptic release is 6.6.1 (Nov 2024). Migration to `@noble/curves` also aligns the elliptic-curve layer with the `@noble/hashes` / `@noble/ciphers` stack adopted in section 9.
+
+The library never called elliptic's `EC.prototype.sign`, so it was not directly exploitable — but the advisory cannot be silenced by an upgrade, and the dependency chain (`hmac-drbg`, `brorand`, …) is unmaintained.
+
+### 12.2 Scope
+
+**Only the low-level point-arithmetic layer was swapped.** The Steem protocol layer is untouched:
+
+- Hand-written RFC 6979 deterministic nonce generation (`deterministicGenerateK`)
+- Canonical-signature retry loop (`is_fc_canonical`, section 4.2)
+- Low-S normalization (BIP62)
+- dsteem-compatible recovery byte (31–34)
+
+All signatures are **bit-identical** to the previous implementation (verified against a pre-migration vector set: 25 signatures / 5 keys / transaction signing / child derivation / ECDH shared secrets).
+
+### 12.3 API Mapping
+
+| elliptic | @noble/curves v2 |
+|---|---|
+| `new EC('secp256k1')` (3 module singletons) | shared `src/auth/ecc/src/curve.ts` |
+| `G.mul(bn)` | `G.multiply(bigint)` |
+| `G.mul(u1).add(Q.mul(u2))` | `G.mulAddUnsafe(u1, Q, u2)` |
+| `Q.getX()` / `Q.getY().isOdd()` | `Q.x` / `Q.y & 1n` |
+| `Q.encode('array', compressed)` | `Q.toBytes(compressed)` |
+| `curve.decodePoint(buffer)` | `secp256k1.Point.fromBytes(bytes)` |
+| `curve.curve.pointFromX(x, isOdd)` | `pointFromX(x, isOdd)` in `curve.ts` (manual sqrt) |
+| `curve.recoverPubKey(msg, sig, i)` | manual SEC 1 recovery in `ecdsa.ts` |
+| `Q.isInfinity()` | `Q.is0()` |
+
+Notable adaptations to noble-curves v2 semantics:
+
+- `multiply()` rejects out-of-range scalars (0 or >= n), while elliptic silently wrapped them. Private scalars are reduced `mod n` before multiplication, preserving the old observable behavior.
+- Verification and recovery use `multiplyUnsafe` / `mulAddUnsafe` — the intended APIs for public scalars, where `u1`/`u2` may legitimately be 0.
+- The redundant `nR` identity check in recovery is dropped (secp256k1 has cofactor 1, so any on-curve point constructed by `pointFromX` has order n).
+- **Latent bug fixed**: the old manual recovery fallback computed `-e` as `e.neg().mod(n)`, which yields a *negative* scalar (bn.js `mod` keeps the dividend's sign). It now uses `umod()`. The bug was never reachable before because elliptic's built-in `recoverPubKey` always succeeded first.
+
+### 12.4 Modified Files
+
+- `src/auth/ecc/src/curve.ts` (new): curve singleton, `ECPoint` type, BN↔bigint conversion, `pointFromX`
+- `src/auth/ecc/src/{ecdsa,signature,key_private,key_public}.ts`: API migration above; `ecdsa.ts` functions lost their `curve` first parameter (module-internal, not re-exported by `ecc/src/index.ts`)
+- `test/signature-recovery.test.ts`: updated call sites
+- `package.json` / `pnpm-lock.yaml`: `+@noble/curves ^2.3.0`, `@noble/hashes ^2.0.1 → ^2.3.0`, `-elliptic`, `-@types/elliptic`
+
+**Public type change**: `PublicKey.Q` is now a noble-curves point (`mul→multiply`, `getX()→x`, `encode('array',b)→toBytes(b)`, `isInfinity()→is0()`). Released as a minor (1.2.0): known downstream consumers use string-level APIs only.
+
+### 12.5 Verification
+
+- `pnpm typecheck` / `pnpm lint`: clean
+- `pnpm test`: 279 passed (incl. Go cross-language serializer vectors)
+- Bit-identical baseline vs the pre-migration build (see 12.2)
+- All 4 build artifacts; UMD smoke-tested in a simulated browser context
+- `pnpm audit`: GHSA-848j-6mx2-7j84 no longer reported
