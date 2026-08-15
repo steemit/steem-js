@@ -1,13 +1,11 @@
-import { ec as EC } from 'elliptic';
 import BN from 'bn.js';
 import { sha256 } from './hash';
 import { PrivateKey } from './key_private';
 import { PublicKey } from './key_public';
 import { sign as ecdsaSign, calcPubKeyRecoveryParam } from './ecdsa';
 import ECSignature from './ecsignature';
+import { secp256k1, CURVE_N, N_BN, bnToBigint, bigintToBn } from './curve';
 // import { debug } from '../../../utils/debug'; // Unused import
-
-const secp256k1 = new EC('secp256k1');
 
 export class Signature {
     r: BN;
@@ -72,7 +70,7 @@ export class Signature {
         // Match old-steem-js behavior: find canonical signature (lenR === 32 && lenS === 32)
         // Based on C++ is_fc_canonical logic
         while (nonce < MAX_NONCE_ATTEMPTS) {
-            ecsignature = ecdsaSign(secp256k1, buf_sha256, d, nonce++);
+            ecsignature = ecdsaSign(buf_sha256, d, nonce++);
             const rBa = ecsignature.r.toArrayLike(Buffer, 'be', 32);
             const sBa = ecsignature.s.toArrayLike(Buffer, 'be', 32);
 
@@ -96,7 +94,7 @@ export class Signature {
             throw new Error('Failed to find canonical signature after maximum attempts');
         }
 
-        const i = calcPubKeyRecoveryParam(secp256k1, new BN(buf_sha256), ecsignature, privKey.toPublic().Q!);
+        const i = calcPubKeyRecoveryParam(new BN(buf_sha256), ecsignature, privKey.toPublic().Q!);
         // Use recovery byte 31-34 (instead of 27-30) to be compatible with dsteem
         // dsteem expects: recovery = byte - 31, so byte = recovery + 31
         return new Signature(ecsignature.r, ecsignature.s, i + 31);
@@ -131,8 +129,7 @@ export class Signature {
         }
 
         const e = new BN(hash);
-        const n = new BN(secp256k1.n!.toString());
-        const G = secp256k1.g;
+        const n = N_BN;
         const Q = public_key.Q;
         if (!Q) {
             throw new Error('Invalid public key');
@@ -148,15 +145,15 @@ export class Signature {
         const c = this.s.invm(n);
         const u1 = e.mul(c).mod(n);
         const u2 = this.r.mul(c).mod(n);
-        
-        // Use elliptic.js API: R = u1*G + u2*Q
-        const R = G.mul(u1).add(Q.mul(u2));
-        
-        if (R.isInfinity()) {
+
+        // R = u1*G + u2*Q via double-scalar multiplication (non-secret scalars)
+        const R = secp256k1.Point.BASE.mulAddUnsafe(bnToBigint(u1), Q, bnToBigint(u2));
+
+        if (R.is0()) {
             return false;
         }
-        
-        const v = R.getX().mod(n);
+
+        const v = bigintToBn(R.x % CURVE_N);
         return v.eq(this.r);
     }
 

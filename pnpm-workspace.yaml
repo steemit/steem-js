@@ -25,5 +25,5 @@ overrides:
   # glob command injection (alert #256)
   'glob@10': '10.5.0'
 
-ignoredBuiltDependencies:
-  - esbuild
+allowBuilds:
+  esbuild: true

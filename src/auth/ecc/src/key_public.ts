@@ -1,16 +1,8 @@
 import BN from 'bn.js';
-import { ec as EC } from 'elliptic';
-const secp256k1 = new EC('secp256k1');
 import base58 from 'bs58';
 import * as hash from './hash';
 import { getConfig } from '../../../config';
-
-// Use elliptic types directly
-// ECPoint is a point on the elliptic curve
-type ECPoint = ReturnType<typeof secp256k1.g.mul>;
-
-const G = secp256k1.g;
-const n = new BN(secp256k1.n!.toString());
+import { secp256k1, type ECPoint, G, N_BN, bnToBigint } from './curve';
 
 export class PublicKey {
     Q: ECPoint | null;
@@ -29,7 +21,7 @@ export class PublicKey {
         if (buffer.toString("hex") === "000000000000000000000000000000000000000000000000000000000000000000") {
             return new PublicKey(null);
         }
-        return new PublicKey(secp256k1.curve.decodePoint(buffer));
+        return new PublicKey(secp256k1.Point.fromBytes(new Uint8Array(buffer)));
     }
 
     toBuffer(compressed: boolean = true): Buffer {
@@ -39,7 +31,7 @@ export class PublicKey {
                 "hex"
             );
         }
-        return Buffer.from(this.Q.encode('array', compressed));
+        return Buffer.from(this.Q.toBytes(compressed));
     }
 
     static fromPoint(point: ECPoint): PublicKey {
@@ -47,8 +39,8 @@ export class PublicKey {
     }
 
     toUncompressed(): PublicKey {
-        const buf = Buffer.from(this.Q!.encode('array', false));
-        const point = secp256k1.curve.decodePoint(buf);
+        const buf = Buffer.from(this.Q!.toBytes(false));
+        const point = secp256k1.Point.fromBytes(new Uint8Array(buf));
         return PublicKey.fromPoint(point);
     }
 
@@ -145,13 +137,13 @@ export class PublicKey {
 
         const c = new BN(offset);
 
-        if (c.cmp(n) >= 0)
+        if (c.cmp(N_BN) >= 0)
             throw new Error("Child offset went out of bounds, try again");
 
-        const cG = G.mul(c);
+        const cG = G.multiply(bnToBigint(c));
         const Qprime = this.Q!.add(cG);
 
-        if (Qprime.isInfinity())
+        if (Qprime.is0())
             throw new Error("Child offset derived to an invalid key, try again");
 
         return PublicKey.fromPoint(Qprime);

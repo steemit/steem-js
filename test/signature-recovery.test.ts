@@ -3,14 +3,11 @@ import { getConfig } from '../src/config';
 import { PrivateKey, PublicKey } from '../src/auth';
 import { Signature } from '../src/auth/ecc/src/signature';
 import { calcPubKeyRecoveryParam, recoverPubKey } from '../src/auth/ecc/src/ecdsa';
-import { ec as EC } from 'elliptic';
 import BN from 'bn.js';
 import ECSignature from '../src/auth/ecc/src/ecsignature';
 
 // Set up config prefix to match original
 getConfig().set('address_prefix', 'STM');
-
-const secp256k1 = new EC('secp256k1');
 
 describe('Signature Recovery', () => {
   describe('calcPubKeyRecoveryParam', () => {
@@ -40,7 +37,7 @@ describe('Signature Recovery', () => {
       const e = new BN(hash);
       const Q = publicKey.Q!;
       
-      const foundRecovery = calcPubKeyRecoveryParam(secp256k1, e, ecsig, Q);
+      const foundRecovery = calcPubKeyRecoveryParam(e, ecsig, Q);
       expect(foundRecovery).toBe(recovery);
     });
 
@@ -67,14 +64,14 @@ describe('Signature Recovery', () => {
         const e = new BN(hash);
         const Q = publicKey.Q!;
         
-        const recovery = calcPubKeyRecoveryParam(secp256k1, e, ecsig, Q);
+        const recovery = calcPubKeyRecoveryParam(e, ecsig, Q);
         expect(recovery).toBeGreaterThanOrEqual(0);
         expect(recovery).toBeLessThanOrEqual(3);
         
         // Verify the recovery parameter produces the correct public key
-        const recoveredQ = recoverPubKey(secp256k1, e, ecsig, recovery);
-        expect(recoveredQ.getX().toString(16)).toBe(Q.getX().toString(16));
-        expect(recoveredQ.getY().toString(16)).toBe(Q.getY().toString(16));
+        const recoveredQ = recoverPubKey(e, ecsig, recovery);
+        expect(recoveredQ.x.toString(16)).toBe(Q.x.toString(16));
+        expect(recoveredQ.y.toString(16)).toBe(Q.y.toString(16));
       }
     });
 
@@ -95,7 +92,7 @@ describe('Signature Recovery', () => {
         const e = new BN(hash);
         const Q = publicKey.Q!;
         
-        const recovery = calcPubKeyRecoveryParam(secp256k1, e, ecsig, Q);
+        const recovery = calcPubKeyRecoveryParam(e, ecsig, Q);
         expect(recovery).toBeGreaterThanOrEqual(0);
         expect(recovery).toBeLessThanOrEqual(3);
       }
@@ -117,14 +114,14 @@ describe('Signature Recovery', () => {
       const e = new BN(hash);
       
       // Find the correct recovery parameter
-      const recovery = calcPubKeyRecoveryParam(secp256k1, e, ecsig, publicKey.Q!);
+      const recovery = calcPubKeyRecoveryParam(e, ecsig, publicKey.Q!);
       
       // Recover public key
-      const recoveredQ = recoverPubKey(secp256k1, e, ecsig, recovery);
+      const recoveredQ = recoverPubKey(e, ecsig, recovery);
       
       // Verify recovered key matches original
-      expect(recoveredQ.getX().toString(16)).toBe(publicKey.Q!.getX().toString(16));
-      expect(recoveredQ.getY().toString(16)).toBe(publicKey.Q!.getY().toString(16));
+      expect(recoveredQ.x.toString(16)).toBe(publicKey.Q!.x.toString(16));
+      expect(recoveredQ.y.toString(16)).toBe(publicKey.Q!.y.toString(16));
     });
 
     it('should handle all recovery parameter values (0-3)', () => {
@@ -143,10 +140,10 @@ describe('Signature Recovery', () => {
       // Test all possible recovery values
       for (let i = 0; i < 4; i++) {
         try {
-          const recoveredQ = recoverPubKey(secp256k1, e, ecsig, i);
+          const recoveredQ = recoverPubKey(e, ecsig, i);
           // Check if this recovery parameter produces the correct key
-          if (recoveredQ.getX().toString(16) === publicKey.Q!.getX().toString(16) &&
-              recoveredQ.getY().toString(16) === publicKey.Q!.getY().toString(16)) {
+          if (recoveredQ.x.toString(16) === publicKey.Q!.x.toString(16) &&
+              recoveredQ.y.toString(16) === publicKey.Q!.y.toString(16)) {
             expect(i).toBeGreaterThanOrEqual(0);
             expect(i).toBeLessThanOrEqual(3);
             break; // Found the correct one
@@ -174,9 +171,9 @@ describe('Signature Recovery', () => {
       const e = new BN(hash);
       
       // Test invalid recovery parameters
-      expect(() => recoverPubKey(secp256k1, e, ecsig, 4)).toThrow();
-      expect(() => recoverPubKey(secp256k1, e, ecsig, -1)).toThrow();
-      expect(() => recoverPubKey(secp256k1, e, ecsig, 5)).toThrow();
+      expect(() => recoverPubKey(e, ecsig, 4)).toThrow();
+      expect(() => recoverPubKey(e, ecsig, -1)).toThrow();
+      expect(() => recoverPubKey(e, ecsig, 5)).toThrow();
     });
   });
 
@@ -184,8 +181,8 @@ describe('Signature Recovery', () => {
     it('should sign and recover public key correctly', () => {
       const privateKey = PrivateKey.fromSeed('e2e-test-seed');
       const publicKey = privateKey.toPublic();
-      const originalPubKeyX = publicKey.Q!.getX().toString(16);
-      const originalPubKeyY = publicKey.Q!.getY().toString(16);
+      const originalPubKeyX = publicKey.Q!.x.toString(16);
+      const originalPubKeyY = publicKey.Q!.y.toString(16);
       
       const testMessages = [
         'Hello, World!',
@@ -220,9 +217,9 @@ describe('Signature Recovery', () => {
         const e = new BN(hash);
         
         // Recover public key
-        const recoveredQ = recoverPubKey(secp256k1, e, ecsig, recovery);
-        const recoveredX = recoveredQ.getX().toString(16);
-        const recoveredY = recoveredQ.getY().toString(16);
+        const recoveredQ = recoverPubKey(e, ecsig, recovery);
+        const recoveredX = recoveredQ.x.toString(16);
+        const recoveredY = recoveredQ.y.toString(16);
         
         // Verify recovered key matches original
         expect(recoveredX).toBe(originalPubKeyX);
