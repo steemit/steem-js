@@ -14,7 +14,7 @@ overrides:
   'brace-expansion@1': '1.1.18'
   'brace-expansion@2': '2.1.4'
   'brace-expansion@5': '5.0.9'
-  # js-yaml quadratic DoS (alerts #286/#289, omap O(n^2) #296)
+  # js-yaml quadratic DoS (alerts #286/#289, omap O(n^2) alert 296 / GHSA-5p4m-2wfm-xmqj)
   'js-yaml@4': '4.3.1'
   # serialize-javascript RCE/DoS (alerts #271/#282)
   'serialize-javascript@6': '7.0.5'
