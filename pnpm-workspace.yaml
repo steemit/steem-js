@@ -12,8 +12,8 @@ overrides:
   # brace-expansion ReDoS (alerts #287/#288)
   'brace-expansion@1': '1.1.16'
   'brace-expansion@2': '2.1.2'
-  # js-yaml quadratic DoS (alerts #286/#289)
-  'js-yaml@4': '4.3.0'
+  # js-yaml quadratic DoS (alerts #286/#289, omap O(n^2) #296)
+  'js-yaml@4': '4.3.1'
   # serialize-javascript RCE/DoS (alerts #271/#282)
   'serialize-javascript@6': '7.0.5'
   # flatted prototype pollution (alert #273)
