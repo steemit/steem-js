@@ -467,18 +467,41 @@ function serializeCreateClaimedAccount(bb: ByteBuffer, data: unknown): void {
 
 /**
  * Serialize account_update2 operation.
- * Fields: account, owner, active, posting, memo_key,
- * json_metadata, posting_json_metadata, extensions.
+ * Fields: account, owner/active/posting (optional authority objects),
+ * memo_key (optional public key), json_metadata, posting_json_metadata,
+ * extensions.
+ *
+ * Unlike account_update, all three authorities AND memo_key are optional in
+ * account_update2 — a metadata-only update (e.g. condenser profile settings)
+ * carries none of them. Each absent optional serializes as a 0x00 presence
+ * byte, matching legacy steem-js 0.7's optional() and the chain protocol.
  */
 function serializeAccountUpdate2(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.account || ''));
-    serializeAuthority(bb, dataObj.owner);
-    serializeAuthority(bb, dataObj.active);
-    serializeAuthority(bb, dataObj.posting);
-    const memoKey = String(dataObj.memo_key || '');
-    const pubKey = PublicKey.fromStringOrThrow(memoKey);
-    bb.append(pubKey.toBuffer());
+
+    // Optional authorities: 0 = not present, 1 = present then serialize authority
+    // (same pattern as serializeAccountUpdate above).
+    for (const field of ['owner', 'active', 'posting'] as const) {
+        const auth = dataObj[field];
+        if (auth != null && auth !== '') {
+            bb.writeUint8(1);
+            serializeAuthority(bb, resolveAuthorityForSerialize(auth, field));
+        } else {
+            bb.writeUint8(0);
+        }
+    }
+
+    // Optional memo_key: 0 = not present, 1 = present then the 33-byte key.
+    const memoKey = dataObj.memo_key;
+    if (memoKey != null && memoKey !== '') {
+        bb.writeUint8(1);
+        const pubKey = PublicKey.fromStringOrThrow(String(memoKey));
+        bb.append(pubKey.toBuffer());
+    } else {
+        bb.writeUint8(0);
+    }
+
     writeString(bb, String(dataObj.json_metadata || ''));
     writeString(bb, String(dataObj.posting_json_metadata || ''));
     serializeExtensions(bb, dataObj.extensions);
