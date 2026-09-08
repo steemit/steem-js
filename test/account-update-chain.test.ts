@@ -233,4 +233,70 @@ describe('account_update chain-safe JSON (steem protocol parity)', () => {
       expect(owner.key_auths).toEqual([[VALID_OWNER_KEY, 1]]);
     });
   });
+
+  describe('account_update2 (optional authorities)', () => {
+    const metadataOnlyOp = {
+      account: 'alice',
+      json_metadata: '',
+      posting_json_metadata: '{"profile":{"name":"Alice","version":2}}',
+      extensions: [] as unknown[],
+    };
+
+    it('serializes a metadata-only account_update2 (no authorities, no memo_key)', () => {
+      // Previously threw "Invalid authority: expected object" — the op's
+      // owner/active/posting and memo_key are optional in the protocol.
+      const tx = { ...txHeader, operations: [['account_update2', metadataOnlyOp]] };
+      const buf = serializeTransaction(tx);
+      // Golden bytes generated with the legacy steem-js 0.7 serializer
+      // (condenser-legacy node_modules) for the same input.
+      expect(buf.toString('hex')).toBe(
+        '614bde71d95f911bf356012b05616c696365000000000028' +
+          '7b2270726f66696c65223a7b226e616d65223a22416c696365222c2276657273696f6e223a327d7d' +
+          '0000',
+      );
+    });
+
+    it('serializes account_update2 with authorities + memo_key present', () => {
+      const auth = {
+        weight_threshold: 1,
+        account_auths: [] as [string, number][],
+        key_auths: [[VALID_MEMO_KEY, 1]] as [string, number][],
+      };
+      const tx = {
+        ...txHeader,
+        operations: [
+          [
+            'account_update2',
+            {
+              account: 'alice',
+              owner: auth,
+              active: auth,
+              posting: auth,
+              memo_key: VALID_MEMO_KEY,
+              json_metadata: '',
+              posting_json_metadata: '',
+              extensions: [],
+            },
+          ],
+        ],
+      };
+      const buf = serializeTransaction(tx);
+      // Golden bytes from the legacy steem-js 0.7 serializer for the same input.
+      expect(buf.toString('hex')).toBe(
+        '614bde71d95f911bf356012b05616c6963650101000000000102ff0de11ef55b998daf88047f1a00a60ed5dffb0c23c3279f8bd42a733845c5da' +
+          '01000101000000000102ff0de11ef55b998daf88047f1a00a60ed5dffb0c23c3279f8bd42a733845c5da' +
+          '01000101000000000102ff0de11ef55b998daf88047f1a00a60ed5dffb0c23c3279f8bd42a733845c5da' +
+          '01000102ff0de11ef55b998daf88047f1a00a60ed5dffb0c23c3279f8bd42a733845c5da' +
+          '00000000',
+      );
+    });
+
+    it('signs a metadata-only account_update2', () => {
+      const fakeWif = toWif('alice', 'password', 'posting');
+      const tx = { ...txHeader, operations: [['account_update2', metadataOnlyOp]] };
+      const signed = signTransaction(tx, [fakeWif]) as { signatures: string[] };
+      expect(signed.signatures.length).toBe(1);
+      expect(signed.signatures[0]).toMatch(/^[0-9a-f]+$/);
+    });
+  });
 });
