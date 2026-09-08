@@ -6,8 +6,13 @@ WORKDIR /steemjs
 # Enable corepack for pnpm support
 RUN corepack enable
 
-# Copy package files first for better caching
-COPY package.json pnpm-lock.yaml* ./
+# Copy package files first for better caching.
+# pnpm-workspace.yaml + patches/ are required at install time: the workspace
+# file carries overrides/patchedDependencies, and frozen installs verify the
+# patch file hash — without them the lockfile config check fails (and the
+# overrides/patch would silently not apply at all).
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
+COPY patches/ patches/
 
 # Remove node_modules if they exist
 RUN rm -rf node_modules
