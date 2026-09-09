@@ -1923,6 +1923,7 @@ Field order and encoding (assets, authorities, time, extensions) follow the same
 - Use **STEEM / SBD / VESTS** asset strings (e.g. `"1.000 STEEM"`) for amount fields.
 - Authorities: `owner` / `active` / `posting` use `weight_threshold`, `account_auths`, and `key_auths` (array of `[key, weight]`); public keys as STM… strings.
 - Optional fields (e.g. `owner` in account_update) are encoded with a presence byte where the protocol requires it.
+- Serializer support **does not imply** a high-level `steem.broadcast.*` wrapper, JSON normalization, or string-only metadata handling for every operation listed above — see [OPERATIONS-JSON-PITFALLS.md](OPERATIONS-JSON-PITFALLS.md) for the exact shapes nodes accept and the failure modes of the wrong ones.
 
 ---
 
