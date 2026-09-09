@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-09-09
+
+### Fixed
+
+- **`account_update2` metadata-only updates failed to serialize** (#552): `serializeAccountUpdate2` unconditionally serialized `owner`/`active`/`posting` and required `memo_key`, throwing `Invalid authority: expected object` for profile-style updates that carry only `json_metadata` / `posting_json_metadata`. All four fields are `optional<>` in the protocol (`account_update2_operation`): absent fields now serialize as a `0x00` presence byte (empty string treated as absent), matching `fc::raw::pack(optional)` and legacy steem-js 0.7. Verified byte-for-byte against golden vectors from the legacy serializer and against the C++ reference node (field order, op id 43, presence-byte format); 282 tests green.
+- **js-yaml raised to 4.3.1 and remaining audit findings cleared** (#551): dependency-only; resolves the last open Dependabot alerts. dev/build-only dependencies, nothing reaches the published bundles beyond what 1.1.2 already covered.
+
+### Changed
+
+- **CI now actually guards code changes** (#553): the `push`/`pull_request` `paths` filters only matched the workflow file itself, `pnpm test || echo` swallowed test failures, and the Docker install was not frozen — a fully red suite still produced a green check. Paths now cover `src/**`, `test/**`, lockfile/workspace/patches/build configs; the test step fails the build; installs run `--frozen-lockfile` with `packageManager` pinned to `pnpm@10.34.5` (pnpm 11 requires Node ≥22.13 and would drop the node20 job). The frozen gate immediately surfaced and fixed two latent drifts the old CI had been masking: the lockfile was pnpm-11-rendered while Docker resolved older corepack defaults, and the dockerfiles never copied `pnpm-workspace.yaml` / `patches/` before install — meaning **previous CI images were built without the workspace security overrides and the bytebuffer patch applied**.
+
+### Documented
+
+- **New `docs/OPERATIONS-JSON-PITFALLS.md`** (#555): the JSON shapes nodes actually accept for authority-carrying operations and the failure modes of the wrong ones — object-map authorities sign locally but are rejected by `fc::from_variant(flat_map)` with bad_cast at broadcast; object metadata stringifies to `"[object Object]"` under `account_update2`; `account_update2` has no high-level `steem.broadcast.*` wrapper (use `broadcast.send`); `condenser_api.broadcast_transaction` vs `network_broadcast_api` endpoint compatibility. TSDoc added on `broadcast.send` and the `normalize*` helpers; `docs/README.md` now points serializer-support lists at the pitfalls page.
+
 ## [1.2.0] - 2026-08-16
 
 ### Security

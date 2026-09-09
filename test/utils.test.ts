@@ -16,7 +16,9 @@ describe('Utils', () => {
       const start = Date.now();
       await sleep(100);
       const end = Date.now();
-      expect(end - start).toBeGreaterThanOrEqual(100);
+      // Tolerate timer/clock rounding: setTimeout(100) can measure as 99ms
+      // against Date.now()'s millisecond resolution (observed on node22 CI).
+      expect(end - start).toBeGreaterThanOrEqual(90);
     });
   });
 

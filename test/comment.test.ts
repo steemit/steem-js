@@ -150,7 +150,22 @@ describe('steem.broadcast:', () => {
           }]
         ];
         console.log('About to call broadcast.sendAsync');
-        const tx = await broadcast.sendAsync({ operations, extensions: [] }, { posting: postingWif });
+        // The CI matrix (node20/node22) broadcasts from this same test account
+        // in parallel and the chain enforces one comment per 3 seconds per
+        // account, so our comment can land inside the other job's interval.
+        // Retry after the interval instead of failing the build.
+        let tx;
+        for (let attempt = 0; ; attempt++) {
+          try {
+            tx = await broadcast.sendAsync({ operations, extensions: [] }, { posting: postingWif });
+            break;
+          } catch (error: any) {
+            if (attempt >= 2 || !error.message?.includes('once every 3 seconds')) {
+              throw error;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 3500));
+          }
+        }
         console.log('broadcast.sendAsync returned:', tx);
         expect(tx).toHaveProperty('expiration');
         expect(tx).toHaveProperty('ref_block_num');
@@ -166,7 +181,7 @@ describe('steem.broadcast:', () => {
         }
         throw error;
       }
-    }, 10000);
+    }, 30000);
   });
 });
 

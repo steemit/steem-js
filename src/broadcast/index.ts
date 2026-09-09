@@ -20,6 +20,17 @@ export class Broadcast {
         this.auth = config.auth;
     }
 
+    /**
+     * Sign and broadcast a transaction built from raw operation tuples.
+     *
+     * This is the only broadcast path that accepts operations lacking a
+     * high-level wrapper method (e.g. `account_update2` has no
+     * `steem.broadcast.accountUpdate2*`). Operations are passed through
+     * as-is: authorities must already be in the chain's fc::flat_map JSON
+     * form (arrays of `[key, weight]` pairs) and metadata fields must be
+     * strings — signing accepts other shapes but nodes reject the broadcast.
+     * See docs/OPERATIONS-JSON-PITFALLS.md.
+     */
     async send(tx: { operations: unknown[]; extensions?: unknown[] }, privKeys: string | string[], callback?: (err: Error | null, result?: unknown) => void): Promise<unknown> {
         // Use instance or global steem.api/auth for compatibility
         const thisObj = this as unknown as { api?: Api; auth?: Auth };

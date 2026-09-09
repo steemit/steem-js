@@ -49,6 +49,8 @@ export type OperationTuple = [string, Record<string, unknown>];
 /**
  * Coerce `json_metadata` to protocol `string` (FC string field).
  * Node rejects object/array variants with bad_cast when broadcasting.
+ * Safe for any operation's metadata fields (`json_metadata`,
+ * `posting_json_metadata`, …).
  */
 export function normalizeChainJsonMetadata(value: unknown): string {
   if (typeof value === 'string') return value;
@@ -140,6 +142,9 @@ export function sanitizeAccountUpdatePayload(payload: Record<string, unknown>): 
 /**
  * Normalize an operation tuple before signing or JSON broadcast.
  * Only account_update is rewritten; other operations pass through unchanged.
+ * In particular, account_update2 and authority-carrying recovery operations
+ * are NOT normalized — callers must supply fc::flat_map pair arrays and
+ * string metadata themselves (see docs/OPERATIONS-JSON-PITFALLS.md).
  */
 export function normalizeOperationForBroadcast(operation: unknown): unknown {
   if (!Array.isArray(operation) || operation.length !== 2) {
@@ -155,7 +160,8 @@ export function normalizeOperationForBroadcast(operation: unknown): unknown {
   return ['account_update', sanitizeAccountUpdatePayload(opData as Record<string, unknown>)];
 }
 
-/** Normalize transaction operations/extensions for JSON broadcast after signing. */
+/** Normalize transaction operations/extensions for JSON broadcast after signing.
+ * Only account_update operations are rewritten (see normalizeOperationForBroadcast). */
 export function normalizeTransactionForBroadcast(trx: Record<string, unknown>): Record<string, unknown> {
   const operations = Array.isArray(trx.operations) ? trx.operations : [];
   const extensions = Array.isArray(trx.extensions) ? trx.extensions : [];
