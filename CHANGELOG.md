@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Open Dependabot alerts cleared** (#556): js-yaml raised to 4.3.2 via the existing `js-yaml@4` workspace override (GHSA-2883-xcg3-v3hh / CVE-2026-84375, high — `maxTotalMergeKeys` did not limit CPU use for empty merge sources); vitest and `@vitest/coverage-v8` moved ^3.2.6 → ^4.1.11, which also moves `@vitest/mocker` past the redirect-mock path traversal fix (GHSA-82fw-gwwq-j7x9 / CVE-2026-84373, medium — no 3.x backport exists, hence the major bump); `@humanfs/node` updated 0.16.7 → 0.16.8 in-range through eslint (GHSA-p498-v437-472g, medium). Dependency-only, dev/build-time packages — nothing reaches the published bundles. Full suite (282 passed / 23 skipped), typecheck, lint, audit and all four rollup bundles verified green under vitest 4.
+
 ## [1.2.1] - 2026-09-09
 
 ### Fixed
