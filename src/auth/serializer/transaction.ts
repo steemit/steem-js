@@ -95,7 +95,7 @@ function serializeOperation(bb: ByteBuffer, op: unknown): void {
  * "Operation type <x> serialization not fully implemented" (that is exactly how
  * delegate_vesting_shares revocation broke in a client wallet).
  */
-export const OPERATION_TYPE_INDEX: Record<string, number> = {
+export const OPERATION_TYPE_INDEX: Readonly<Record<string, number>> = Object.freeze({
     'vote': 0,
     'comment': 1,
     'transfer': 2,
@@ -151,7 +151,7 @@ export const OPERATION_TYPE_INDEX: Record<string, number> = {
     'fill_vesting_withdraw': 52,
     'fill_order': 53,
     'fill_transfer_from_savings': 54,
-};
+});
 
 /**
  * Operation types listed in the type-index map that intentionally have no
@@ -1221,13 +1221,27 @@ function serializeRemoveProposal(bb: ByteBuffer, data: unknown): void {
 /**
  * Serialize an array<uint64> field: varint32 length followed by each element
  * as uint64 little-endian.
+ *
+ * Fails loudly rather than coercing: this runs on the signing path, where a
+ * malformed element silently becoming 0 would sign a vote for proposal 0 — a
+ * transaction the caller never intended — instead of surfacing the bad input.
  */
 function serializeUint64Array(bb: ByteBuffer, values: unknown): void {
-    const list = Array.isArray(values) ? values : [];
-    bb.writeVarint32(list.length);
-    for (const value of list) {
-        const numeric = typeof value === 'number' ? value : Number(value);
-        bb.writeUint64(Number.isFinite(numeric) ? numeric : 0);
+    if (!Array.isArray(values)) {
+        throw new Error('Invalid uint64 array field: expected an array');
+    }
+    bb.writeVarint32(values.length);
+    for (const value of values) {
+        const numeric =
+            typeof value === 'number'
+                ? value
+                : typeof value === 'string' && value.trim() !== ''
+                  ? Number(value)
+                  : Number.NaN;
+        if (!Number.isSafeInteger(numeric) || numeric < 0) {
+            throw new Error(`Invalid uint64 array element: ${JSON.stringify(value)}`);
+        }
+        bb.writeUint64(numeric);
     }
 }
 

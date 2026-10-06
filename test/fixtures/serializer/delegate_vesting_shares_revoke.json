@@ -1,6 +1,6 @@
 {
   "name": "delegate_vesting_shares_revoke",
-  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), verified against the committed steemutil fixtures",
+  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), verified against the committed steemutil fixtures Revocation is the same operation with 0.000000 VESTS; the serializer is independently confirmed against the live mainnet delegate_vesting_shares transactions cited in delegate_vesting_shares_basic.json.",
   "tx": {
     "expiration": "2016-03-23T22:41:21",
     "extensions": [],

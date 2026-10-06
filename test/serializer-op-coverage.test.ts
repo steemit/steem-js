@@ -13,6 +13,12 @@ import {
  *
  * Every type in the map must therefore either serialize a `[op, {}]` payload or
  * throw something *other* than the "not fully implemented" error.
+ *
+ * Scope: this proves DISPATCH, not ENCODING — any implemented serializer accepts
+ * a `[opType, {}]` payload, since the serializers default missing fields. Byte-level
+ * correctness is covered elsewhere: the golden fixtures in
+ * `test/fixtures/serializer/` (loaded by `test/serializer-cross-lang.test.ts`) and
+ * the real signing round-trips in `test/delegate-vesting-shares.test.ts`.
  */
 const UNIMPLEMENTED_MESSAGE = 'serialization not fully implemented';
 

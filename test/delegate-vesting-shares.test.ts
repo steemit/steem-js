@@ -142,3 +142,57 @@ describe('proposal operation signing', () => {
     });
   }
 });
+
+/**
+ * `proposal_ids` is the one array field these operations carry. On a signing path
+ * a coerced element is worse than a thrown error: the caller would broadcast a
+ * vote for a different proposal than the one they approved.
+ */
+describe('proposal_ids validation', () => {
+  const malformed: Array<[string, unknown]> = [
+    ['a non-array', 42],
+    ['a missing field', undefined],
+    ['a null element', [null]],
+    ['an empty-string element', ['']],
+    ['a fractional element', [1.5]],
+    ['a negative element', [-1]],
+    ['an object element', [{ id: 1 }]],
+    ['an unsafe-integer element', [Number.MAX_SAFE_INTEGER + 2]],
+  ];
+
+  for (const [label, proposalIds] of malformed) {
+    it(`refuses to sign update_proposal_votes with ${label}`, () => {
+      const tx = {
+        ...headerOnly(),
+        operations: [
+          ['update_proposal_votes', { voter: DELEGATOR, proposal_ids: proposalIds, approve: true }],
+        ],
+      };
+      expect(() => signTransaction(tx, [ACTIVE_WIF])).toThrow(/Invalid uint64 array/);
+    });
+  }
+
+  it('accepts numeric strings and an empty list', () => {
+    const stringIds = signTransaction(
+      {
+        ...headerOnly(),
+        operations: [
+          ['update_proposal_votes', { voter: DELEGATOR, proposal_ids: ['42'], approve: true }],
+        ],
+      },
+      [ACTIVE_WIF]
+    ) as SignedTx;
+    expect(verifyTransaction(stringIds, ACTIVE_PUBLIC_KEY)).toBe(true);
+
+    const emptyIds = signTransaction(
+      {
+        ...headerOnly(),
+        operations: [
+          ['remove_proposal', { proposal_owner: DELEGATOR, proposal_ids: [], extensions: [] }],
+        ],
+      },
+      [ACTIVE_WIF]
+    ) as SignedTx;
+    expect(verifyTransaction(emptyIds, ACTIVE_PUBLIC_KEY)).toBe(true);
+  });
+});

@@ -1,6 +1,6 @@
 {
   "name": "update_proposal_votes_disapprove",
-  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), verified against the committed steemutil fixtures",
+  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), verified against the committed steemutil fixtures Same wire layout as update_proposal_votes_basic.json with approve=false.",
   "tx": {
     "expiration": "2016-03-23T22:41:21",
     "extensions": [],

@@ -1,6 +1,6 @@
 {
   "name": "claim_account_basic",
-  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), verified against the committed steemutil fixtures",
+  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), verified against the committed steemutil fixtures Serializer independently confirmed against live mainnet transactions: 8a71ffed8813630c1b8ee656754d332fd5652f84 and 036b91d9d2b9d25d92e05c9b8b946ec274bd53d9 (block 110209534) both reproduce their on-chain transaction_id exactly.",
   "tx": {
     "expiration": "2016-03-23T22:41:21",
     "extensions": [],

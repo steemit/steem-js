@@ -1,6 +1,6 @@
 {
   "name": "delete_comment_basic",
-  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), verified against the committed steemutil fixtures",
+  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), verified against the committed steemutil fixtures Serializer independently confirmed against a live mainnet transaction: 6b3481dc5a128437d21cf96590947474e3401c6f (block 110209473) reproduces its on-chain transaction_id exactly.",
   "tx": {
     "expiration": "2016-03-23T22:41:21",
     "extensions": [],
