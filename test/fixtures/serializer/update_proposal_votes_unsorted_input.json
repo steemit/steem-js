@@ -1,0 +1,22 @@
+{
+  "name": "update_proposal_votes_unsorted_input",
+  "note": "proposal_ids is flat_set_ex<int64_t> on chain: fc::raw::pack casts it to flat_set (iteration order = ascending), from_variant asserts \"Items should be unique and sorted\", and legacy 0.7 sorted numeric arrays too (Types.array -> sortOperation, numeric compare). The input here is deliberately unordered ([42, 1]), so this fixture pins the canonicalisation: expected_hex is byte-identical to update_proposal_votes_basic's, which is the legacy golden for the same id set.",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982,
+    "operations": [
+      [
+        "update_proposal_votes",
+        {
+          "voter": "alice",
+          "proposal_ids": [42, 1],
+          "approve": true,
+          "extensions": []
+        }
+      ]
+    ]
+  },
+  "expected_hex": "614bde71d95f911bf356012d05616c6963650201000000000000002a00000000000000010000"
+}

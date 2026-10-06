@@ -10,7 +10,6 @@
           "active": {
             "account_auths": [],
             "key_auths": [
-              null,
               [
                 "STM8k1f8fvHxLrCTqMdRUJcK2rCE3y7SQBb8PremyadWvVWMeedZy",
                 1
@@ -28,7 +27,6 @@
           "owner": {
             "account_auths": [],
             "key_auths": [
-              null,
               [
                 "STM8k1f8fvHxLrCTqMdRUJcK2rCE3y7SQBb8PremyadWvVWMeedZy",
                 1
@@ -39,7 +37,6 @@
           "posting": {
             "account_auths": [],
             "key_auths": [
-              null,
               [
                 "STM8k1f8fvHxLrCTqMdRUJcK2rCE3y7SQBb8PremyadWvVWMeedZy",
                 1

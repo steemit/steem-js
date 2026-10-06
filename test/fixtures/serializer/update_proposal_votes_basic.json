@@ -1,0 +1,25 @@
+{
+  "name": "update_proposal_votes_basic",
+  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), verified against the committed steemutil fixtures No live sample found on chain within the sampled block range, so this fixture rests on the reference implementations listed above plus the C++ FC_REFLECT(update_proposal_votes_operation, (voter)(proposal_ids)(approve)(extensions)).",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982,
+    "operations": [
+      [
+        "update_proposal_votes",
+        {
+          "voter": "alice",
+          "proposal_ids": [
+            1,
+            42
+          ],
+          "approve": true,
+          "extensions": []
+        }
+      ]
+    ]
+  },
+  "expected_hex": "614bde71d95f911bf356012d05616c6963650201000000000000002a00000000000000010000"
+}

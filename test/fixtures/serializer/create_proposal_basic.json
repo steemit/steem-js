@@ -1,0 +1,26 @@
+{
+  "name": "create_proposal_basic",
+  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), whose output was first validated against every committed steemutil fixture it can encode (6/6 byte-identical). Field order and the asset-typed daily_pay are confirmed by the C++ reference (libraries/protocol/include/steem/protocol/sps_operations.hpp: FC_REFLECT(create_proposal_operation, (creator)(receiver)(start_date)(end_date)(daily_pay)(subject)(permlink)(extensions)) with `asset daily_pay`) and by dsteem's serializer table. Do NOT regenerate this fixture with steemutil's cmd/gen_serializer_fixtures: its encoder detects asset fields by Go struct field name and does not list DailyPay, so it emits daily_pay as a string (0a + \"10.000 SBD\") instead of a binary asset. No live sample found on chain within the sampled block range (SPS creations are rare), so this fixture rests on the reference implementations listed above plus the C++ FC_REFLECT(create_proposal_operation, (creator)(receiver)(start_date)(end_date)(daily_pay)(subject)(permlink)(extensions)).",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982,
+    "operations": [
+      [
+        "create_proposal",
+        {
+          "creator": "alice",
+          "receiver": "bob",
+          "start_date": "2016-03-23T22:41:21",
+          "end_date": "2016-03-30T22:41:21",
+          "daily_pay": "10.000 SBD",
+          "subject": "Proposal subject",
+          "permlink": "proposal-permlink",
+          "extensions": []
+        }
+      ]
+    ]
+  },
+  "expected_hex": "614bde71d95f911bf356012c05616c69636503626f62911bf3561156fc56102700000000000003534244000000001050726f706f73616c207375626a6563741170726f706f73616c2d7065726d6c696e6b0000"
+}

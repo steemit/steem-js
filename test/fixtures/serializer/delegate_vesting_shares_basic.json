@@ -1,0 +1,21 @@
+{
+  "name": "delegate_vesting_shares_basic",
+  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), verified against the committed steemutil fixtures Serializer independently confirmed against live mainnet transactions: replays of 16c2251ca1e6bb7d3ec77a8e89e3bb1be38bf026 (block 110209332) and 071ad341825f9e985eb0858c476e165e8c41b92e (block 110209329) reproduce their on-chain transaction_id exactly (sha256(serializeTransaction(tx))[0:20], per transaction.cpp transaction::id()).",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982,
+    "operations": [
+      [
+        "delegate_vesting_shares",
+        {
+          "delegator": "alice",
+          "delegatee": "bob",
+          "vesting_shares": "10.000000 VESTS"
+        }
+      ]
+    ]
+  },
+  "expected_hex": "614bde71d95f911bf356012805616c69636503626f628096980000000000065645535453000000"
+}

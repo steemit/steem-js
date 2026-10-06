@@ -1,0 +1,24 @@
+{
+  "name": "remove_proposal_basic",
+  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), verified against the committed steemutil fixtures No live sample found on chain within the sampled block range, so this fixture rests on the reference implementations listed above plus the C++ FC_REFLECT(remove_proposal_operation, (proposal_owner)(proposal_ids)(extensions)).",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982,
+    "operations": [
+      [
+        "remove_proposal",
+        {
+          "proposal_owner": "alice",
+          "proposal_ids": [
+            7,
+            8
+          ],
+          "extensions": []
+        }
+      ]
+    ]
+  },
+  "expected_hex": "614bde71d95f911bf356012e05616c69636502070000000000000008000000000000000000"
+}

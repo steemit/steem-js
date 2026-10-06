@@ -62,11 +62,11 @@ function normalizeTxForSerialize(tx: any): any {
   return out;
 }
 
-describe('Cross-lang serializer fixtures (steemutil ↔ steem-js)', () => {
+describe('Cross-lang serializer fixtures (external reference implementations)', () => {
   const fixtures = loadFixtures();
 
   for (const fixture of fixtures) {
-    it(`matches steemutil encoder for ${fixture.name}`, () => {
+    it(`matches the reference encoder for ${fixture.name}`, () => {
       const tx = normalizeTxForSerialize(fixture.tx);
       const buf = serializeTransaction(tx);
       const hex = buf.toString('hex');
