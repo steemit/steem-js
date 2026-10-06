@@ -179,6 +179,15 @@ describe('steem.broadcast:', () => {
           console.warn('Skipping network test: network unavailable or SSL certificate issue');
           return;
         }
+        // Skip when the shared test account cannot pay for the transaction. A
+        // single hardcoded account backs every local run and both CI matrix
+        // jobs, so its resource-credit budget is routinely exhausted; that is
+        // an environment condition, not a library regression, and retrying
+        // cannot clear it (RC regenerates over hours, not seconds).
+        if (error.message?.includes('RC, needs')) {
+          console.warn('Skipping live broadcast test: test account out of resource credits');
+          return;
+        }
         throw error;
       }
     }, 30000);
