@@ -1195,8 +1195,13 @@ function serializeCreateProposal(bb: ByteBuffer, data: unknown): void {
 
 /**
  * Serialize update_proposal_votes operation (op 45).
- * Fields: voter, proposal_ids (array<uint64>), approve (bool),
- * extensions (set<future_extensions>).
+ * Fields: voter, proposal_ids (flat_set_ex<int64_t>, written ascending),
+ * approve (bool), extensions (set<future_extensions>).
+ *
+ * `approve` has no separate "unset" encoding: omitting it serializes as false,
+ * which the chain reads as removing the vote. That matches the protocol's
+ * `bool approve = false` default and this library's other bool fields, so
+ * callers must pass it explicitly.
  */
 function serializeUpdateProposalVotes(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
@@ -1208,8 +1213,8 @@ function serializeUpdateProposalVotes(bb: ByteBuffer, data: unknown): void {
 
 /**
  * Serialize remove_proposal operation (op 46).
- * Fields: proposal_owner, proposal_ids (array<uint64>),
- * extensions (set<future_extensions>).
+ * Fields: proposal_owner, proposal_ids (flat_set_ex<int64_t>, written
+ * ascending), extensions (set<future_extensions>).
  */
 function serializeRemoveProposal(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
@@ -1220,7 +1225,21 @@ function serializeRemoveProposal(bb: ByteBuffer, data: unknown): void {
 
 /**
  * Serialize an array<uint64> field: varint32 length followed by each element
- * as uint64 little-endian.
+ * as uint64 little-endian, in ascending numeric order.
+ *
+ * Order is canonical, not caller order. The fields this serializes
+ * (`update_proposal_votes` / `remove_proposal` `proposal_ids`) are
+ * `flat_set_ex<int64_t>` on chain, and `fc::raw::pack` casts that to
+ * `flat_set`, i.e. the packed form is a sorted set; the JSON path is stricter
+ * still (`from_variant` asserts `tmp > last`, "Items should be unique and
+ * sorted"). Legacy 0.7 also emitted sorted bytes — `proposal_ids` was declared
+ * `array(uint64)` and `Types.array` ran every numeric array through
+ * `sortOperation`, which orders numbers by `a - b`. Signing caller order would
+ * therefore produce a digest the node recomputes over the sorted set and
+ * rejects as invalid.
+ *
+ * Duplicates are the caller's problem: this is the legacy behaviour, and the
+ * chain rejects a repeated id (JSON path) or collapses it (binary path).
  *
  * Fails loudly rather than coercing: this runs on the signing path, where a
  * malformed element silently becoming 0 would sign a vote for proposal 0 — a
@@ -1230,8 +1249,7 @@ function serializeUint64Array(bb: ByteBuffer, values: unknown): void {
     if (!Array.isArray(values)) {
         throw new Error('Invalid uint64 array field: expected an array');
     }
-    bb.writeVarint32(values.length);
-    for (const value of values) {
+    const elements = values.map((value) => {
         const numeric =
             typeof value === 'number'
                 ? value
@@ -1241,7 +1259,12 @@ function serializeUint64Array(bb: ByteBuffer, values: unknown): void {
         if (!Number.isSafeInteger(numeric) || numeric < 0) {
             throw new Error(`Invalid uint64 array element: ${JSON.stringify(value)}`);
         }
-        bb.writeUint64(numeric);
+        return numeric;
+    });
+    elements.sort((a, b) => a - b);
+    bb.writeVarint32(elements.length);
+    for (const element of elements) {
+        bb.writeUint64(element);
     }
 }
 

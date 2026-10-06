@@ -196,3 +196,74 @@ describe('proposal_ids validation', () => {
     expect(verifyTransaction(emptyIds, ACTIVE_PUBLIC_KEY)).toBe(true);
   });
 });
+
+/**
+ * `proposal_ids` is `flat_set_ex<int64_t>` on both operations, so its packed
+ * form is the *sorted* set: `fc::raw::pack` casts it to `flat_set`, the JSON
+ * path asserts "Items should be unique and sorted", and legacy 0.7 sorted
+ * numeric arrays as well (`Types.array` → `sortOperation`). Signing the caller's
+ * order would produce a digest the node recomputes over the sorted set, i.e. a
+ * signature it rejects as invalid — so the wire bytes must not depend on the
+ * order the caller happened to build the id list in.
+ */
+describe('proposal_ids canonical ordering (flat_set_ex<int64_t>)', () => {
+  const UPDATE_GOLDEN =
+    '614bde71d95f911bf356012d05616c6963650201000000000000002a00000000000000010000';
+  const REMOVE_GOLDEN =
+    '614bde71d95f911bf356012e05616c69636502070000000000000008000000000000000000';
+
+  function updateVotesHex(proposalIds: unknown[]): string {
+    return serializeTransaction({
+      ...header,
+      operations: [
+        ['update_proposal_votes', { voter: DELEGATOR, proposal_ids: proposalIds, approve: true, extensions: [] }],
+      ],
+    }).toString('hex');
+  }
+
+  function removeProposalHex(proposalIds: unknown[]): string {
+    return serializeTransaction({
+      ...header,
+      operations: [
+        ['remove_proposal', { proposal_owner: DELEGATOR, proposal_ids: proposalIds, extensions: [] }],
+      ],
+    }).toString('hex');
+  }
+
+  it('serializes update_proposal_votes ids ascending whatever order the caller passes', () => {
+    expect(updateVotesHex([42, 1])).toBe(UPDATE_GOLDEN);
+    expect(updateVotesHex(['42', '1'])).toBe(UPDATE_GOLDEN);
+    expect(updateVotesHex([1, 42])).toBe(UPDATE_GOLDEN);
+  });
+
+  it('sorts but does not deduplicate (legacy parity)', () => {
+    // flat_set semantics would collapse a repeated id, but legacy 0.7 sorted the
+    // numeric array without uniquing. Either way the chain does not accept such
+    // a transaction — the JSON path asserts "unique and sorted", the binary path
+    // recomputes the digest over the collapsed set — so a caller passing
+    // duplicates gets a rejection rather than a silently different vote.
+    const duplicated = updateVotesHex([42, 1, 1]);
+    expect(duplicated).not.toBe(UPDATE_GOLDEN);
+    expect(duplicated.length).toBe(UPDATE_GOLDEN.length + 16);
+  });
+
+  it('serializes remove_proposal ids ascending whatever order the caller passes', () => {
+    expect(removeProposalHex([8, 7])).toBe(REMOVE_GOLDEN);
+    expect(removeProposalHex([7, 8])).toBe(REMOVE_GOLDEN);
+  });
+
+  it('signs and verifies an unsorted vote request', () => {
+    const signed = signTransaction(
+      {
+        ...headerOnly(),
+        operations: [
+          ['update_proposal_votes', { voter: DELEGATOR, proposal_ids: [42, 1], approve: true }],
+        ],
+      },
+      [ACTIVE_WIF]
+    ) as SignedTx;
+
+    expect(signed.signatures).toHaveLength(1);
+    expect(verifyTransaction(signed, ACTIVE_PUBLIC_KEY)).toBe(true);
+  });
+});
