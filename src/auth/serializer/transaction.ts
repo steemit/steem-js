@@ -87,68 +87,85 @@ function serializeOperation(bb: ByteBuffer, op: unknown): void {
 }
 
 /**
+ * Operation type index based on Steem blockchain operation order.
+ *
+ * Exported so the serializer-coverage test can assert that every operation type
+ * known here also has a `serializeOperationData` case — an entry without a
+ * serializer fails only at runtime, inside the browser, with
+ * "Operation type <x> serialization not fully implemented" (that is exactly how
+ * delegate_vesting_shares revocation broke in a client wallet).
+ */
+export const OPERATION_TYPE_INDEX: Record<string, number> = {
+    'vote': 0,
+    'comment': 1,
+    'transfer': 2,
+    'transfer_to_vesting': 3,
+    'withdraw_vesting': 4,
+    'limit_order_create': 5,
+    'limit_order_cancel': 6,
+    'feed_publish': 7,
+    'convert': 8,
+    'account_create': 9,
+    'account_update': 10,
+    'witness_update': 11,
+    'account_witness_vote': 12,
+    'account_witness_proxy': 13,
+    'pow': 14,
+    'custom': 15,
+    'report_over_production': 16,
+    'delete_comment': 17,
+    'custom_json': 18,
+    'comment_options': 19,
+    'set_withdraw_vesting_route': 20,
+    'limit_order_create2': 21,
+    'claim_account': 22,
+    'create_claimed_account': 23,
+    'request_account_recovery': 24,
+    'recover_account': 25,
+    'change_recovery_account': 26,
+    'escrow_transfer': 27,
+    'escrow_dispute': 28,
+    'escrow_release': 29,
+    'pow2': 30,
+    'escrow_approve': 31,
+    'transfer_to_savings': 32,
+    'transfer_from_savings': 33,
+    'cancel_transfer_from_savings': 34,
+    'custom_binary': 35,
+    'decline_voting_rights': 36,
+    'reset_account': 37,
+    'set_reset_account': 38,
+    'claim_reward_balance': 39,
+    'delegate_vesting_shares': 40,
+    'account_create_with_delegation': 41,
+    'witness_set_properties': 42,
+    'account_update2': 43,
+    'create_proposal': 44,
+    'update_proposal_votes': 45,
+    'remove_proposal': 46,
+    'claim_reward_balance2': 47,
+    'fill_convert_request': 48,
+    'comment_reward': 49,
+    'liquidity_reward': 50,
+    'interest': 51,
+    'fill_vesting_withdraw': 52,
+    'fill_order': 53,
+    'fill_transfer_from_savings': 54,
+};
+
+/**
+ * Operation types listed in the type-index map that intentionally have no
+ * serializer: `report_over_production` was disabled on chain and its payload
+ * embeds two full signed_block_headers. Everything else in the map must be
+ * serializable (enforced by test/serializer-op-coverage.test.ts).
+ */
+export const UNSERIALIZED_OPERATION_TYPES: readonly string[] = ['report_over_production'];
+
+/**
  * Get operation type index based on Steem blockchain operation order
  */
 function getOperationTypeIndex(opType: string): number {
-    const opMap: Record<string, number> = {
-        'vote': 0,
-        'comment': 1,
-        'transfer': 2,
-        'transfer_to_vesting': 3,
-        'withdraw_vesting': 4,
-        'limit_order_create': 5,
-        'limit_order_cancel': 6,
-        'feed_publish': 7,
-        'convert': 8,
-        'account_create': 9,
-        'account_update': 10,
-        'witness_update': 11,
-        'account_witness_vote': 12,
-        'account_witness_proxy': 13,
-        'pow': 14,
-        'custom': 15,
-        'report_over_production': 16,
-        'delete_comment': 17,
-        'custom_json': 18,
-        'comment_options': 19,
-        'set_withdraw_vesting_route': 20,
-        'limit_order_create2': 21,
-        'claim_account': 22,
-        'create_claimed_account': 23,
-        'request_account_recovery': 24,
-        'recover_account': 25,
-        'change_recovery_account': 26,
-        'escrow_transfer': 27,
-        'escrow_dispute': 28,
-        'escrow_release': 29,
-        'pow2': 30,
-        'escrow_approve': 31,
-        'transfer_to_savings': 32,
-        'transfer_from_savings': 33,
-        'cancel_transfer_from_savings': 34,
-        'custom_binary': 35,
-        'decline_voting_rights': 36,
-        'reset_account': 37,
-        'set_reset_account': 38,
-        'claim_reward_balance': 39,
-        'delegate_vesting_shares': 40,
-        'account_create_with_delegation': 41,
-        'witness_set_properties': 42,
-        'account_update2': 43,
-        'create_proposal': 44,
-        'update_proposal_votes': 45,
-        'remove_proposal': 46,
-        'claim_reward_balance2': 47,
-        'fill_convert_request': 48,
-        'comment_reward': 49,
-        'liquidity_reward': 50,
-        'interest': 51,
-        'fill_vesting_withdraw': 52,
-        'fill_order': 53,
-        'fill_transfer_from_savings': 54,
-    };
-    
-    const index = opMap[opType];
+    const index = OPERATION_TYPE_INDEX[opType];
     if (index === undefined) {
         throw new Error(`Unknown operation type: ${opType}. Please add it to the operation map.`);
     }
@@ -303,6 +320,24 @@ function serializeOperationData(bb: ByteBuffer, opType: string, opData: unknown)
             break;
         case 'custom_json':
             serializeCustomJson(bb, opData);
+            break;
+        case 'delete_comment':
+            serializeDeleteComment(bb, opData);
+            break;
+        case 'claim_account':
+            serializeClaimAccount(bb, opData);
+            break;
+        case 'delegate_vesting_shares':
+            serializeDelegateVestingShares(bb, opData);
+            break;
+        case 'create_proposal':
+            serializeCreateProposal(bb, opData);
+            break;
+        case 'update_proposal_votes':
+            serializeUpdateProposalVotes(bb, opData);
+            break;
+        case 'remove_proposal':
+            serializeRemoveProposal(bb, opData);
             break;
         default:
             throw new Error(`Operation type ${opType} serialization not fully implemented`);
@@ -1106,6 +1141,97 @@ function serializeCustomJson(bb: ByteBuffer, data: unknown): void {
 }
 
 /**
+ * Serialize delete_comment operation (op 17).
+ * Fields: author, permlink.
+ */
+function serializeDeleteComment(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.author || ''));
+    writeString(bb, String(dataObj.permlink || ''));
+}
+
+/**
+ * Serialize claim_account operation (op 22).
+ * Fields: creator, fee (asset), extensions (set<future_extensions>).
+ */
+function serializeClaimAccount(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.creator || ''));
+    serializeAsset(bb, String(dataObj.fee || '0.000 STEEM'));
+    serializeExtensions(bb, dataObj.extensions);
+}
+
+/**
+ * Serialize delegate_vesting_shares operation (op 40).
+ * Fields: delegator, delegatee, vesting_shares (asset).
+ *
+ * Revoking a delegation is the same operation with vesting_shares set to
+ * 0.000000 VESTS, which is why an unimplemented serializer here breaks both
+ * "delegate" and "revoke delegation" in a wallet UI.
+ */
+function serializeDelegateVestingShares(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.delegator || ''));
+    writeString(bb, String(dataObj.delegatee || ''));
+    serializeAsset(bb, String(dataObj.vesting_shares || '0.000000 VESTS'));
+}
+
+/**
+ * Serialize create_proposal operation (op 44).
+ * Fields: creator, receiver, start_date, end_date (time_point_sec),
+ * daily_pay (asset), subject, permlink, extensions (set<future_extensions>).
+ */
+function serializeCreateProposal(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.creator || ''));
+    writeString(bb, String(dataObj.receiver || ''));
+    serializeTimePointSec(bb, dataObj.start_date);
+    serializeTimePointSec(bb, dataObj.end_date);
+    serializeAsset(bb, String(dataObj.daily_pay || '0.000 SBD'));
+    writeString(bb, String(dataObj.subject || ''));
+    writeString(bb, String(dataObj.permlink || ''));
+    serializeExtensions(bb, dataObj.extensions);
+}
+
+/**
+ * Serialize update_proposal_votes operation (op 45).
+ * Fields: voter, proposal_ids (array<uint64>), approve (bool),
+ * extensions (set<future_extensions>).
+ */
+function serializeUpdateProposalVotes(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.voter || ''));
+    serializeUint64Array(bb, dataObj.proposal_ids);
+    serializeBool(bb, dataObj.approve);
+    serializeExtensions(bb, dataObj.extensions);
+}
+
+/**
+ * Serialize remove_proposal operation (op 46).
+ * Fields: proposal_owner, proposal_ids (array<uint64>),
+ * extensions (set<future_extensions>).
+ */
+function serializeRemoveProposal(bb: ByteBuffer, data: unknown): void {
+    const dataObj = data as Record<string, unknown>;
+    writeString(bb, String(dataObj.proposal_owner || ''));
+    serializeUint64Array(bb, dataObj.proposal_ids);
+    serializeExtensions(bb, dataObj.extensions);
+}
+
+/**
+ * Serialize an array<uint64> field: varint32 length followed by each element
+ * as uint64 little-endian.
+ */
+function serializeUint64Array(bb: ByteBuffer, values: unknown): void {
+    const list = Array.isArray(values) ? values : [];
+    bb.writeVarint32(list.length);
+    for (const value of list) {
+        const numeric = typeof value === 'number' ? value : Number(value);
+        bb.writeUint64(Number.isFinite(numeric) ? numeric : 0);
+    }
+}
+
+/**
  * Read authority map fields for binary packing (on-wire sorted flat_map).
  * JSON-RPC uses fc::flat_map → array of [key, weight] pairs; object maps are accepted
  * here only so callers that forgot to normalize still sign the intended keys.
@@ -1288,4 +1414,3 @@ function serializeExtensions(bb: ByteBuffer, extensions: unknown): void {
     // }
     bb.writeVarint32(0);
 }
-

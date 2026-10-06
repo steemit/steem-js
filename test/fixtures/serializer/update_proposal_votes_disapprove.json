@@ -1,0 +1,24 @@
+{
+  "name": "update_proposal_votes_disapprove",
+  "note": "Golden hex generated from the legacy steem-js serializer (origin/legacy @17fdf38), verified against the committed steemutil fixtures",
+  "tx": {
+    "expiration": "2016-03-23T22:41:21",
+    "extensions": [],
+    "ref_block_num": 19297,
+    "ref_block_prefix": 1608085982,
+    "operations": [
+      [
+        "update_proposal_votes",
+        {
+          "voter": "alice",
+          "proposal_ids": [
+            5
+          ],
+          "approve": false,
+          "extensions": []
+        }
+      ]
+    ]
+  },
+  "expected_hex": "614bde71d95f911bf356012d05616c696365010500000000000000000000"
+}
