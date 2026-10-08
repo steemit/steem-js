@@ -646,7 +646,8 @@ function serializeSetResetAccount(bb: ByteBuffer, data: unknown): void {
 function serializeDeclineVotingRights(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.account || ''));
-    serializeBool(bb, dataObj.decline, 'decline_voting_rights.decline');
+    // C++ default: bool decline = true (steem_operations.hpp) — missing must throw.
+    serializeBool(bb, dataObj.decline, 'decline_voting_rights.decline', { protocolDefault: true });
 }
 
 /**
@@ -680,7 +681,7 @@ function serializeSetWithdrawVestingRoute(bb: ByteBuffer, data: unknown): void {
     writeString(bb, String(dataObj.to_account || ''));
     // percent is uint16
     bb.writeUint16((dataObj.percent as number) ?? 0);
-    serializeBool(bb, dataObj.auto_vest, 'set_withdraw_vesting_route.auto_vest');
+    serializeBool(bb, dataObj.auto_vest, 'set_withdraw_vesting_route.auto_vest', { protocolDefault: false });
 }
 
 /**
@@ -728,7 +729,7 @@ function serializeLimitOrderCreate(bb: ByteBuffer, data: unknown): void {
     bb.writeUint32((dataObj.orderid as number) ?? 0);
     serializeAsset(bb, String(dataObj.amount_to_sell || '0.000 STEEM'));
     serializeAsset(bb, String(dataObj.min_to_receive || '0.000 STEEM'));
-    serializeBool(bb, dataObj.fill_or_kill, 'limit_order_create.fill_or_kill');
+    serializeBool(bb, dataObj.fill_or_kill, 'limit_order_create.fill_or_kill', { protocolDefault: false });
     serializeTimePointSec(bb, dataObj.expiration, 'limit_order_create.expiration');
 }
 
@@ -746,7 +747,7 @@ function serializeLimitOrderCreate2(bb: ByteBuffer, data: unknown): void {
     const quote = rate?.quote ?? '0.000 SBD';
     serializeAsset(bb, String(base));
     serializeAsset(bb, String(quote));
-    serializeBool(bb, dataObj.fill_or_kill, 'limit_order_create2.fill_or_kill');
+    serializeBool(bb, dataObj.fill_or_kill, 'limit_order_create2.fill_or_kill', { protocolDefault: false });
     serializeTimePointSec(bb, dataObj.expiration, 'limit_order_create2.expiration');
 }
 
@@ -856,7 +857,8 @@ function serializeEscrowApprove(bb: ByteBuffer, data: unknown): void {
     writeString(bb, String(dataObj.agent || ''));
     writeString(bb, String(dataObj.who || ''));
     bb.writeUint32((dataObj.escrow_id as number) ?? 0);
-    serializeBool(bb, dataObj.approve, 'escrow_approve.approve');
+    // C++ default: bool approve = true (steem_operations.hpp) — missing must throw.
+    serializeBool(bb, dataObj.approve, 'escrow_approve.approve', { protocolDefault: true });
 }
 
 /**
@@ -1072,7 +1074,8 @@ function serializeAccountWitnessVote(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.account || ''));
     writeString(bb, String(dataObj.witness || ''));
-    serializeBool(bb, dataObj.approve, 'account_witness_vote.approve');
+    // C++ default: bool approve = true (steem_operations.hpp) — missing must throw.
+    serializeBool(bb, dataObj.approve, 'account_witness_vote.approve', { protocolDefault: true });
 }
 
 /**
@@ -1144,8 +1147,10 @@ function serializeCommentOptions(bb: ByteBuffer, data: unknown): void {
     writeString(bb, String(dataObj.permlink || ''));
     serializeAsset(bb, String(dataObj.max_accepted_payout || '1000000.000 SBD'));
     bb.writeUint16((dataObj.percent_steem_dollars as number) ?? 0);
-    serializeBool(bb, dataObj.allow_votes, 'comment_options.allow_votes');
-    serializeBool(bb, dataObj.allow_curation_rewards, 'comment_options.allow_curation_rewards');
+    // C++ defaults: allow_votes = true, allow_curation_rewards = true
+    // (steem_operations.hpp) — missing must throw.
+    serializeBool(bb, dataObj.allow_votes, 'comment_options.allow_votes', { protocolDefault: true });
+    serializeBool(bb, dataObj.allow_curation_rewards, 'comment_options.allow_curation_rewards', { protocolDefault: true });
     serializeCommentOptionsExtensions(bb, dataObj.extensions);
 }
 
@@ -1212,6 +1217,14 @@ function serializeClaimAccount(bb: ByteBuffer, data: unknown): void {
  * vesting_shares must throw instead of defaulting: on this operation a zero
  * amount is a destructive action (full revocation), never a safe default.
  * A camelCase typo like `vestingShares` therefore fails loudly too.
+ *
+ * The value is additionally shape-validated op-locally: serializeAsset's
+ * `parseInt(...) || 0` would turn a malformed amount like 'abc.000000 VESTS'
+ * into NaN → 0, i.e. byte-identical to a full revocation. VESTS has precision
+ * 6 on chain, so the exact form `<digits>.<6 digits> VESTS` is required — a
+ * decimal-less '10 VESTS' would serialize at precision 0, signing 10 base
+ * units instead of 10 VESTS. (Hardening serializeAsset itself is a separate
+ * follow-up; it is shared by every asset field.)
  */
 function serializeDelegateVestingShares(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
@@ -1223,7 +1236,12 @@ function serializeDelegateVestingShares(bb: ByteBuffer, data: unknown): void {
             'delegate_vesting_shares.vesting_shares is required: a missing amount would silently sign a full delegation revocation. Pass an explicit asset string (use \'0.000000 VESTS\' to revoke).'
         );
     }
-    serializeAsset(bb, String(vestingShares));
+    if (typeof vestingShares !== 'string' || !/^\d+\.\d{6} VESTS$/.test(vestingShares)) {
+        throw new Error(
+            `Invalid delegate_vesting_shares.vesting_shares: expected a VESTS asset string with 6 decimals (e.g. '1000.000000 VESTS'), received ${JSON.stringify(vestingShares)}`
+        );
+    }
+    serializeAsset(bb, vestingShares);
 }
 
 /**
@@ -1257,7 +1275,7 @@ function serializeUpdateProposalVotes(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.voter || ''));
     serializeUint64Array(bb, dataObj.proposal_ids);
-    serializeBool(bb, dataObj.approve, 'update_proposal_votes.approve');
+    serializeBool(bb, dataObj.approve, 'update_proposal_votes.approve', { protocolDefault: false });
     serializeExtensions(bb, dataObj.extensions);
 }
 
@@ -1459,11 +1477,25 @@ function serializeTimePointSec(bb: ByteBuffer, value: unknown, fieldName: string
  * - booleans `true` / `false`
  * - the numbers `1` / `0`
  * - the strings `'true'` / `'false'` / `'1'` / `'0'`
- * - `undefined` / `null`, which serialize as false to match the protocol's
- *   `bool x = false` field defaults
+ * - `undefined` / `null`, but ONLY for fields whose protocol default is
+ *   `false` (`options.protocolDefault === false`): those serialize as 0,
+ *   matching the C++ `bool x = false` field default. For fields whose C++
+ *   default is `true` (e.g. `account_witness_vote.approve`,
+ *   `comment_options.allow_votes`), a missing value throws — silently writing
+ *   0 would sign the opposite of the protocol default.
  */
-function serializeBool(bb: ByteBuffer, value: unknown, fieldName: string): void {
+function serializeBool(
+    bb: ByteBuffer,
+    value: unknown,
+    fieldName: string,
+    options: { protocolDefault: boolean }
+): void {
     if (value === undefined || value === null) {
+        if (options.protocolDefault) {
+            throw new Error(
+                `Missing required boolean field ${fieldName}: the protocol default for this field is true, so there is no safe silent default. Pass an explicit boolean.`
+            );
+        }
         bb.writeUint8(0);
         return;
     }

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'fs';
 import {
   OPERATION_TYPE_INDEX,
   UNSERIALIZED_OPERATION_TYPES,
@@ -23,73 +24,31 @@ import {
 const UNIMPLEMENTED_MESSAGE = 'serialization not fully implemented';
 
 /**
- * The operations that have a serializer case in `serializeOperationData`.
- * This list is the manifest for the reverse direction of the map/switch
- * invariant: a case that exists in the switch but is absent from
- * OPERATION_TYPE_INDEX would throw "Unknown operation type" at signing time
- * while the dispatch guard below stays silent, so map entries, switch cases,
- * and this list must agree exactly (both directions). Adding a switch case
- * requires adding the name here AND to the map; the set-equality assertion
- * fails otherwise.
+ * The operation types that have a `case` in the `serializeOperationData`
+ * switch, parsed from the serializer source itself. A hand-maintained manifest
+ * would not catch the exact failure mode the invariant exists for (a case
+ * added to the switch without a map entry throws "Unknown operation type" at
+ * signing time while the dispatch guard stays silent), so the expected set is
+ * derived from the source. Fails loudly when zero cases are found, so a
+ * refactor of the switch shape cannot silently void this test.
  */
-const SERIALIZED_OPERATION_TYPES = [
-  'vote',
-  'comment',
-  'transfer',
-  'transfer_to_vesting',
-  'withdraw_vesting',
-  'limit_order_create',
-  'limit_order_cancel',
-  'feed_publish',
-  'convert',
-  'account_create',
-  'account_update',
-  'witness_update',
-  'account_witness_vote',
-  'account_witness_proxy',
-  'pow',
-  'custom',
-  'delete_comment',
-  'custom_json',
-  'comment_options',
-  'set_withdraw_vesting_route',
-  'limit_order_create2',
-  'claim_account',
-  'create_claimed_account',
-  'request_account_recovery',
-  'recover_account',
-  'change_recovery_account',
-  'escrow_transfer',
-  'escrow_dispute',
-  'escrow_release',
-  'pow2',
-  'escrow_approve',
-  'transfer_to_savings',
-  'transfer_from_savings',
-  'cancel_transfer_from_savings',
-  'custom_binary',
-  'decline_voting_rights',
-  'reset_account',
-  'set_reset_account',
-  'claim_reward_balance',
-  'delegate_vesting_shares',
-  'account_create_with_delegation',
-  'witness_set_properties',
-  'account_update2',
-  'create_proposal',
-  'update_proposal_votes',
-  'remove_proposal',
-  'claim_reward_balance2',
-  // Virtual operations (never signed by clients) that still have serializers
-  // so their byte encoding stays verifiable:
-  'fill_convert_request',
-  'comment_reward',
-  'liquidity_reward',
-  'interest',
-  'fill_vesting_withdraw',
-  'fill_order',
-  'fill_transfer_from_savings',
-];
+function parseSwitchCases(): string[] {
+  const source = readFileSync(
+    new URL('../src/auth/serializer/transaction.ts', import.meta.url),
+    'utf8'
+  );
+  const fnStart = source.indexOf('function serializeOperationData');
+  if (fnStart === -1) {
+    throw new Error('serializeOperationData not found in transaction.ts — has it been renamed?');
+  }
+  const cases = [...source.slice(fnStart).matchAll(/^\s*case '([a-z0-9_]+)':$/gm)].map((m) => m[1]);
+  if (cases.length === 0) {
+    throw new Error(
+      'No case labels found in serializeOperationData — the switch shape changed; update this parser.'
+    );
+  }
+  return cases;
+}
 
 function txWith(opType: string) {
   return {
@@ -184,16 +143,20 @@ describe('operation serializer coverage', () => {
   });
 
   it('keeps the type map and the serializer switch in exact agreement (both directions)', () => {
-    // Forward: every mapped, serializable type is in the switch manifest.
+    const switchCases = parseSwitchCases();
+
+    // Forward: the switch cases are exactly the mapped types minus the
+    // intentionally-unsupported list. A case without a map entry would throw
+    // "Unknown operation type" at signing time; a mapped type without a case
+    // would throw "serialization not fully implemented".
     const serializableMapped = mappedTypes.filter(
       (opType) => !UNSERIALIZED_OPERATION_TYPES.includes(opType)
     );
-    expect(new Set(SERIALIZED_OPERATION_TYPES)).toEqual(new Set(serializableMapped));
+    expect(new Set(switchCases)).toEqual(new Set(serializableMapped));
 
-    // Reverse: every switch case resolves through the map — otherwise signing
-    // it would throw "Unknown operation type" while the dispatch guard above
-    // stays silent — and actually dispatches to a serializer.
-    for (const opType of SERIALIZED_OPERATION_TYPES) {
+    // Reverse: every parsed switch case resolves through the map and actually
+    // dispatches to a serializer.
+    for (const opType of switchCases) {
       expect(OPERATION_TYPE_INDEX[opType]).toBeDefined();
       try {
         serializeTransaction(txWith(opType));

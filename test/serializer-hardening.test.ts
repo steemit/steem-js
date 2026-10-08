@@ -42,7 +42,9 @@ describe('bool fields reject non-boolean truthy input (signing path)', () => {
     expect(proposalVotes({ approve: 0 }).equals(proposalVotes({ approve: false }))).toBe(true);
   });
 
-  it('serializes a missing approve as false (protocol `bool approve = false` default)', () => {
+  it('serializes a missing approve as false for update_proposal_votes (C++ default IS `bool approve = false`)', () => {
+    // Scoped to update_proposal_votes: the false default is per-field, not
+    // universal — see the "protocol bool defaults" block below.
     const missing = proposalVotes({});
     expect(missing.equals(proposalVotes({ approve: false }))).toBe(true);
   });
@@ -79,11 +81,75 @@ describe('bool fields reject non-boolean truthy input (signing path)', () => {
   });
 });
 
+/**
+ * The C++ `bool x = ...` default is per-field (steem_operations.hpp /
+ * sps_operations.hpp on origin/master). Fields defaulting to `false` keep the
+ * missing → false shortcut; fields defaulting to `true` must throw on a
+ * missing value, because silently writing 0 would sign the opposite of the
+ * protocol default.
+ */
+describe('bool fields honor the per-field protocol default', () => {
+  it('missing account_witness_vote.approve (default true) throws', () => {
+    expect(() => txWith('account_witness_vote', { account: 'alice', witness: 'bob' })).toThrow(
+      /Missing required boolean field account_witness_vote\.approve/
+    );
+  });
+
+  it('missing comment_options.allow_votes / allow_curation_rewards (defaults true) throw', () => {
+    const base = { author: 'alice', permlink: 'p' };
+    expect(() => txWith('comment_options', base)).toThrow(
+      /Missing required boolean field comment_options\.allow_votes/
+    );
+    expect(() => txWith('comment_options', { ...base, allow_votes: true })).toThrow(
+      /Missing required boolean field comment_options\.allow_curation_rewards/
+    );
+  });
+
+  it('missing escrow_approve.approve (default true) throws', () => {
+    expect(() =>
+      txWith('escrow_approve', { from: 'a', to: 'b', agent: 'c', who: 'a', escrow_id: 1 })
+    ).toThrow(/Missing required boolean field escrow_approve\.approve/);
+  });
+
+  it('missing decline_voting_rights.decline (default true) throws', () => {
+    expect(() => txWith('decline_voting_rights', { account: 'alice' })).toThrow(
+      /Missing required boolean field decline_voting_rights\.decline/
+    );
+  });
+
+  it('missing fill_or_kill / auto_vest (defaults false) still serialize as 0', () => {
+    const order = {
+      owner: 'alice',
+      orderid: 1,
+      amount_to_sell: '1.000 STEEM',
+      min_to_receive: '1.000 SBD',
+      expiration: '2016-03-30T22:41:21',
+    };
+    expect(txWith('limit_order_create', order).equals(txWith('limit_order_create', { ...order, fill_or_kill: false }))).toBe(
+      true
+    );
+    const order2 = { ...order, exchange_rate: { base: '1.000 STEEM', quote: '1.000 SBD' } };
+    expect(
+      txWith('limit_order_create2', order2).equals(txWith('limit_order_create2', { ...order2, fill_or_kill: false }))
+    ).toBe(true);
+
+    const route = { from_account: 'alice', to_account: 'bob', percent: 100 };
+    expect(
+      txWith('set_withdraw_vesting_route', route).equals(
+        txWith('set_withdraw_vesting_route', { ...route, auto_vest: false })
+      )
+    ).toBe(true);
+  });
+});
+
 describe('delegate_vesting_shares requires an explicit amount', () => {
   const base = { delegator: 'alice', delegatee: 'bob' };
 
   it('throws when vesting_shares is missing instead of silently signing a revocation', () => {
     expect(() => txWith('delegate_vesting_shares', base)).toThrow(
+      /delegate_vesting_shares\.vesting_shares is required/
+    );
+    expect(() => txWith('delegate_vesting_shares', { ...base, vesting_shares: '' })).toThrow(
       /delegate_vesting_shares\.vesting_shares is required/
     );
   });
@@ -98,6 +164,29 @@ describe('delegate_vesting_shares requires an explicit amount', () => {
     const revoke = txWith('delegate_vesting_shares', { ...base, vesting_shares: '0.000000 VESTS' });
     expect(revoke.toString('hex')).toBe(
       '614bde71d95f911bf356012805616c69636503626f620000000000000000065645535453000000'
+    );
+  });
+
+  it('rejects malformed amounts that serializeAsset would degrade to a revocation', () => {
+    // 'abc.000000 VESTS' → parseInt is NaN → || 0 → byte-identical to a full revoke.
+    // ('' throws earlier, via the required-field check.)
+    for (const bad of ['abc.000000 VESTS', '1.000000 STEEM', 10, '1.00000 VESTS', '-1.000000 VESTS']) {
+      expect(() => txWith('delegate_vesting_shares', { ...base, vesting_shares: bad })).toThrow(
+        /Invalid delegate_vesting_shares\.vesting_shares/
+      );
+    }
+  });
+
+  it('rejects a decimal-less amount (would serialize at precision 0, off by 10^6)', () => {
+    expect(() => txWith('delegate_vesting_shares', { ...base, vesting_shares: '10 VESTS' })).toThrow(
+      /Invalid delegate_vesting_shares\.vesting_shares/
+    );
+  });
+
+  it('still serializes a normal amount', () => {
+    const delegate = txWith('delegate_vesting_shares', { ...base, vesting_shares: '10.000000 VESTS' });
+    expect(delegate.toString('hex')).toBe(
+      '614bde71d95f911bf356012805616c69636503626f628096980000000000065645535453000000'
     );
   });
 });
