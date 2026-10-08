@@ -94,6 +94,17 @@ function serializeOperation(bb: ByteBuffer, op: unknown): void {
  * serializer fails only at runtime, inside the browser, with
  * "Operation type <x> serialization not fully implemented" (that is exactly how
  * delegate_vesting_shares revocation broke in a client wallet).
+ *
+ * Indices follow the authoritative on-chain ordering: legacy steem-js 0.7
+ * `operation.st_operations` (origin/legacy src/auth/serializer/src/operations.js)
+ * and the C++ reference `libraries/protocol/include/steem/protocol/operations.hpp`.
+ * Indices 48–65 include vote2 / smt_* placeholders and the virtual operations
+ * (fill_*, author/curation/comment_reward, liquidity_reward, interest,
+ * shutdown_witness). Everything from 56 on is virtual — clients never sign those;
+ * the serializers below exist only so the byte encoding stays verifiable.
+ * Indices 66+ (hardfork, comment_payout_update, return_vesting_delegation,
+ * comment_benefactor_reward, producer_reward, ...) are omitted: all virtual,
+ * never signed, and unsupported here.
  */
 export const OPERATION_TYPE_INDEX: Readonly<Record<string, number>> = Object.freeze({
     'vote': 0,
@@ -144,22 +155,52 @@ export const OPERATION_TYPE_INDEX: Readonly<Record<string, number>> = Object.fre
     'update_proposal_votes': 45,
     'remove_proposal': 46,
     'claim_reward_balance2': 47,
-    'fill_convert_request': 48,
-    'comment_reward': 49,
-    'liquidity_reward': 50,
-    'interest': 51,
-    'fill_vesting_withdraw': 52,
-    'fill_order': 53,
-    'fill_transfer_from_savings': 54,
+    'vote2': 48,
+    'smt_setup': 49,
+    'smt_setup_emissions': 50,
+    'smt_setup_ico_tier': 51,
+    'smt_set_setup_parameters': 52,
+    'smt_set_runtime_parameters': 53,
+    'smt_create': 54,
+    'smt_contribute': 55,
+    'fill_convert_request': 56,
+    'author_reward': 57,
+    'curation_reward': 58,
+    'comment_reward': 59,
+    'liquidity_reward': 60,
+    'interest': 61,
+    'fill_vesting_withdraw': 62,
+    'fill_order': 63,
+    'shutdown_witness': 64,
+    'fill_transfer_from_savings': 65,
 });
 
 /**
  * Operation types listed in the type-index map that intentionally have no
- * serializer: `report_over_production` was disabled on chain and its payload
- * embeds two full signed_block_headers. Everything else in the map must be
- * serializable (enforced by test/serializer-op-coverage.test.ts).
+ * serializer:
+ * - `report_over_production` was disabled on chain and its payload embeds two
+ *   full signed_block_headers.
+ * - `vote2` and the `smt_*` operations were never enabled on mainnet.
+ * - `author_reward`, `curation_reward` and `shutdown_witness` are virtual
+ *   operations: produced by the chain, never signed by a client.
+ *
+ * Everything else in the map must be serializable (enforced by
+ * test/serializer-op-coverage.test.ts, both directions).
  */
-export const UNSERIALIZED_OPERATION_TYPES: readonly string[] = ['report_over_production'];
+export const UNSERIALIZED_OPERATION_TYPES: readonly string[] = Object.freeze([
+    'report_over_production',
+    'vote2',
+    'smt_setup',
+    'smt_setup_emissions',
+    'smt_setup_ico_tier',
+    'smt_set_setup_parameters',
+    'smt_set_runtime_parameters',
+    'smt_create',
+    'smt_contribute',
+    'author_reward',
+    'curation_reward',
+    'shutdown_witness',
+]);
 
 /**
  * Get operation type index based on Steem blockchain operation order
@@ -605,7 +646,7 @@ function serializeSetResetAccount(bb: ByteBuffer, data: unknown): void {
 function serializeDeclineVotingRights(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.account || ''));
-    serializeBool(bb, dataObj.decline);
+    serializeBool(bb, dataObj.decline, 'decline_voting_rights.decline');
 }
 
 /**
@@ -639,7 +680,7 @@ function serializeSetWithdrawVestingRoute(bb: ByteBuffer, data: unknown): void {
     writeString(bb, String(dataObj.to_account || ''));
     // percent is uint16
     bb.writeUint16((dataObj.percent as number) ?? 0);
-    serializeBool(bb, dataObj.auto_vest);
+    serializeBool(bb, dataObj.auto_vest, 'set_withdraw_vesting_route.auto_vest');
 }
 
 /**
@@ -687,8 +728,8 @@ function serializeLimitOrderCreate(bb: ByteBuffer, data: unknown): void {
     bb.writeUint32((dataObj.orderid as number) ?? 0);
     serializeAsset(bb, String(dataObj.amount_to_sell || '0.000 STEEM'));
     serializeAsset(bb, String(dataObj.min_to_receive || '0.000 STEEM'));
-    serializeBool(bb, dataObj.fill_or_kill);
-    serializeTimePointSec(bb, dataObj.expiration);
+    serializeBool(bb, dataObj.fill_or_kill, 'limit_order_create.fill_or_kill');
+    serializeTimePointSec(bb, dataObj.expiration, 'limit_order_create.expiration');
 }
 
 /**
@@ -705,8 +746,8 @@ function serializeLimitOrderCreate2(bb: ByteBuffer, data: unknown): void {
     const quote = rate?.quote ?? '0.000 SBD';
     serializeAsset(bb, String(base));
     serializeAsset(bb, String(quote));
-    serializeBool(bb, dataObj.fill_or_kill);
-    serializeTimePointSec(bb, dataObj.expiration);
+    serializeBool(bb, dataObj.fill_or_kill, 'limit_order_create2.fill_or_kill');
+    serializeTimePointSec(bb, dataObj.expiration, 'limit_order_create2.expiration');
 }
 
 /**
@@ -774,8 +815,8 @@ function serializeEscrowTransfer(bb: ByteBuffer, data: unknown): void {
     writeString(bb, String(dataObj.agent || ''));
     serializeAsset(bb, String(dataObj.fee || '0.000 STEEM'));
     writeString(bb, String(dataObj.json_meta || ''));
-    serializeTimePointSec(bb, dataObj.ratification_deadline);
-    serializeTimePointSec(bb, dataObj.escrow_expiration);
+    serializeTimePointSec(bb, dataObj.ratification_deadline, 'escrow_transfer.ratification_deadline');
+    serializeTimePointSec(bb, dataObj.escrow_expiration, 'escrow_transfer.escrow_expiration');
 }
 
 /**
@@ -815,7 +856,7 @@ function serializeEscrowApprove(bb: ByteBuffer, data: unknown): void {
     writeString(bb, String(dataObj.agent || ''));
     writeString(bb, String(dataObj.who || ''));
     bb.writeUint32((dataObj.escrow_id as number) ?? 0);
-    serializeBool(bb, dataObj.approve);
+    serializeBool(bb, dataObj.approve, 'escrow_approve.approve');
 }
 
 /**
@@ -1031,7 +1072,7 @@ function serializeAccountWitnessVote(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.account || ''));
     writeString(bb, String(dataObj.witness || ''));
-    serializeBool(bb, dataObj.approve);
+    serializeBool(bb, dataObj.approve, 'account_witness_vote.approve');
 }
 
 /**
@@ -1103,8 +1144,8 @@ function serializeCommentOptions(bb: ByteBuffer, data: unknown): void {
     writeString(bb, String(dataObj.permlink || ''));
     serializeAsset(bb, String(dataObj.max_accepted_payout || '1000000.000 SBD'));
     bb.writeUint16((dataObj.percent_steem_dollars as number) ?? 0);
-    serializeBool(bb, dataObj.allow_votes);
-    serializeBool(bb, dataObj.allow_curation_rewards);
+    serializeBool(bb, dataObj.allow_votes, 'comment_options.allow_votes');
+    serializeBool(bb, dataObj.allow_curation_rewards, 'comment_options.allow_curation_rewards');
     serializeCommentOptionsExtensions(bb, dataObj.extensions);
 }
 
@@ -1167,13 +1208,22 @@ function serializeClaimAccount(bb: ByteBuffer, data: unknown): void {
  *
  * Revoking a delegation is the same operation with vesting_shares set to
  * 0.000000 VESTS, which is why an unimplemented serializer here breaks both
- * "delegate" and "revoke delegation" in a wallet UI.
+ * "delegate" and "revoke delegation" in a wallet UI — and why a missing
+ * vesting_shares must throw instead of defaulting: on this operation a zero
+ * amount is a destructive action (full revocation), never a safe default.
+ * A camelCase typo like `vestingShares` therefore fails loudly too.
  */
 function serializeDelegateVestingShares(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.delegator || ''));
     writeString(bb, String(dataObj.delegatee || ''));
-    serializeAsset(bb, String(dataObj.vesting_shares || '0.000000 VESTS'));
+    const vestingShares = dataObj.vesting_shares;
+    if (vestingShares === undefined || vestingShares === null || vestingShares === '') {
+        throw new Error(
+            'delegate_vesting_shares.vesting_shares is required: a missing amount would silently sign a full delegation revocation. Pass an explicit asset string (use \'0.000000 VESTS\' to revoke).'
+        );
+    }
+    serializeAsset(bb, String(vestingShares));
 }
 
 /**
@@ -1185,8 +1235,8 @@ function serializeCreateProposal(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.creator || ''));
     writeString(bb, String(dataObj.receiver || ''));
-    serializeTimePointSec(bb, dataObj.start_date);
-    serializeTimePointSec(bb, dataObj.end_date);
+    serializeTimePointSec(bb, dataObj.start_date, 'create_proposal.start_date');
+    serializeTimePointSec(bb, dataObj.end_date, 'create_proposal.end_date');
     serializeAsset(bb, String(dataObj.daily_pay || '0.000 SBD'));
     writeString(bb, String(dataObj.subject || ''));
     writeString(bb, String(dataObj.permlink || ''));
@@ -1207,7 +1257,7 @@ function serializeUpdateProposalVotes(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.voter || ''));
     serializeUint64Array(bb, dataObj.proposal_ids);
-    serializeBool(bb, dataObj.approve);
+    serializeBool(bb, dataObj.approve, 'update_proposal_votes.approve');
     serializeExtensions(bb, dataObj.extensions);
 }
 
@@ -1244,12 +1294,21 @@ function serializeRemoveProposal(bb: ByteBuffer, data: unknown): void {
  * Fails loudly rather than coercing: this runs on the signing path, where a
  * malformed element silently becoming 0 would sign a vote for proposal 0 — a
  * transaction the caller never intended — instead of surfacing the bad input.
+ *
+ * Elements must be safe integers: string and number values are capped at
+ * `Number.MAX_SAFE_INTEGER` (2^53 - 1). That is narrower than legacy, which
+ * accepted the full uint64 range via Long, but proposal ids come from a
+ * sequential on-chain counter and never approach that range.
+ *
+ * `Array.from` (not `values.map`) so that holes in a sparse array are also
+ * validated — `map` skips holes, which would fall through to ByteBuffer's
+ * opaque "Illegal value: undefined" instead of the field-level error below.
  */
 function serializeUint64Array(bb: ByteBuffer, values: unknown): void {
     if (!Array.isArray(values)) {
         throw new Error('Invalid uint64 array field: expected an array');
     }
-    const elements = values.map((value) => {
+    const elements = Array.from(values, (value) => {
         const numeric =
             typeof value === 'number'
                 ? value
@@ -1365,8 +1424,12 @@ function writeString(bb: ByteBuffer, str: string): void {
  *
  * Accepts ISO string / Date / seconds number; writes uint32 (seconds since epoch).
  * Used for proposal start/end, escrow_deadline, and similar fields.
+ *
+ * An unparseable input throws a field-level error instead of letting NaN fall
+ * through to ByteBuffer's opaque "Illegal value: NaN" — on the signing path
+ * the caller needs to know which field was bad and what was received.
  */
-function serializeTimePointSec(bb: ByteBuffer, value: unknown): void {
+function serializeTimePointSec(bb: ByteBuffer, value: unknown, fieldName: string): void {
     let seconds: number;
     if (typeof value === 'string') {
         const iso = value.endsWith('Z') ? value : `${value}Z`;
@@ -1380,15 +1443,51 @@ function serializeTimePointSec(bb: ByteBuffer, value: unknown): void {
     } else {
         seconds = 0;
     }
+    if (!Number.isFinite(seconds)) {
+        throw new Error(`Invalid time value for ${fieldName}: ${JSON.stringify(value)}`);
+    }
     bb.writeUint32(seconds);
 }
 
 /**
  * Serialize a generic bool flag as uint8(0/1).
  * Reused for optional / approve / decline and similar fields.
+ *
+ * Accepted inputs — anything else throws, because this runs on the signing
+ * path, where coercing a malformed value (e.g. the string "false", which is
+ * truthy in JavaScript) would silently sign bytes the caller never intended:
+ * - booleans `true` / `false`
+ * - the numbers `1` / `0`
+ * - the strings `'true'` / `'false'` / `'1'` / `'0'`
+ * - `undefined` / `null`, which serialize as false to match the protocol's
+ *   `bool x = false` field defaults
  */
-function serializeBool(bb: ByteBuffer, value: unknown): void {
-    bb.writeUint8(value ? 1 : 0);
+function serializeBool(bb: ByteBuffer, value: unknown, fieldName: string): void {
+    if (value === undefined || value === null) {
+        bb.writeUint8(0);
+        return;
+    }
+    if (typeof value === 'boolean') {
+        bb.writeUint8(value ? 1 : 0);
+        return;
+    }
+    if (typeof value === 'number' && (value === 0 || value === 1)) {
+        bb.writeUint8(value);
+        return;
+    }
+    if (typeof value === 'string') {
+        if (value === 'true' || value === '1') {
+            bb.writeUint8(1);
+            return;
+        }
+        if (value === 'false' || value === '0') {
+            bb.writeUint8(0);
+            return;
+        }
+    }
+    throw new Error(
+        `Invalid boolean value for ${fieldName}: expected a boolean, 0/1, or 'true'/'false'/'0'/'1', received ${JSON.stringify(value)}`
+    );
 }
 
 /**
@@ -1431,8 +1530,10 @@ function serializeCommentOptionsExtensions(bb: ByteBuffer, extensions: unknown):
  * - varint32 length
  * - then each element serialized per convention (current implementation supports empty only).
  *
- * To stay compatible with existing usage, we only write length 0 and ignore content here;
- * when supporting specific extension types, extend this after verification.
+ * A caller that explicitly passes a NON-empty extensions array gets an error
+ * instead of silently dropped bytes: on the signing path, dropping them would
+ * sign a payload the caller never intended. Absent / empty stays varint32(0).
+ * When supporting specific extension types, extend this after verification.
  */
 function serializeExtensions(bb: ByteBuffer, extensions: unknown): void {
     if (!Array.isArray(extensions) || extensions.length === 0) {
@@ -1440,14 +1541,7 @@ function serializeExtensions(bb: ByteBuffer, extensions: unknown): void {
         return;
     }
 
-    // Protocol-wise extensions are future_extensions; on mainnet they are typically 0.
-    // To avoid serializing data incompatible with C++ nodes, we still write 0 conservatively.
-    // To support non-empty extensions in the future, enable the logic below after tests:
-    //
-    // bb.writeVarint32(extensions.length);
-    // for (const ext of extensions) {
-    //   const json = JSON.stringify(ext ?? null);
-    //   writeString(bb, json);
-    // }
-    bb.writeVarint32(0);
+    throw new Error(
+        `Unsupported non-empty extensions: this serializer only supports the empty future_extensions set, received ${JSON.stringify(extensions)}`
+    );
 }
