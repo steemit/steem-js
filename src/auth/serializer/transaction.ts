@@ -416,7 +416,7 @@ function serializeTransfer(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.from || ''));
     writeString(bb, String(dataObj.to || ''));
-    serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.amount ?? '0.000 STEEM'));
     writeString(bb, String(dataObj.memo || ''));
 }
 
@@ -425,7 +425,7 @@ function serializeTransfer(bb: ByteBuffer, data: unknown): void {
  */
 function serializeAccountCreate(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
-    serializeAsset(bb, String(dataObj.fee || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.fee ?? '0.000 STEEM'));
     writeString(bb, String(dataObj.creator || ''));
     writeString(bb, String(dataObj.new_account_name || ''));
     serializeAuthority(bb, dataObj.owner);
@@ -507,8 +507,8 @@ function serializeAccountUpdate(bb: ByteBuffer, data: unknown): void {
  */
 function serializeAccountCreateWithDelegation(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
-    serializeAsset(bb, String(dataObj.fee || '0.000 STEEM'));
-    serializeAsset(bb, String(dataObj.delegation || '0.000 VESTS'));
+    serializeAsset(bb, String(dataObj.fee ?? '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.delegation ?? '0.000 VESTS'));
     writeString(bb, String(dataObj.creator || ''));
     writeString(bb, String(dataObj.new_account_name || ''));
     serializeAuthority(bb, dataObj.owner);
@@ -657,7 +657,7 @@ function serializeTransferToVesting(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.from || ''));
     writeString(bb, String(dataObj.to || ''));
-    serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.amount ?? '0.000 STEEM'));
 }
 
 /**
@@ -667,7 +667,7 @@ function serializeTransferToVesting(bb: ByteBuffer, data: unknown): void {
 function serializeWithdrawVesting(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.account || ''));
-    serializeAsset(bb, String(dataObj.vesting_shares || '0.000 VESTS'));
+    serializeAsset(bb, String(dataObj.vesting_shares ?? '0.000 VESTS'));
 }
 
 /**
@@ -691,7 +691,7 @@ function serializeTransferToSavings(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.from || ''));
     writeString(bb, String(dataObj.to || ''));
-    serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.amount ?? '0.000 STEEM'));
     writeString(bb, String(dataObj.memo || ''));
 }
 
@@ -704,7 +704,7 @@ function serializeTransferFromSavings(bb: ByteBuffer, data: unknown): void {
     writeString(bb, String(dataObj.from || ''));
     bb.writeUint32((dataObj.request_id as number) ?? (dataObj.requestID as number) ?? 0);
     writeString(bb, String(dataObj.to || ''));
-    serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.amount ?? '0.000 STEEM'));
     writeString(bb, String(dataObj.memo || ''));
 }
 
@@ -726,8 +726,8 @@ function serializeLimitOrderCreate(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.owner || ''));
     bb.writeUint32((dataObj.orderid as number) ?? 0);
-    serializeAsset(bb, String(dataObj.amount_to_sell || '0.000 STEEM'));
-    serializeAsset(bb, String(dataObj.min_to_receive || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.amount_to_sell ?? '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.min_to_receive ?? '0.000 STEEM'));
     serializeBool(bb, dataObj.fill_or_kill, 'limit_order_create.fill_or_kill', { protocolDefault: false });
     serializeTimePointSec(bb, dataObj.expiration, 'limit_order_create.expiration');
 }
@@ -740,7 +740,7 @@ function serializeLimitOrderCreate2(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.owner || ''));
     bb.writeUint32((dataObj.orderid as number) ?? 0);
-    serializeAsset(bb, String(dataObj.amount_to_sell || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.amount_to_sell ?? '0.000 STEEM'));
     const rate = (dataObj.exchange_rate ?? dataObj.exchangeRate) as Record<string, unknown> | undefined;
     const base = rate?.base ?? '0.000 STEEM';
     const quote = rate?.quote ?? '0.000 SBD';
@@ -782,7 +782,7 @@ function serializeConvert(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.owner || ''));
     bb.writeUint32((dataObj.requestid as number) ?? (dataObj.request_id as number) ?? 0);
-    serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.amount ?? '0.000 STEEM'));
 }
 
 /**
@@ -794,10 +794,10 @@ function serializeFillOrder(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.current_owner || ''));
     bb.writeUint32((dataObj.current_orderid as number) ?? 0);
-    serializeAsset(bb, String(dataObj.current_pays || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.current_pays ?? '0.000 STEEM'));
     writeString(bb, String(dataObj.open_owner || ''));
     bb.writeUint32((dataObj.open_orderid as number) ?? 0);
-    serializeAsset(bb, String(dataObj.open_pays || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.open_pays ?? '0.000 STEEM'));
 }
 
 /**
@@ -809,11 +809,11 @@ function serializeEscrowTransfer(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.from || ''));
     writeString(bb, String(dataObj.to || ''));
-    serializeAsset(bb, String(dataObj.sbd_amount || '0.000 SBD'));
-    serializeAsset(bb, String(dataObj.steem_amount || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.sbd_amount ?? '0.000 SBD'));
+    serializeAsset(bb, String(dataObj.steem_amount ?? '0.000 STEEM'));
     bb.writeUint32((dataObj.escrow_id as number) ?? 0);
     writeString(bb, String(dataObj.agent || ''));
-    serializeAsset(bb, String(dataObj.fee || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.fee ?? '0.000 STEEM'));
     writeString(bb, String(dataObj.json_meta || ''));
     serializeTimePointSec(bb, dataObj.ratification_deadline, 'escrow_transfer.ratification_deadline');
     serializeTimePointSec(bb, dataObj.escrow_expiration, 'escrow_transfer.escrow_expiration');
@@ -841,8 +841,8 @@ function serializeEscrowRelease(bb: ByteBuffer, data: unknown): void {
     writeString(bb, String(dataObj.to || ''));
     writeString(bb, String(dataObj.who || ''));
     bb.writeUint32((dataObj.escrow_id as number) ?? 0);
-    serializeAsset(bb, String(dataObj.sbd_amount || '0.000 SBD'));
-    serializeAsset(bb, String(dataObj.steem_amount || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.sbd_amount ?? '0.000 SBD'));
+    serializeAsset(bb, String(dataObj.steem_amount ?? '0.000 STEEM'));
 }
 
 /**
@@ -867,9 +867,9 @@ function serializeEscrowApprove(bb: ByteBuffer, data: unknown): void {
 function serializeClaimRewardBalance(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.account || ''));
-    serializeAsset(bb, String(dataObj.reward_steem || '0.000 STEEM'));
-    serializeAsset(bb, String(dataObj.reward_sbd || '0.000 SBD'));
-    serializeAsset(bb, String(dataObj.reward_vests || '0.000000 VESTS'));
+    serializeAsset(bb, String(dataObj.reward_steem ?? '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.reward_sbd ?? '0.000 SBD'));
+    serializeAsset(bb, String(dataObj.reward_vests ?? '0.000000 VESTS'));
 }
 
 /**
@@ -895,7 +895,7 @@ function serializeCommentReward(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.author || ''));
     writeString(bb, String(dataObj.permlink || ''));
-    serializeAsset(bb, String(dataObj.payout || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.payout ?? '0.000 STEEM'));
 }
 
 /**
@@ -905,7 +905,7 @@ function serializeCommentReward(bb: ByteBuffer, data: unknown): void {
 function serializeLiquidityReward(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.owner || ''));
-    serializeAsset(bb, String(dataObj.payout || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.payout ?? '0.000 STEEM'));
 }
 
 /**
@@ -915,7 +915,7 @@ function serializeLiquidityReward(bb: ByteBuffer, data: unknown): void {
 function serializeInterest(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.owner || ''));
-    serializeAsset(bb, String(dataObj.interest || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.interest ?? '0.000 STEEM'));
 }
 
 /**
@@ -926,8 +926,8 @@ function serializeFillVestingWithdraw(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.from_account || ''));
     writeString(bb, String(dataObj.to_account || ''));
-    serializeAsset(bb, String(dataObj.withdrawn || '0.000000 VESTS'));
-    serializeAsset(bb, String(dataObj.deposited || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.withdrawn ?? '0.000000 VESTS'));
+    serializeAsset(bb, String(dataObj.deposited ?? '0.000 STEEM'));
 }
 
 /**
@@ -938,8 +938,8 @@ function serializeFillConvertRequest(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.owner || ''));
     bb.writeUint32((dataObj.requestid as number) ?? 0);
-    serializeAsset(bb, String(dataObj.amount_in || '0.000 STEEM'));
-    serializeAsset(bb, String(dataObj.amount_out || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.amount_in ?? '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.amount_out ?? '0.000 STEEM'));
 }
 
 /**
@@ -950,7 +950,7 @@ function serializeFillTransferFromSavings(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.from || ''));
     writeString(bb, String(dataObj.to || ''));
-    serializeAsset(bb, String(dataObj.amount || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.amount ?? '0.000 STEEM'));
     bb.writeUint32((dataObj.request_id as number) ?? 0);
     writeString(bb, String(dataObj.memo || ''));
 }
@@ -1042,7 +1042,7 @@ function serializeWitnessUpdate(bb: ByteBuffer, data: unknown): void {
         bb.append(Buffer.alloc(33));
     }
     serializeChainProperties(bb, dataObj.props);
-    serializeAsset(bb, String(dataObj.fee || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.fee ?? '0.000 STEEM'));
 }
 
 /**
@@ -1144,7 +1144,7 @@ function serializeCommentOptions(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.author || ''));
     writeString(bb, String(dataObj.permlink || ''));
-    serializeAsset(bb, String(dataObj.max_accepted_payout || '1000000.000 SBD'));
+    serializeAsset(bb, String(dataObj.max_accepted_payout ?? '1000000.000 SBD'));
     bb.writeUint16((dataObj.percent_steem_dollars as number) ?? 0);
     // C++ defaults: allow_votes = true, allow_curation_rewards = true
     // (steem_operations.hpp) — missing must throw.
@@ -1202,7 +1202,7 @@ function serializeDeleteComment(bb: ByteBuffer, data: unknown): void {
 function serializeClaimAccount(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
     writeString(bb, String(dataObj.creator || ''));
-    serializeAsset(bb, String(dataObj.fee || '0.000 STEEM'));
+    serializeAsset(bb, String(dataObj.fee ?? '0.000 STEEM'));
     serializeExtensions(bb, dataObj.extensions);
 }
 
@@ -1254,7 +1254,7 @@ function serializeCreateProposal(bb: ByteBuffer, data: unknown): void {
     writeString(bb, String(dataObj.receiver || ''));
     serializeTimePointSec(bb, dataObj.start_date, 'create_proposal.start_date');
     serializeTimePointSec(bb, dataObj.end_date, 'create_proposal.end_date');
-    serializeAsset(bb, String(dataObj.daily_pay || '0.000 SBD'));
+    serializeAsset(bb, String(dataObj.daily_pay ?? '0.000 SBD'));
     writeString(bb, String(dataObj.subject || ''));
     writeString(bb, String(dataObj.permlink || ''));
     serializeExtensions(bb, dataObj.extensions);
@@ -1409,28 +1409,48 @@ function serializeAuthority(bb: ByteBuffer, auth: unknown): void {
  * This helper is reused for asset fields across all operations, e.g.
  * - amount / vesting_shares / reward_* / *_pays
  *
- * The amount part must be well-formed and fit in int64 — anything else throws
- * instead of silently degrading on the signing path: the previous
- * `parseInt(...) || 0` turned a malformed amount like 'abc.000 STEEM' into
- * NaN → 0, signing byte-identical output to an explicit zero amount (for
- * delegate_vesting_shares that means a full revocation), and an amount beyond
- * int64 was silently clamped by writeInt64. Precision beyond uint8 is likewise
- * rejected here instead of falling through to ByteBuffer's opaque error.
+ * The input must be exactly '<value> <SYMBOL>' with a well-formed value that
+ * fits in int64 — anything else throws instead of silently degrading on the
+ * signing path: the previous `parseInt(...) || 0` turned a malformed amount
+ * like 'abc.000 STEEM' into NaN → 0, signing byte-identical output to an
+ * explicit zero amount (for delegate_vesting_shares that means a full
+ * revocation), an amount beyond int64 was silently clamped by writeInt64, and
+ * the `parts[0] || '0.000'` / `parts[1] || 'STEEM'` fallbacks turned a leading
+ * space (' 1.000 STEEM') or a symbol-less amount ('1.000') into a signed
+ * zero-STEEM payload. The symbol must be 1-6 uppercase letters to match the
+ * C++ asset_symbol_type layout ([decimals][up to 6 symbol bytes][NUL]) — a
+ * 7th character lands in the NUL slot (chain-rejected bytes) and an 8th would
+ * shift every following field in the byte stream. Negative amounts are
+ * rejected because the chain's own asset parser asserts amount >= 0.
  */
-const INT64_MIN = -(1n << 63n);
 const INT64_MAX = (1n << 63n) - 1n;
 
 function serializeAsset(bb: ByteBuffer, amount: string): void {
     const parts = amount.split(' ');
-    const valueStr = parts[0] || '0.000';
-    const symbol = parts[1] || 'STEEM';
+    if (parts.length !== 2 || parts[0] === '' || parts[1] === '') {
+        throw new Error(
+            `Invalid asset amount: expected '<value> <SYMBOL>' (e.g. '1.000 STEEM'), received ${JSON.stringify(amount)}`
+        );
+    }
+    const valueStr = parts[0];
+    const symbol = parts[1];
 
     const segments = valueStr.split('.');
     const intPart = segments[0] ?? '';
     const decPart = segments.length > 1 ? segments[1] ?? '' : '';
-    if (segments.length > 2 || !/^-?\d+$/.test(intPart) || !/^\d+$/.test(decPart)) {
+    if (segments.length > 2 || !/^\d+$/.test(intPart) || !/^\d+$/.test(decPart)) {
+        if (/^-\d+$/.test(intPart)) {
+            throw new Error(
+                `Invalid asset amount: negative amounts cannot be serialized (the chain rejects amount < 0), received ${JSON.stringify(amount)}`
+            );
+        }
         throw new Error(
-            `Invalid asset amount: expected '<digits>[.<decimals>] <SYMBOL>' (e.g. '1.000 STEEM'), received ${JSON.stringify(amount)}`
+            `Invalid asset amount: expected '<digits>.<decimals>' (e.g. '1.000'), received ${JSON.stringify(amount)}`
+        );
+    }
+    if (!/^[A-Z]{1,6}$/.test(symbol)) {
+        throw new Error(
+            `Invalid asset symbol: expected 1-6 uppercase letters (e.g. 'STEEM', 'SBD', 'VESTS'), received ${JSON.stringify(symbol)} in ${JSON.stringify(amount)}`
         );
     }
     const precision = decPart.length;
@@ -1443,7 +1463,7 @@ function serializeAsset(bb: ByteBuffer, amount: string): void {
     // writeInt64/Long, so no precision is lost above 2^53 and there is no
     // dependency on bytebuffer's bundled Long class.
     const amountValue = BigInt(intPart + decPart);
-    if (amountValue < INT64_MIN || amountValue > INT64_MAX) {
+    if (amountValue > INT64_MAX) {
         throw new Error(`Invalid asset amount: value exceeds int64 range in ${JSON.stringify(amount)}`);
     }
     bb.writeUint32(Number(amountValue & 0xffffffffn));
@@ -1479,6 +1499,9 @@ function writeString(bb: ByteBuffer, str: string): void {
  * previous `else { seconds = 0 }` silently signed 1970-01-01 (e.g. a
  * create_proposal without start_date). Values outside the uint32 range throw
  * as well — ByteBuffer's `value >>>= 0` would otherwise wrap them silently.
+ * Fractional-second numbers and numeric strings throw field-level errors
+ * too: the former would be silently truncated by ByteBuffer's integer
+ * assertion, and the latter is ambiguous (seconds vs ISO date).
  */
 function serializeTimePointSec(bb: ByteBuffer, value: unknown, fieldName: string): void {
     if (value === undefined || value === null) {
@@ -1488,6 +1511,11 @@ function serializeTimePointSec(bb: ByteBuffer, value: unknown, fieldName: string
     }
     let seconds: number;
     if (typeof value === 'string') {
+        if (/^\d+$/.test(value)) {
+            throw new Error(
+                `Invalid time value for ${fieldName}: a numeric string is ambiguous (seconds or ISO date?); pass the seconds since epoch as a number instead, received ${JSON.stringify(value)}`
+            );
+        }
         const iso = value.endsWith('Z') ? value : `${value}Z`;
         const d = new Date(iso);
         seconds = Math.floor(d.getTime() / 1000);
@@ -1503,6 +1531,11 @@ function serializeTimePointSec(bb: ByteBuffer, value: unknown, fieldName: string
     }
     if (!Number.isFinite(seconds)) {
         throw new Error(`Invalid time value for ${fieldName}: ${JSON.stringify(value)}`);
+    }
+    if (!Number.isInteger(seconds)) {
+        throw new Error(
+            `Invalid time value for ${fieldName}: expected whole seconds since epoch, received ${seconds}`
+        );
     }
     if (seconds < 0 || seconds > 0xffffffff) {
         throw new Error(`Invalid time value for ${fieldName}: ${seconds} is outside the uint32 seconds range`);
@@ -1568,16 +1601,39 @@ function serializeBool(
 /**
  * Serialize comment_options extensions (flat_set<comment_options_extension>).
  * Used only for comment_options operation. Supports tag 0 (comment_payout_beneficiaries).
- * Beneficiaries are sorted alphabetically by account name before encoding to satisfy Steem protocol.
- * Any other extension tag throws instead of being silently dropped: on the
- * signing path, dropping it would sign a payload the caller never intended
+ * Any other extension tag throws instead of being silently dropped, and a
+ * present-but-non-array value throws instead of being signed as an empty set:
+ * on the signing path, either would sign a payload the caller never intended
  * (same rule as serializeExtensions for future_extensions).
+ *
+ * Beneficiaries are validated against the chain's own rules
+ * (comment_payout_beneficiaries::validate in steem_operations.cpp): at least
+ * one entry, a non-empty account name, and an integer weight within
+ * [0, STEEM_100_PERCENT=10000] — the previous code silently masked a
+ * NaN/overflowing weight through `& 0xffff` and signed a missing account as
+ * an empty string. They are sorted by raw code-unit order (the C++
+ * flat_map<account_name, ...> byte ordering) before encoding; localeCompare
+ * is ICU-collation-dependent and can diverge from byte order.
  */
+const BENEFICIARY_WEIGHT_MAX = 10000; // STEEM_100_PERCENT
+
 function serializeCommentOptionsExtensions(bb: ByteBuffer, extensions: unknown): void {
-    if (!Array.isArray(extensions) || extensions.length === 0) {
+    if (extensions === undefined || extensions === null) {
         bb.writeVarint32(0);
         return;
     }
+    if (!Array.isArray(extensions)) {
+        throw new Error(
+            `Invalid comment_options extensions: expected an array of [tag, value] pairs, received ${JSON.stringify(extensions)}`
+        );
+    }
+    if (extensions.length === 0) {
+        bb.writeVarint32(0);
+        return;
+    }
+    // Validate everything first so a bad entry cannot leave a half-written
+    // extension set behind when the error is thrown.
+    const groups: Array<Array<{ account: string; weight: number }>> = [];
     for (const ext of extensions) {
         const tag = Array.isArray(ext) && ext.length >= 1 ? Number(ext[0]) : Number.NaN;
         if (tag !== 0) {
@@ -1585,17 +1641,42 @@ function serializeCommentOptionsExtensions(bb: ByteBuffer, extensions: unknown):
                 `Unsupported comment_options extension: only tag 0 (comment_payout_beneficiaries) is supported, received ${JSON.stringify(ext)}`
             );
         }
+        const value = (Array.isArray(ext) ? ext[1] : undefined) as
+            | { beneficiaries?: Array<{ account?: unknown; weight?: unknown }> }
+            | undefined;
+        const beneficiaries = value?.beneficiaries;
+        if (!Array.isArray(beneficiaries) || beneficiaries.length === 0) {
+            throw new Error(
+                `Invalid comment_payout_beneficiaries: expected a non-empty beneficiaries array (the chain requires at least one beneficiary), received ${JSON.stringify(ext)}`
+            );
+        }
+        const group: Array<{ account: string; weight: number }> = [];
+        for (const b of beneficiaries) {
+            const account = (b as { account?: unknown } | undefined)?.account;
+            if (typeof account !== 'string' || account === '') {
+                throw new Error(
+                    `Invalid beneficiary account: expected a non-empty account name string, received ${JSON.stringify(b)}`
+                );
+            }
+            const weight = (b as { weight?: unknown } | undefined)?.weight;
+            if (typeof weight !== 'number' || !Number.isInteger(weight) || weight < 0 || weight > BENEFICIARY_WEIGHT_MAX) {
+                throw new Error(
+                    `Invalid beneficiary weight for account '${account}': expected an integer between 0 and ${BENEFICIARY_WEIGHT_MAX} (STEEM_100_PERCENT), received ${JSON.stringify(weight)}`
+                );
+            }
+            group.push({ account, weight });
+        }
+        groups.push(group);
     }
     bb.writeVarint32(extensions.length);
-    for (const ext of extensions as [number, { beneficiaries?: Array<{ account: string; weight: number }> }][]) {
-        const value = ext[1];
+    for (const group of groups) {
         bb.writeVarint32(0);
-        const beneficiaries = Array.isArray(value?.beneficiaries) ? value.beneficiaries.slice() : [];
-        beneficiaries.sort((a, b) => String(a.account).localeCompare(String(b.account)));
+        const beneficiaries = group.slice();
+        beneficiaries.sort((a, b) => (a.account < b.account ? -1 : a.account > b.account ? 1 : 0));
         bb.writeVarint32(beneficiaries.length);
         for (const b of beneficiaries) {
-            writeString(bb, String(b.account ?? ''));
-            bb.writeUint16(Number(b.weight) & 0xffff);
+            writeString(bb, b.account);
+            bb.writeUint16(b.weight);
         }
     }
 }
@@ -1609,11 +1690,22 @@ function serializeCommentOptionsExtensions(bb: ByteBuffer, extensions: unknown):
  *
  * A caller that explicitly passes a NON-empty extensions array gets an error
  * instead of silently dropped bytes: on the signing path, dropping them would
- * sign a payload the caller never intended. Absent / empty stays varint32(0).
+ * sign a payload the caller never intended. A present-but-non-array value
+ * (e.g. an extensions object) likewise throws instead of being signed as an
+ * empty set. Absent / empty stays varint32(0).
  * When supporting specific extension types, extend this after verification.
  */
 function serializeExtensions(bb: ByteBuffer, extensions: unknown): void {
-    if (!Array.isArray(extensions) || extensions.length === 0) {
+    if (extensions === undefined || extensions === null) {
+        bb.writeVarint32(0);
+        return;
+    }
+    if (!Array.isArray(extensions)) {
+        throw new Error(
+            `Invalid extensions: expected an array of [tag, value] pairs, received ${JSON.stringify(extensions)}`
+        );
+    }
+    if (extensions.length === 0) {
         bb.writeVarint32(0);
         return;
     }

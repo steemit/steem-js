@@ -292,7 +292,7 @@ describe('comment_options rejects unsupported extension tags', () => {
     expect(() =>
       txWith('comment_options', {
         ...base,
-        extensions: [[0, { beneficiaries: [] }], [1, {}]],
+        extensions: [[0, { beneficiaries: [{ account: 'bob', weight: 1000 }] }], [1, {}]],
       })
     ).toThrow(/Unsupported comment_options extension/);
     // A malformed (non-pair) entry throws instead of being filtered out.
@@ -366,6 +366,148 @@ describe('time_point_sec fields reject missing, mistyped, and out-of-range value
     const asDate = txWith('limit_order_create', { ...order, expiration: new Date('2016-03-30T22:41:21Z') });
     expect(asNumber.equals(asString)).toBe(true);
     expect(asDate.equals(asString)).toBe(true);
+  });
+});
+
+describe('audit follow-ups: asset string shape, symbol, and call-site defaults', () => {
+  const transfer = (amount: unknown) =>
+    txWith('transfer', { from: 'alice', to: 'bob', amount, memo: '' });
+
+  it('throws on amounts that would previously degrade to a signed zero payload', () => {
+    // Each of these previously serialized byte-identical to '0.000 STEEM':
+    // a leading/trailing/double space or empty value hit the `parts[0] || '0.000'`
+    // fallback inside serializeAsset, and '' / ' ' / 0 / NaN hit the call-site
+    // `String(x || '0.000 STEEM')` default.
+    for (const bad of [' 1.000 STEEM', '1.000 STEEM ', '1.000  STEEM', '', ' ', 0, NaN]) {
+      expect(() => transfer(bad)).toThrow(/Invalid asset amount/);
+    }
+  });
+
+  it('throws on a symbol-less amount instead of silently defaulting to STEEM', () => {
+    expect(() => transfer('1.000')).toThrow(/Invalid asset amount/);
+  });
+
+  it('throws when extra segments are present instead of ignoring them', () => {
+    expect(() => transfer('1.000 STEEM EXTRA')).toThrow(/Invalid asset amount/);
+  });
+
+  it('throws on negative amounts (the chain rejects amount < 0)', () => {
+    expect(() => transfer('-1.000 STEEM')).toThrow(/negative amounts cannot be serialized/);
+  });
+
+  it('throws on malformed symbols: case, charset, and the 6-byte layout limit', () => {
+    // C++ asset_symbol_type layout is [decimals][<=6 symbol bytes][NUL]: a
+    // 7th character lands in the NUL slot (chain-rejected bytes) and an 8th
+    // would shift every following field of the byte stream.
+    for (const bad of ['1.000 steem', '1.000 St3em', '1.000 STEEMX1', '1.000 STEEMX12', '1.000 $$']) {
+      expect(() => transfer(bad)).toThrow(/Invalid asset symbol/);
+    }
+    expect(() => transfer('1.000 VESTS')).not.toThrow();
+  });
+
+  it('undefined/null amount fields still take the protocol-default zero asset', () => {
+    const asUndefined = txWith('transfer', { from: 'alice', to: 'bob', memo: '' });
+    const asNull = txWith('transfer', { from: 'alice', to: 'bob', amount: null, memo: '' });
+    expect(asUndefined.equals(asNull)).toBe(true);
+    // amount int64 sits at offset 22 in this fixture (10B header + ops varint
+    // + op id + 'alice' + 'bob').
+    expect(asUndefined.subarray(22, 30).toString('hex')).toBe('0000000000000000');
+  });
+});
+
+describe('audit follow-ups: extensions shape and beneficiaries validation', () => {
+  const base = {
+    author: 'alice',
+    permlink: 'p',
+    max_accepted_payout: '1000000.000 SBD',
+    percent_steem_dollars: 10000,
+    allow_votes: true,
+    allow_curation_rewards: true,
+  };
+  const withExt = (extensions: unknown) => txWith('comment_options', { ...base, extensions });
+
+  it('throws on a non-array extensions value instead of signing an empty set', () => {
+    // Previously an extensions object was silently signed as varint(0),
+    // dropping every beneficiary it carried.
+    expect(() => withExt({ 0: { beneficiaries: [{ account: 'bob', weight: 1000 }] } })).toThrow(
+      /Invalid comment_options extensions: expected an array/
+    );
+    expect(() =>
+      txWith('create_proposal', {
+        creator: 'a',
+        receiver: 'b',
+        start_date: '2016-03-23T22:41:21',
+        end_date: '2016-03-30T22:41:21',
+        daily_pay: '10.000 SBD',
+        subject: 's',
+        permlink: 'p',
+        extensions: { foo: 1 },
+      })
+    ).toThrow(/Invalid extensions: expected an array/);
+    // Absent / empty / null still serialize as the empty set (unchanged).
+    expect(() => withExt(undefined)).not.toThrow();
+    expect(() => withExt(null)).not.toThrow();
+    expect(() => withExt([])).not.toThrow();
+  });
+
+  it('beneficiaries: rejects an empty list, a missing account, and bad weights', () => {
+    expect(() => withExt([[0, { beneficiaries: [] }]])).toThrow(/non-empty beneficiaries array/);
+    expect(() => withExt([[0, {}]])).toThrow(/non-empty beneficiaries array/);
+    expect(() => withExt([[0]])).toThrow(/non-empty beneficiaries array/);
+    expect(() =>
+      withExt([[0, { beneficiaries: [{ weight: 1000 }] }] as never])
+    ).toThrow(/Invalid beneficiary account/);
+    expect(() => withExt([[0, { beneficiaries: [{ account: '', weight: 1000 }] }]])).toThrow(
+      /Invalid beneficiary account/
+    );
+    // Previously masked through `Number(w) & 0xffff` (65536 -> 0, NaN -> 0)
+    // or signed as-is; the chain caps a single weight at STEEM_100_PERCENT.
+    for (const bad of [65536, 10001, -1, 1.5, NaN, '1000']) {
+      expect(() => withExt([[0, { beneficiaries: [{ account: 'bob', weight: bad }] }]])).toThrow(
+        /Invalid beneficiary weight/
+      );
+    }
+    // Boundary values still serialize: 0 and STEEM_100_PERCENT (10000).
+    expect(() => withExt([[0, { beneficiaries: [{ account: 'bob', weight: 10000 }] }]])).not.toThrow();
+    expect(() => withExt([[0, { beneficiaries: [{ account: 'bob', weight: 0 }] }]])).not.toThrow();
+  });
+
+  it('sorts beneficiaries in raw byte order (C++ flat_map ordering), not ICU collation', () => {
+    const tx = withExt([
+      [0, { beneficiaries: ['a1', 'a-1', 'b'].map((account) => ({ account, weight: 100 })) }],
+    ]);
+    const hex = tx.toString('hex');
+    // vstring-encoded positions: 'a-1' = 03 61 2d 31, 'a1' = 02 61 31, 'b' = 01 62.
+    // Byte order: 'a-' (0x2d) < 'a1' (0x31) < 'b'; localeCompare is
+    // ICU-collation-dependent and can diverge from this ordering.
+    const idxHyphen = hex.indexOf('03612d31');
+    const idxA1 = hex.indexOf('026131');
+    const idxB = hex.indexOf('0162');
+    expect(idxHyphen).toBeGreaterThan(-1);
+    expect(idxA1).toBeGreaterThan(idxHyphen);
+    expect(idxB).toBeGreaterThan(idxA1);
+  });
+});
+
+describe('audit follow-ups: time field integer and numeric-string handling', () => {
+  const order = {
+    owner: 'alice',
+    orderid: 1,
+    amount_to_sell: '1.000 STEEM',
+    min_to_receive: '1.000 SBD',
+    fill_or_kill: false,
+  };
+
+  it('throws a field-level error on fractional seconds instead of ByteBuffer opaque TypeError', () => {
+    expect(() => txWith('limit_order_create', { ...order, expiration: 1760000000.5 })).toThrow(
+      /Invalid time value for limit_order_create\.expiration: expected whole seconds/
+    );
+  });
+
+  it('rejects numeric strings with an explicit hint (ambiguous with ISO dates)', () => {
+    expect(() => txWith('limit_order_create', { ...order, expiration: '1760000000' })).toThrow(
+      /numeric string is ambiguous/
+    );
   });
 });
 
