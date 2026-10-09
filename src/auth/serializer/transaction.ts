@@ -1,5 +1,4 @@
 import ByteBuffer from 'bytebuffer';
-// import Long from 'long'; // Unused import - Long is used via ByteBuffer
 import { PublicKey } from '../ecc/src/key_public';
 import { resolveAuthorityForSerialize } from '../account-update-chain';
 
@@ -1219,12 +1218,12 @@ function serializeClaimAccount(bb: ByteBuffer, data: unknown): void {
  * A camelCase typo like `vestingShares` therefore fails loudly too.
  *
  * The value is additionally shape-validated op-locally: serializeAsset's
- * `parseInt(...) || 0` would turn a malformed amount like 'abc.000000 VESTS'
- * into NaN → 0, i.e. byte-identical to a full revocation. VESTS has precision
- * 6 on chain, so the exact form `<digits>.<6 digits> VESTS` is required — a
- * decimal-less '10 VESTS' would serialize at precision 0, signing 10 base
- * units instead of 10 VESTS. (Hardening serializeAsset itself is a separate
- * follow-up; it is shared by every asset field.)
+ * strict amount check turns a malformed amount like 'abc.000000 VESTS' into a
+ * field-level error, and the op-local regex pins the field name in the
+ * message. VESTS has precision 6 on chain, so the exact form
+ * `<digits>.<6 digits> VESTS` is required — a decimal-less '10 VESTS' would
+ * otherwise serialize at precision 0, signing 10 base units instead of 10
+ * VESTS.
  */
 function serializeDelegateVestingShares(bb: ByteBuffer, data: unknown): void {
     const dataObj = data as Record<string, unknown>;
@@ -1409,17 +1408,46 @@ function serializeAuthority(bb: ByteBuffer, auth: unknown): void {
  *
  * This helper is reused for asset fields across all operations, e.g.
  * - amount / vesting_shares / reward_* / *_pays
+ *
+ * The amount part must be well-formed and fit in int64 — anything else throws
+ * instead of silently degrading on the signing path: the previous
+ * `parseInt(...) || 0` turned a malformed amount like 'abc.000 STEEM' into
+ * NaN → 0, signing byte-identical output to an explicit zero amount (for
+ * delegate_vesting_shares that means a full revocation), and an amount beyond
+ * int64 was silently clamped by writeInt64. Precision beyond uint8 is likewise
+ * rejected here instead of falling through to ByteBuffer's opaque error.
  */
+const INT64_MIN = -(1n << 63n);
+const INT64_MAX = (1n << 63n) - 1n;
+
 function serializeAsset(bb: ByteBuffer, amount: string): void {
     const parts = amount.split(' ');
     const valueStr = parts[0] || '0.000';
     const symbol = parts[1] || 'STEEM';
 
-    const [intPart, decPart = ''] = valueStr.split('.');
+    const segments = valueStr.split('.');
+    const intPart = segments[0] ?? '';
+    const decPart = segments.length > 1 ? segments[1] ?? '' : '';
+    if (segments.length > 2 || !/^-?\d+$/.test(intPart) || !/^\d+$/.test(decPart)) {
+        throw new Error(
+            `Invalid asset amount: expected '<digits>[.<decimals>] <SYMBOL>' (e.g. '1.000 STEEM'), received ${JSON.stringify(amount)}`
+        );
+    }
     const precision = decPart.length;
-    const amountValue = parseInt(intPart + decPart.padEnd(precision, '0'), 10) || 0;
+    if (precision > 255) {
+        throw new Error(`Invalid asset amount: precision exceeds uint8 range in ${JSON.stringify(amount)}`);
+    }
 
-    bb.writeInt64(amountValue);
+    // BigInt keeps the full int64 range exact; write the two 32-bit halves
+    // directly (little-endian low word first) instead of going through
+    // writeInt64/Long, so no precision is lost above 2^53 and there is no
+    // dependency on bytebuffer's bundled Long class.
+    const amountValue = BigInt(intPart + decPart);
+    if (amountValue < INT64_MIN || amountValue > INT64_MAX) {
+        throw new Error(`Invalid asset amount: value exceeds int64 range in ${JSON.stringify(amount)}`);
+    }
+    bb.writeUint32(Number(amountValue & 0xffffffffn));
+    bb.writeUint32(Number((amountValue >> 32n) & 0xffffffffn));
 
     bb.writeUint8(precision);
     const symbolBytes = Buffer.from(symbol, 'utf8');
@@ -1446,8 +1474,18 @@ function writeString(bb: ByteBuffer, str: string): void {
  * An unparseable input throws a field-level error instead of letting NaN fall
  * through to ByteBuffer's opaque "Illegal value: NaN" — on the signing path
  * the caller needs to know which field was bad and what was received.
+ *
+ * A missing value (undefined/null) or a wrong-typed value also throws: the
+ * previous `else { seconds = 0 }` silently signed 1970-01-01 (e.g. a
+ * create_proposal without start_date). Values outside the uint32 range throw
+ * as well — ByteBuffer's `value >>>= 0` would otherwise wrap them silently.
  */
 function serializeTimePointSec(bb: ByteBuffer, value: unknown, fieldName: string): void {
+    if (value === undefined || value === null) {
+        throw new Error(
+            `Missing required time field ${fieldName}: refusing to silently sign epoch 0 (1970-01-01). Pass an ISO string, Date, or seconds-since-epoch number.`
+        );
+    }
     let seconds: number;
     if (typeof value === 'string') {
         const iso = value.endsWith('Z') ? value : `${value}Z`;
@@ -1459,10 +1497,15 @@ function serializeTimePointSec(bb: ByteBuffer, value: unknown, fieldName: string
         // Assume value is already in seconds
         seconds = value;
     } else {
-        seconds = 0;
+        throw new Error(
+            `Invalid time value for ${fieldName}: expected ISO string, Date, or seconds-since-epoch number, received ${JSON.stringify(value)}`
+        );
     }
     if (!Number.isFinite(seconds)) {
         throw new Error(`Invalid time value for ${fieldName}: ${JSON.stringify(value)}`);
+    }
+    if (seconds < 0 || seconds > 0xffffffff) {
+        throw new Error(`Invalid time value for ${fieldName}: ${seconds} is outside the uint32 seconds range`);
     }
     bb.writeUint32(seconds);
 }
@@ -1526,31 +1569,33 @@ function serializeBool(
  * Serialize comment_options extensions (flat_set<comment_options_extension>).
  * Used only for comment_options operation. Supports tag 0 (comment_payout_beneficiaries).
  * Beneficiaries are sorted alphabetically by account name before encoding to satisfy Steem protocol.
- * Other extension tags are skipped; only tag 0 is serialized.
+ * Any other extension tag throws instead of being silently dropped: on the
+ * signing path, dropping it would sign a payload the caller never intended
+ * (same rule as serializeExtensions for future_extensions).
  */
 function serializeCommentOptionsExtensions(bb: ByteBuffer, extensions: unknown): void {
     if (!Array.isArray(extensions) || extensions.length === 0) {
         bb.writeVarint32(0);
         return;
     }
-    // Only serialize tag 0 (comment_payout_beneficiaries); skip unknown tags
-    const supported = extensions.filter((ext): ext is [number, { beneficiaries?: Array<{ account: string; weight: number }> }] => {
-        const tag = Array.isArray(ext) && ext.length >= 1 ? Number(ext[0]) : -1;
-        return tag === 0;
-    });
-    bb.writeVarint32(supported.length);
-    for (const ext of supported) {
-        const tag = ext[0];
+    for (const ext of extensions) {
+        const tag = Array.isArray(ext) && ext.length >= 1 ? Number(ext[0]) : Number.NaN;
+        if (tag !== 0) {
+            throw new Error(
+                `Unsupported comment_options extension: only tag 0 (comment_payout_beneficiaries) is supported, received ${JSON.stringify(ext)}`
+            );
+        }
+    }
+    bb.writeVarint32(extensions.length);
+    for (const ext of extensions as [number, { beneficiaries?: Array<{ account: string; weight: number }> }][]) {
         const value = ext[1];
-        bb.writeVarint32(tag);
-        if (tag === 0) {
-            const beneficiaries = Array.isArray(value?.beneficiaries) ? value.beneficiaries.slice() : [];
-            beneficiaries.sort((a, b) => String(a.account).localeCompare(String(b.account)));
-            bb.writeVarint32(beneficiaries.length);
-            for (const b of beneficiaries) {
-                writeString(bb, String(b.account ?? ''));
-                bb.writeUint16(Number(b.weight) & 0xffff);
-            }
+        bb.writeVarint32(0);
+        const beneficiaries = Array.isArray(value?.beneficiaries) ? value.beneficiaries.slice() : [];
+        beneficiaries.sort((a, b) => String(a.account).localeCompare(String(b.account)));
+        bb.writeVarint32(beneficiaries.length);
+        for (const b of beneficiaries) {
+            writeString(bb, String(b.account ?? ''));
+            bb.writeUint16(Number(b.weight) & 0xffff);
         }
     }
 }
