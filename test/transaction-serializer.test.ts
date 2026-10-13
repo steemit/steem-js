@@ -627,7 +627,7 @@ describe('Transaction Serializer', () => {
       expect(serializedA.toString('hex')).toBe(serializedB.toString('hex'));
     });
 
-    it('should handle empty beneficiaries array in extension', () => {
+    it('should reject an empty beneficiaries array (the chain requires at least one)', () => {
       const tx = {
         ...baseTx,
         operations: [
@@ -637,9 +637,9 @@ describe('Transaction Serializer', () => {
           }]
         ]
       };
-      const serialized = serializeTransaction(tx);
-      expect(serialized).toBeDefined();
-      expect(Buffer.isBuffer(serialized)).toBe(true);
+      expect(() => serializeTransaction(tx as never)).toThrow(
+        /Invalid comment_payout_beneficiaries: expected a non-empty beneficiaries array/
+      );
     });
   });
 
