@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Throw-only hardening; byte output for well-formed input is unchanged. Malformed input that previously degraded silently now throws field-level errors.
+
+### Fixed
+
+- **`chain_properties` no longer falls back to `0.000 STEEM` / `0` for missing or malformed fields** (`witness_update`, `pow`): a missing or non-string `account_creation_fee` previously signed `0.000 STEEM` and a missing `maximum_block_size` / `sbd_interest_rate` signed `0` — for `witness_update` those props are the witness's votes for consensus parameters, so the fallback broadcast a vote the caller never made. All three fields are now required and validated (asset string via the shared `serializeAsset` checks; non-negative integers bounded to uint32 / uint16). Explicit zero values remain accepted.
+- **`comment_payout_beneficiaries` now enforces the remaining chain-side validate() rules** (`steem_operations.cpp`): more than 127 beneficiaries (`STEEM_BENEFICIARY_LIMIT - 1` — the chain caps `size() < 128` so the size fits one byte), a total weight sum above 10000 (`STEEM_100_PERCENT`; per-weight bounds alone did not cover this), and duplicate beneficiary accounts (the chain requires a strictly ascending, duplicate-free list) all throw at signing time instead of producing a transaction the node always rejects.
+
 ## [1.2.3] - 2026-10-13
 
 No API changes; byte output for well-formed input is unchanged. Malformed input that previously degraded silently now throws field-level errors — callers that relied on silent defaults (empty-string amounts, non-boolean truthy flags, object-form extensions, missing time fields) will see explicit errors instead of unintended signatures. Test suite: 364 passed / 23 skipped, typecheck, lint and all four rollup bundles verified green.
