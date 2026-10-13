@@ -7,8 +7,11 @@ the symptom you will see, and the correct form.
 
 Scope: authority-carrying operations (`account_update`, `account_update2`,
 `recover_account`, `request_account_recovery`, …) built and signed with this
-SDK. Applies as of v1.2.1; this page will be updated when the planned
-broadcast-parity follow-ups land.
+SDK. Applies as of v1.2.3; this page will be updated when the planned
+broadcast-parity follow-ups land. Every pitfall below still signs locally
+without complaint, but since v1.2.3 the serializer rejects malformed input
+(bad amounts, non-boolean flags, missing time fields) at signing time — see
+the 1.2.3 CHANGELOG entry.
 
 ---
 
