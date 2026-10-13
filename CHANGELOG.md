@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.3] - 2026-10-13
+
+No API changes; byte output for well-formed input is unchanged. Malformed input that previously degraded silently now throws field-level errors — callers that relied on silent defaults (empty-string amounts, non-boolean truthy flags, object-form extensions, missing time fields) will see explicit errors instead of unintended signatures. Test suite: 364 passed / 23 skipped, typecheck, lint and all four rollup bundles verified green.
+
+### Fixed
+
+- **Non-boolean truthy input was silently signed as `true`** (#558): `serializeBool` accepted any truthy value, so the string `"false"` signed as `true` — the opposite of what the caller passed. It now accepts only booleans, `0`/`1`, and `'true'`/`'false'`/`'1'`/`'0'`, and a missing value serializes as `0` only for fields whose C++ default is `false`; fields whose protocol default is `true` (`comment_options.allow_votes`/`allow_curation_rewards`, `escrow_approve.approve`, `account_witness_vote.approve`, `decline_voting_rights.decline`) throw on a missing value instead of silently signing the opposite of the default.
+- **A missing or malformed `delegate_vesting_shares.vesting_shares` signed a full delegation revocation** (#558): the field fell through to a `0.000000 VESTS` default, so a camelCase typo (`vestingShares`) or a missing key produced a validly-signed revocation. The field is now required and shape-validated (`<digits>.<6 decimals> VESTS`).
+- **`serializeExtensions` silently wrote an empty set for a non-empty extensions array** (#558): dropping extensions signs a payload the caller never intended; a non-empty array now throws (only the empty set is supported today).
+- **The operation index was mislabeled at 48–54** (#558): `OPERATION_TYPE_INDEX` now follows the authoritative on-chain ordering (`vote2`, `smt_*`, virtual ops) through 65, is exported frozen, and the op-coverage test asserts a bidirectional map↔switch invariant parsed from the serializer source.
+- **`serializeUint64Array` mapped sparse-array holes to `0`** (#558): a hole in `proposal_ids` signed a vote for proposal 0; holes now throw.
+
+### Changed
+
+- **`serializeAsset` validates the amount and symbol; malformed input throws instead of signing degraded bytes** (#559): previously `'abc.000 STEEM'` parsed as `NaN → 0` — byte-identical to an explicit zero amount — an out-of-int64 amount was silently clamped by `writeInt64`, and a decimal-less amount (`'10 VESTS'`) serialized at precision 0. The amount must now be exactly `'<value> <SYMBOL>'`: whitespace variants (`' 1.000 STEEM'`, trailing/double space), empty values (`''`, `' '`, `0`, `NaN` — asset call sites use `??` so falsy-but-present values throw while omitted fields keep their protocol default), symbol-less amounts (`'1.000'` previously defaulted to STEEM), extra segments, and negative amounts (the chain's asset parser asserts `amount >= 0`) all throw. The symbol must be 1–6 uppercase letters, matching the C++ `asset_symbol_type` layout (`[decimals][≤6 symbol bytes][NUL]`): a 7-character symbol previously landed in the NUL slot (chain-rejected bytes) and an 8th character shifted every following field of the byte stream. The int64 is computed via `BigInt` and written as two 32-bit words, so the full int64 range stays exact above 2^53 (`9223372036854775.807 STEEM` accepted, `.808` rejected).
+- **`comment_options` extensions and beneficiaries follow the chain's own validation** (#559): a non-tag-0 extension or a present-but-non-array `extensions` value throws instead of being silently dropped / signed as an empty set (which dropped every beneficiary); the beneficiaries list must be non-empty with non-empty account names and integer weights within `[0, 10000]` (`STEEM_100_PERCENT` — previously a NaN/overflowing weight was masked through `& 0xffff` and a missing account was signed as an empty string); sorting uses raw byte order (the C++ `flat_map` ordering) instead of the ICU-collation-dependent `localeCompare`.
+- **`time_point_sec` fields reject missing, mistyped, and out-of-range values** (#558, #559): a missing (`undefined`/`null`) value previously signed epoch 0 (1970-01-01) — e.g. a `create_proposal` without `start_date`; wrong-typed values, values outside the uint32 seconds range, fractional-second numbers, and numeric strings now throw field-level errors (the former previously fell through to ByteBuffer's opaque `Illegal value` TypeError, the latter to a generic invalid-date message). Affects `limit_order_create`/`limit_order_create2` (`expiration`), `escrow_transfer` (`ratification_deadline`, `escrow_expiration`), and `create_proposal` (`start_date`, `end_date`).
+
 ## [1.2.2] - 2026-10-07
 
 ### Fixed
