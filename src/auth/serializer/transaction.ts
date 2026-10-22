@@ -958,17 +958,54 @@ function serializeFillTransferFromSavings(bb: ByteBuffer, data: unknown): void {
 /**
  * Serialize ChainProperties (used in pow, witness_update).
  * Fields: account_creation_fee (asset string), maximum_block_size (uint32), sbd_interest_rate (uint16).
+ *
+ * Every field is required and validated: in witness_update these props are the
+ * witness's votes for consensus parameters, so silently defaulting a missing
+ * account_creation_fee to '0.000 STEEM' (or a missing maximum_block_size /
+ * sbd_interest_rate to 0) would sign the OPPOSITE of the caller's intent —
+ * the same silent-degradation class as the 1.2.3 serializer hardening.
+ * The numeric fields are also bounded to the chain's own consensus ranges
+ * (legacy_chain_properties::validate), so values every node rejects — e.g.
+ * sbd_interest_rate above STEEM_100_PERCENT or maximum_block_size below
+ * STEEM_MIN_BLOCK_SIZE_LIMIT — fail here instead of after broadcast.
+ * Throw-only: complete, well-formed props serialize byte-identical to before.
  */
+// Consensus bounds mirrored from steem/protocol/config.hpp, enforced by
+// legacy_chain_properties::validate() (steem_operations.hpp) for the props of
+// both witness_update and pow.
+const SBD_INTEREST_RATE_MAX = 10000; // STEEM_100_PERCENT
+const MAXIMUM_BLOCK_SIZE_MIN = 64 * 1024; // STEEM_MIN_BLOCK_SIZE_LIMIT (= STEEM_MAX_TRANSACTION_SIZE)
+
 function serializeChainProperties(bb: ByteBuffer, props: unknown): void {
     const p = (props as Record<string, unknown>) || {};
     const fee = p.account_creation_fee;
-    if (typeof fee === 'string' && fee.split(' ').length >= 2) {
-        serializeAsset(bb, fee);
-    } else {
-        serializeAsset(bb, '0.000 STEEM');
+    if (typeof fee !== 'string') {
+        throw new Error(
+            `Invalid chain_properties.account_creation_fee: expected an asset string (e.g. '0.100 STEEM'), received ${JSON.stringify(fee)}`
+        );
     }
-    bb.writeUint32((p.maximum_block_size as number) ?? 0);
-    bb.writeUint16((p.sbd_interest_rate as number) ?? 0);
+    serializeAsset(bb, fee);
+    writeUintField(bb, p.maximum_block_size, 'chain_properties.maximum_block_size', MAXIMUM_BLOCK_SIZE_MIN, 0xffffffff);
+    writeUintField(bb, p.sbd_interest_rate, 'chain_properties.sbd_interest_rate', 0, SBD_INTEREST_RATE_MAX);
+}
+
+/**
+ * Write a required integer field bounded to [min, max] (uint16/uint32 style,
+ * chosen by the wire width the caller's max implies). Missing or malformed
+ * values throw instead of silently signing 0, which for consensus-parameter
+ * votes (witness props) would record a vote the caller never made.
+ */
+function writeUintField(bb: ByteBuffer, value: unknown, fieldName: string, min: number, max: number): void {
+    if (typeof value !== 'number' || !Number.isInteger(value) || value < min || value > max) {
+        throw new Error(
+            `Invalid ${fieldName}: expected an integer between ${min} and ${max}, received ${JSON.stringify(value)}`
+        );
+    }
+    if (max > 0xffff) {
+        bb.writeUint32(value);
+    } else {
+        bb.writeUint16(value);
+    }
 }
 
 /**
@@ -1608,14 +1645,18 @@ function serializeBool(
  *
  * Beneficiaries are validated against the chain's own rules
  * (comment_payout_beneficiaries::validate in steem_operations.cpp): at least
- * one entry, a non-empty account name, and an integer weight within
- * [0, STEEM_100_PERCENT=10000] — the previous code silently masked a
- * NaN/overflowing weight through `& 0xffff` and signed a missing account as
- * an empty string. They are sorted by raw code-unit order (the C++
- * flat_map<account_name, ...> byte ordering) before encoding; localeCompare
- * is ICU-collation-dependent and can diverge from byte order.
+ * one entry, at most STEEM_BENEFICIARY_LIMIT - 1 = 127 entries
+ * (config.hpp: `size() < STEEM_BENEFICIARY_LIMIT`, so the size fits one
+ * byte), a non-empty account name, no duplicate accounts, an integer weight
+ * within [0, STEEM_100_PERCENT=10000], and a total weight sum within
+ * STEEM_100_PERCENT — the previous code silently masked a NaN/overflowing
+ * weight through `& 0xffff` and signed a missing account as an empty string.
+ * They are sorted by raw code-unit order (the C++ flat_map<account_name, ...>
+ * byte ordering) before encoding; localeCompare is ICU-collation-dependent
+ * and can diverge from byte order.
  */
 const BENEFICIARY_WEIGHT_MAX = 10000; // STEEM_100_PERCENT
+const BENEFICIARY_COUNT_MAX = 127; // STEEM_BENEFICIARY_LIMIT (128) - 1
 
 function serializeCommentOptionsExtensions(bb: ByteBuffer, extensions: unknown): void {
     if (extensions === undefined || extensions === null) {
@@ -1650,7 +1691,14 @@ function serializeCommentOptionsExtensions(bb: ByteBuffer, extensions: unknown):
                 `Invalid comment_payout_beneficiaries: expected a non-empty beneficiaries array (the chain requires at least one beneficiary), received ${JSON.stringify(ext)}`
             );
         }
+        if (beneficiaries.length > BENEFICIARY_COUNT_MAX) {
+            throw new Error(
+                `Invalid comment_payout_beneficiaries: too many beneficiaries (${beneficiaries.length}); the chain caps the list at ${BENEFICIARY_COUNT_MAX} (STEEM_BENEFICIARY_LIMIT - 1)`
+            );
+        }
         const group: Array<{ account: string; weight: number }> = [];
+        const seenAccounts = new Set<string>();
+        let weightSum = 0;
         for (const b of beneficiaries) {
             const account = (b as { account?: unknown } | undefined)?.account;
             if (typeof account !== 'string' || account === '') {
@@ -1658,10 +1706,22 @@ function serializeCommentOptionsExtensions(bb: ByteBuffer, extensions: unknown):
                     `Invalid beneficiary account: expected a non-empty account name string, received ${JSON.stringify(b)}`
                 );
             }
+            if (seenAccounts.has(account)) {
+                throw new Error(
+                    `Invalid beneficiary account: duplicate beneficiary '${account}' (the chain requires a strictly ascending, duplicate-free list)`
+                );
+            }
+            seenAccounts.add(account);
             const weight = (b as { weight?: unknown } | undefined)?.weight;
             if (typeof weight !== 'number' || !Number.isInteger(weight) || weight < 0 || weight > BENEFICIARY_WEIGHT_MAX) {
                 throw new Error(
                     `Invalid beneficiary weight for account '${account}': expected an integer between 0 and ${BENEFICIARY_WEIGHT_MAX} (STEEM_100_PERCENT), received ${JSON.stringify(weight)}`
+                );
+            }
+            weightSum += weight;
+            if (weightSum > BENEFICIARY_WEIGHT_MAX) {
+                throw new Error(
+                    `Invalid comment_payout_beneficiaries: total beneficiary weight exceeds ${BENEFICIARY_WEIGHT_MAX} (STEEM_100_PERCENT); the chain rejects allocations above 100%`
                 );
             }
             group.push({ account, weight });

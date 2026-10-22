@@ -539,3 +539,139 @@ describe('uint64 array and time field nits', () => {
     expect(Object.isFrozen(UNSERIALIZED_OPERATION_TYPES)).toBe(true);
   });
 });
+
+describe('chain_properties (witness_update / pow) reject missing or malformed fields', () => {
+  const witnessUpdate = {
+    owner: 'initminer',
+    url: 'https://example.com',
+    block_signing_key: 'STM5gzvDurFRmVUUs38TDtTtGVAEz8TcWMt4xLVbxwP2PP8b9q7P4',
+    props: {
+      account_creation_fee: '0.200 STEEM',
+      maximum_block_size: 65536,
+      sbd_interest_rate: 1000,
+    },
+    fee: '0.000 STEEM',
+  };
+  const withProps = (props: unknown) => txWith('witness_update', { ...witnessUpdate, props });
+
+  it('throws on a missing or non-string account_creation_fee instead of signing 0.000 STEEM', () => {
+    // Previously each of these silently signed '0.000 STEEM' — a witness would
+    // have broadcast a vote for a zero account creation fee.
+    const { account_creation_fee: _omit, ...noFee } = witnessUpdate.props;
+    expect(() => withProps(noFee)).toThrow(/Invalid chain_properties\.account_creation_fee/);
+    expect(() => withProps({ ...witnessUpdate.props, account_creation_fee: undefined })).toThrow(
+      /Invalid chain_properties\.account_creation_fee/
+    );
+    expect(() => withProps({ ...witnessUpdate.props, account_creation_fee: 0.2 })).toThrow(
+      /Invalid chain_properties\.account_creation_fee/
+    );
+  });
+
+  it('throws on a malformed fee string via the shared asset validation', () => {
+    expect(() => withProps({ ...witnessUpdate.props, account_creation_fee: '0.200' })).toThrow(
+      /Invalid asset amount/
+    );
+    expect(() => withProps({ ...witnessUpdate.props, account_creation_fee: 'abc.000 STEEM' })).toThrow(
+      /Invalid asset amount/
+    );
+  });
+
+  it('throws on missing or out-of-range numeric fields instead of signing 0', () => {
+    const { maximum_block_size: _omit1, ...noBlockSize } = witnessUpdate.props;
+    expect(() => withProps(noBlockSize)).toThrow(/Invalid chain_properties\.maximum_block_size/);
+    const { sbd_interest_rate: _omit2, ...noRate } = witnessUpdate.props;
+    expect(() => withProps(noRate)).toThrow(/Invalid chain_properties\.sbd_interest_rate/);
+    expect(() => withProps({ ...witnessUpdate.props, maximum_block_size: -1 })).toThrow(
+      /Invalid chain_properties\.maximum_block_size/
+    );
+    expect(() => withProps({ ...witnessUpdate.props, maximum_block_size: 0x100000000 })).toThrow(
+      /Invalid chain_properties\.maximum_block_size/
+    );
+    expect(() => withProps({ ...witnessUpdate.props, sbd_interest_rate: 65536 })).toThrow(
+      /Invalid chain_properties\.sbd_interest_rate/
+    );
+    expect(() => withProps({ ...witnessUpdate.props, sbd_interest_rate: 1.5 })).toThrow(
+      /Invalid chain_properties\.sbd_interest_rate/
+    );
+    // Values inside the uint wire range but outside the chain's own consensus
+    // bounds (legacy_chain_properties::validate in steem_operations.hpp) sign
+    // a transaction every node rejects — they throw at signing time too.
+    expect(() => withProps({ ...witnessUpdate.props, maximum_block_size: 65535 })).toThrow(
+      /Invalid chain_properties\.maximum_block_size/
+    );
+    expect(() => withProps({ ...witnessUpdate.props, sbd_interest_rate: 10001 })).toThrow(
+      /Invalid chain_properties\.sbd_interest_rate/
+    );
+  });
+
+  it('still serializes complete, well-formed props within the consensus bounds', () => {
+    expect(() => txWith('witness_update', witnessUpdate)).not.toThrow();
+    // The consensus bounds themselves stay serializable at their edges
+    // (STEEM_MIN_BLOCK_SIZE_LIMIT = 64 KiB, STEEM_100_PERCENT = 10000).
+    expect(() =>
+      withProps({ ...witnessUpdate.props, maximum_block_size: 65536, sbd_interest_rate: 10000 })
+    ).not.toThrow();
+    // An explicit zero sbd_interest_rate is a legitimate consensus vote and
+    // stays accepted; a zero maximum_block_size is NOT (it is below the chain
+    // floor) and throws like any other out-of-range value.
+    expect(() =>
+      withProps({ account_creation_fee: '0.000 STEEM', maximum_block_size: 65536, sbd_interest_rate: 0 })
+    ).not.toThrow();
+    expect(() =>
+      withProps({ account_creation_fee: '0.000 STEEM', maximum_block_size: 0, sbd_interest_rate: 0 })
+    ).toThrow(/Invalid chain_properties\.maximum_block_size/);
+  });
+});
+
+describe('beneficiaries count limit, weight sum, and duplicate accounts', () => {
+  const base = {
+    author: 'alice',
+    permlink: 'p',
+    max_accepted_payout: '1000000.000 SBD',
+    percent_steem_dollars: 10000,
+    allow_votes: true,
+    allow_curation_rewards: true,
+  };
+  const withBeneficiaries = (beneficiaries: unknown) =>
+    txWith('comment_options', { ...base, extensions: [[0, { beneficiaries }]] });
+
+  it('throws above the chain cap of 127 beneficiaries (STEEM_BENEFICIARY_LIMIT - 1)', () => {
+    // The chain asserts size() < STEEM_BENEFICIARY_LIMIT (128) so the size
+    // fits one byte; 128+ entries would sign a transaction the node rejects.
+    const atLimit = Array.from({ length: 127 }, (_, i) => ({
+      account: `b${String(i).padStart(3, '0')}`,
+      weight: 0,
+    }));
+    expect(() => withBeneficiaries(atLimit)).not.toThrow();
+    const overLimit = [...atLimit, { account: 'b127', weight: 0 }];
+    expect(() => withBeneficiaries(overLimit)).toThrow(/too many beneficiaries \(128\)/);
+  });
+
+  it('throws when the total beneficiary weight exceeds 100% (STEEM_100_PERCENT)', () => {
+    // comment_payout_beneficiaries::validate asserts the running sum stays
+    // within STEEM_100_PERCENT; per-weight bounds alone do not cover this.
+    expect(() =>
+      withBeneficiaries([
+        { account: 'bob', weight: 10000 },
+        { account: 'carol', weight: 1 },
+      ])
+    ).toThrow(/total beneficiary weight exceeds 10000/);
+    expect(() =>
+      withBeneficiaries([
+        { account: 'bob', weight: 5000 },
+        { account: 'carol', weight: 5000 },
+      ])
+    ).not.toThrow();
+  });
+
+  it('throws on duplicate beneficiary accounts (the chain requires a strict ascending set)', () => {
+    // Sorting before encoding makes duplicates adjacent; the chain's
+    // `beneficiaries[i-1] < beneficiaries[i]` assert rejects them.
+    expect(() =>
+      withBeneficiaries([
+        { account: 'bob', weight: 100 },
+        { account: 'bob', weight: 200 },
+      ])
+    ).toThrow(/duplicate beneficiary 'bob'/);
+  });
+});
