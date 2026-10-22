@@ -593,14 +593,33 @@ describe('chain_properties (witness_update / pow) reject missing or malformed fi
     expect(() => withProps({ ...witnessUpdate.props, sbd_interest_rate: 1.5 })).toThrow(
       /Invalid chain_properties\.sbd_interest_rate/
     );
+    // Values inside the uint wire range but outside the chain's own consensus
+    // bounds (legacy_chain_properties::validate in steem_operations.hpp) sign
+    // a transaction every node rejects — they throw at signing time too.
+    expect(() => withProps({ ...witnessUpdate.props, maximum_block_size: 65535 })).toThrow(
+      /Invalid chain_properties\.maximum_block_size/
+    );
+    expect(() => withProps({ ...witnessUpdate.props, sbd_interest_rate: 10001 })).toThrow(
+      /Invalid chain_properties\.sbd_interest_rate/
+    );
   });
 
-  it('still serializes complete, well-formed props (byte-identical to before)', () => {
-    // Explicit zero values are legitimate consensus votes and stay accepted.
+  it('still serializes complete, well-formed props within the consensus bounds', () => {
     expect(() => txWith('witness_update', witnessUpdate)).not.toThrow();
+    // The consensus bounds themselves stay serializable at their edges
+    // (STEEM_MIN_BLOCK_SIZE_LIMIT = 64 KiB, STEEM_100_PERCENT = 10000).
+    expect(() =>
+      withProps({ ...witnessUpdate.props, maximum_block_size: 65536, sbd_interest_rate: 10000 })
+    ).not.toThrow();
+    // An explicit zero sbd_interest_rate is a legitimate consensus vote and
+    // stays accepted; a zero maximum_block_size is NOT (it is below the chain
+    // floor) and throws like any other out-of-range value.
+    expect(() =>
+      withProps({ account_creation_fee: '0.000 STEEM', maximum_block_size: 65536, sbd_interest_rate: 0 })
+    ).not.toThrow();
     expect(() =>
       withProps({ account_creation_fee: '0.000 STEEM', maximum_block_size: 0, sbd_interest_rate: 0 })
-    ).not.toThrow();
+    ).toThrow(/Invalid chain_properties\.maximum_block_size/);
   });
 });
 

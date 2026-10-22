@@ -964,8 +964,18 @@ function serializeFillTransferFromSavings(bb: ByteBuffer, data: unknown): void {
  * account_creation_fee to '0.000 STEEM' (or a missing maximum_block_size /
  * sbd_interest_rate to 0) would sign the OPPOSITE of the caller's intent —
  * the same silent-degradation class as the 1.2.3 serializer hardening.
+ * The numeric fields are also bounded to the chain's own consensus ranges
+ * (legacy_chain_properties::validate), so values every node rejects — e.g.
+ * sbd_interest_rate above STEEM_100_PERCENT or maximum_block_size below
+ * STEEM_MIN_BLOCK_SIZE_LIMIT — fail here instead of after broadcast.
  * Throw-only: complete, well-formed props serialize byte-identical to before.
  */
+// Consensus bounds mirrored from steem/protocol/config.hpp, enforced by
+// legacy_chain_properties::validate() (steem_operations.hpp) for the props of
+// both witness_update and pow.
+const SBD_INTEREST_RATE_MAX = 10000; // STEEM_100_PERCENT
+const MAXIMUM_BLOCK_SIZE_MIN = 64 * 1024; // STEEM_MIN_BLOCK_SIZE_LIMIT (= STEEM_MAX_TRANSACTION_SIZE)
+
 function serializeChainProperties(bb: ByteBuffer, props: unknown): void {
     const p = (props as Record<string, unknown>) || {};
     const fee = p.account_creation_fee;
@@ -975,20 +985,20 @@ function serializeChainProperties(bb: ByteBuffer, props: unknown): void {
         );
     }
     serializeAsset(bb, fee);
-    writeUintField(bb, p.maximum_block_size, 'chain_properties.maximum_block_size', 0xffffffff);
-    writeUintField(bb, p.sbd_interest_rate, 'chain_properties.sbd_interest_rate', 0xffff);
+    writeUintField(bb, p.maximum_block_size, 'chain_properties.maximum_block_size', MAXIMUM_BLOCK_SIZE_MIN, 0xffffffff);
+    writeUintField(bb, p.sbd_interest_rate, 'chain_properties.sbd_interest_rate', 0, SBD_INTEREST_RATE_MAX);
 }
 
 /**
- * Write a required non-negative integer field bounded to `max` (uint16/uint32
- * style). Missing or malformed values throw instead of silently signing 0,
- * which for consensus-parameter votes (witness props) would record a vote the
- * caller never made.
+ * Write a required integer field bounded to [min, max] (uint16/uint32 style,
+ * chosen by the wire width the caller's max implies). Missing or malformed
+ * values throw instead of silently signing 0, which for consensus-parameter
+ * votes (witness props) would record a vote the caller never made.
  */
-function writeUintField(bb: ByteBuffer, value: unknown, fieldName: string, max: number): void {
-    if (typeof value !== 'number' || !Number.isInteger(value) || value < 0 || value > max) {
+function writeUintField(bb: ByteBuffer, value: unknown, fieldName: string, min: number, max: number): void {
+    if (typeof value !== 'number' || !Number.isInteger(value) || value < min || value > max) {
         throw new Error(
-            `Invalid ${fieldName}: expected a non-negative integer between 0 and ${max}, received ${JSON.stringify(value)}`
+            `Invalid ${fieldName}: expected an integer between ${min} and ${max}, received ${JSON.stringify(value)}`
         );
     }
     if (max > 0xffff) {
