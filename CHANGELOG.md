@@ -5,14 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.4] - 2026-10-24
 
-Throw-only hardening; byte output for well-formed input is unchanged. Malformed input that previously degraded silently now throws field-level errors.
+No API changes; byte output for well-formed input is unchanged. This release is
+throw-only hardening: input the chain would always reject at broadcast now throws
+a field-level error at signing time instead of producing a validly-signed dead
+transaction. Test suite: 371 passed / 23 skipped, typecheck, lint and all four
+rollup bundles verified green.
 
 ### Fixed
 
-- **`chain_properties` no longer falls back to `0.000 STEEM` / `0` for missing or malformed fields** (`witness_update`, `pow`): a missing or non-string `account_creation_fee` previously signed `0.000 STEEM` and a missing `maximum_block_size` / `sbd_interest_rate` signed `0` — for `witness_update` those props are the witness's votes for consensus parameters, so the fallback broadcast a vote the caller never made. All three fields are now required and validated (asset string via the shared `serializeAsset` checks; integers bounded to the chain's own consensus ranges from `legacy_chain_properties::validate()` — `sbd_interest_rate` ≤ `STEEM_100_PERCENT` (10000), `maximum_block_size` ≥ `STEEM_MIN_BLOCK_SIZE_LIMIT` (64 KiB)). An explicit `sbd_interest_rate` of 0 remains a legitimate vote; `maximum_block_size` values below the chain floor (including 0) now throw instead of signing a transaction every node rejects at broadcast.
-- **`comment_payout_beneficiaries` now enforces the remaining chain-side validate() rules** (`steem_operations.cpp`): more than 127 beneficiaries (`STEEM_BENEFICIARY_LIMIT - 1` — the chain caps `size() < 128` so the size fits one byte), a total weight sum above 10000 (`STEEM_100_PERCENT`; per-weight bounds alone did not cover this), and duplicate beneficiary accounts (the chain requires a strictly ascending, duplicate-free list) all throw at signing time instead of producing a transaction the node always rejects.
+- **`chain_properties` no longer falls back to `0.000 STEEM` / `0` for missing or malformed fields** (#561): a missing or non-string `account_creation_fee` previously signed `0.000 STEEM` and a missing `maximum_block_size` / `sbd_interest_rate` signed `0` — for `witness_update` those props are the witness's votes for consensus parameters, so the fallback broadcast a vote the caller never made. All three fields are now required and validated (asset string via the shared `serializeAsset` checks; integers bounded to the chain's own consensus ranges from `legacy_chain_properties::validate()` — `sbd_interest_rate` ≤ `STEEM_100_PERCENT` (10000), `maximum_block_size` ≥ `STEEM_MIN_BLOCK_SIZE_LIMIT` (64 KiB)). An explicit `sbd_interest_rate` of 0 remains a legitimate vote; `maximum_block_size` values below the chain floor (including 0) now throw instead of signing a transaction every node rejects at broadcast.
+- **`comment_payout_beneficiaries` now enforces the remaining chain-side validate() rules** (`steem_operations.cpp`): more than 127 beneficiaries (`STEEM_BENEFICIARY_LIMIT - 1` — the chain caps `size() < 128` so the size fits one byte), a total weight sum above 10000 (`STEEM_100_PERCENT`; per-weight bounds alone did not cover this), and duplicate beneficiary accounts (the chain requires a strictly ascending, duplicate-free list) all throw at signing time instead of producing a transaction the node always rejects (#561).
 
 ## [1.2.3] - 2026-10-13
 
