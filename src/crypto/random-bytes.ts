@@ -24,7 +24,7 @@ export function randomBytes(size: number): Buffer {
   // In browser builds, Rollup will tree-shake this code away because
   // the condition above will always be true in browsers.
   //
-  // Note: This SDK requires Node.js >= 20.19.0 (see package.json engines field).
+  // Note: This SDK requires Node.js >= 22.23.4 (see package.json engines field).
   // Node.js 20.19+ has Web Crypto API, so this fallback is rarely needed.
   // In ESM mode, require is undefined, but since Node.js 20.19+ has Web Crypto API,
   // this code path won't be reached in ESM mode with the minimum required version.

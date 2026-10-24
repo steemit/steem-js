@@ -1,4 +1,4 @@
-name: Test on Node.js 20, 22
+name: Test on Node.js 22
 
 on:
   push:
@@ -7,7 +7,6 @@ on:
       - 'next'
     paths:
       - '.github/workflows/build.yml'
-      - 'node-20.dockerfile'
       - 'node-22.dockerfile'
       - 'src/**'
       - 'test/**'
@@ -22,7 +21,6 @@ on:
     types: [opened, reopened, synchronize]
     paths:
       - '.github/workflows/build.yml'
-      - 'node-20.dockerfile'
       - 'node-22.dockerfile'
       - 'src/**'
       - 'test/**'
@@ -36,40 +34,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-node20:
-    name: Test on Node.js 20
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Show Node and PNPM version
-        run: |
-          node --version
-          pnpm --version || echo "PNPM will be installed via corepack in Docker"
-      
-      - name: Verify package files
-        run: |
-          cat package.json
-          ls -la pnpm-lock.yaml || echo "pnpm-lock.yaml not found"
-      
-      - name: Build Docker image and run tests (Node.js 20)
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: node-20.dockerfile
-          push: false
-          tags: steem-js-test:node20
-          no-cache: false
-          build-args: |
-            NODE_ENV=development
-
   test-node22:
     name: Test on Node.js 22
     runs-on: ubuntu-latest

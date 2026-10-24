@@ -1,4 +1,13 @@
-FROM node:22
+FROM node:22.23.4-alpine
+#
+# Pinned on purpose, do not float this back to `node:22`:
+# - 22.23.4 is the first 22.x with the brotli decoder fix for CVE-2026-111497
+#   (out-of-bounds write in the in-process brotli decoder, RCE). A floating tag
+#   makes the CI node version depend on whatever `node:22` pointed at the last
+#   time the runner's image cache was populated, which can silently be a
+#   vulnerable build.
+# - 22.23.4 is also the floor declared in package.json `engines`, so the CI
+#   container tests exactly the oldest runtime consumers are allowed to use.
 
 # Set working directory
 WORKDIR /steemjs
