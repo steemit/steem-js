@@ -4,9 +4,10 @@ import { signatureVerification, signRequest } from '../src/api';
 
 const { api, auth, config } = steem;
 
-// Test credentials
-const testAccount = 'guest123';
-const testPrivateKey = '5JLw5dgQAx6rhZEgNN5C2ds1V47RweGshynFSWFbaMohsYsBvE8';
+// Test credentials (public test account documented in Steem dev tutorials;
+// overridable via env for live-network runs, same as rpc-auth.test.ts)
+const testAccount = process.env.STEEM_USERNAME || 'guest123';
+const testPrivateKey = process.env.STEEM_WIF || '5JLw5dgQAx6rhZEgNN5C2ds1V47RweGshynFSWFbaMohsYsBvE8';
 const testPublicKey = auth.wifToPublic(testPrivateKey);
 
 describe('Signature Verification', () => {
