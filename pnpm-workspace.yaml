@@ -5,20 +5,30 @@ patchedDependencies:
   'bytebuffer@5.0.1': patches/bytebuffer@5.0.1.patch
 
 overrides:
-  # minimatch ReDoS (alerts #268/#269/#270, nested extglob backtracking GHSA-23c5-xmqv-rm74)
+  # minimatch ReDoS (alerts #268/#269/#270, nested extglob backtracking GHSA-23c5-xmqv-rm74;
+  # GHSA-g3hv-75wg-m249 needs >=11.0.1, so the @9 selector (typescript-estree) jumps two majors)
   'minimatch@3': '3.1.4'
   'minimatch@5': '5.1.8'
-  'minimatch@9': '9.0.7'
+  'minimatch@9': '11.0.1'
   # brace-expansion ReDoS (alerts #287/#288, unbounded expansion length / intermediate
-  # arrays GHSA-mh99-v99m-4gvg / GHSA-rgw5-rvv9-x895)
-  'brace-expansion@1': '1.1.18'
-  'brace-expansion@2': '2.1.4'
-  'brace-expansion@5': '5.0.9'
+  # arrays GHSA-mh99-v99m-4gvg / GHSA-rgw5-rvv9-x895;
+  # #312/#313/#314 quadratic-time `{a},b}` rewrite DoS GHSA-q2hr-2g5m-vwhr)
+  'brace-expansion@1': '1.1.22'
+  'brace-expansion@2': '2.1.8'
+  'brace-expansion@5': '5.0.13'
   # js-yaml quadratic DoS (alerts #286/#289, omap O(n^2) alert 296 / GHSA-5p4m-2wfm-xmqj)
   # and maxTotalMergeKeys CPU limit bypass (alert #305 / CVE-2026-84375)
   'js-yaml@4': '4.3.2'
-  # serialize-javascript RCE/DoS (alerts #271/#282)
-  'serialize-javascript@6': '7.0.5'
+  # serialize-javascript RCE/DoS (alerts #271/#282; #323 trailing `</script>` XSS GHSA-m5mm-p8h7-m29v)
+  'serialize-javascript@6': '7.1.4'
+  # source-map-js event-loop DoS via indexed source-map section offsets
+  # (alert #315 / GHSA-68fv-2mgg-jv7q; reachable from magicast in the toolchain)
+  'source-map-js': '1.2.2'
+  # deepmerge prototype poisoning via mergeObject() (alert #324 / GHSA-gcqx-w48m-w2h4).
+  # No patched release exists yet (>=4.2.0 <=4.3.1 all affected), so pin below the
+  # vulnerable range. Only consumer is @rollup/plugin-node-resolve, which merges its
+  # own frozen DEFAULTS at module load — no untrusted input ever reaches it.
+  'deepmerge': '4.1.2'
   # flatted prototype pollution (alert #273)
   'flatted': '3.4.3'
   # picomatch glob-matching bug (alert #275)
