@@ -17,7 +17,8 @@ function loadFixtures(): SerializerFixture[] {
   const dir = path.resolve(__dirname, 'fixtures/serializer');
   const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'));
   return files.map(file => {
-    const full = path.join(dir, file);
+    // readdirSync entries are bare file names; basename keeps the join traversal-free
+    const full = path.join(dir, path.basename(file));
     const raw = fs.readFileSync(full, 'utf8');
     const parsed = JSON.parse(raw) as SerializerFixture;
     return parsed;

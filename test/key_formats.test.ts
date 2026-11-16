@@ -1,25 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { PrivateKey, PublicKey, Address } from '../src/auth';
-
-const testKey = {
-  // delegate0
-  // sourced from: ./bitshares/programs/utils/bts_create_key
-  public_key: 'STM7jDPoMwyjVH5obFmqzFNp4Ffp7G2nvC7FKFkrMBpo7Sy4uq5Mj',
-  private_key: '20991828d456b389d0768ed7fb69bf26b9bb87208dd699ef49f10481c20d3e18',
-  private_key_WIF_format: '5J4eFhjREJA7hKG6KcvHofHMXyGQZCDpQE463PAaKo9xXY6UDPq',
-  bts_address: 'STM8DvGQqzbgCR5FHiNsFf8kotEXr8VKD3mR',
-  pts_address: 'Po3mqkgMzBL4F1VXJArwQxeWf3fWEpxUf3',
-  encrypted_private_key: '5e1ae410919c450dce1c476ae3ed3e5fe779ad248081d85b3dcf2888e698744d0a4b60efb7e854453bec3f6883bcbd1d',
-  blockchain_address: '4f3a560442a05e4fbb257e8dc5859b736306bace',
-  // https://github.com/BitShares/bitshares/blob/2602504998dcd63788e106260895769697f62b07/libraries/wallet/wallet_db.cpp#L103-L108
-  Uncompressed_BTC: 'STMLAFmEtM8as1mbmjVcj5dphLdPguXquimn',
-  Compressed_BTC: 'STMANNTSEaUviJgWLzJBersPmyFZBY4jJETY',
-  Uncompressed_PTS: 'STMEgj7RM6FBwSoccGaESJLC3Mi18785bM3T',
-  Compressed_PTS: 'STMD5rYtofD6D4UHJH6mo953P5wpBfMhdMEi',
-  // https://github.com/steemit/steem-js/issues/267
-  null_hex: '000000000000000000000000000000000000000000000000000000000000000000',
-  null_address: 'STM1111111111111111111111111111111114T1Anm'
-};
+// Published reference vectors (see the fixture's _comment for provenance).
+import testKey from './fixtures/key_formats.json';
 
 describe('Key Formats', () => {
   it('calculates public key from private key', () => {

@@ -38,6 +38,12 @@ importers:
       '@noble/hashes':
         specifier: ^2.3.0
         version: 2.3.0
+      '@types/bn.js':
+        specifier: ^5.2.0
+        version: 5.2.0
+      '@types/node':
+        specifier: ^20.11.24
+        version: 20.19.25
       bn.js:
         specifier: ^5.2.3
         version: 5.2.5
@@ -90,18 +96,12 @@ importers:
       '@rollup/plugin-typescript':
         specifier: ^11.1.6
         version: 11.1.6(rollup@4.62.3)(tslib@2.8.1)(typescript@5.7.3)
-      '@types/bn.js':
-        specifier: ^5.2.0
-        version: 5.2.0
       '@types/bytebuffer':
         specifier: ^5.0.49
         version: 5.0.49
       '@types/debug':
         specifier: ^4.1.12
         version: 4.1.12
-      '@types/node':
-        specifier: ^20.11.24
-        version: 20.19.25
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.0.0
         version: 8.48.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1)(typescript@5.7.3))(eslint@9.39.1)(typescript@5.7.3)

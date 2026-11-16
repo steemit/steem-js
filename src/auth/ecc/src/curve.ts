@@ -10,7 +10,7 @@ export type ECPoint = typeof secp256k1.Point.BASE;
 export const CURVE_N = secp256k1.Point.CURVE().n;
 export const CURVE_P = secp256k1.Point.CURVE().p;
 
-export const G = secp256k1.Point.BASE;
+export const G: ECPoint = secp256k1.Point.BASE;
 
 /** BN form of the curve order, for arithmetic that stays in bn.js. */
 export const N_BN = new BN(CURVE_N.toString());
