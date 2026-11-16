@@ -3,7 +3,7 @@
  * This file provides type definitions for dynamically generated methods
  */
 
-import type { ApiMethodSignatures } from './types';
+import type { ApiMethodSignatures } from './types.js';
 
 // Use declaration merging to add method signatures to Api class
 declare module './index' {

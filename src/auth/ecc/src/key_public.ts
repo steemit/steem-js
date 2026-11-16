@@ -1,8 +1,8 @@
 import BN from 'bn.js';
 import base58 from 'bs58';
-import * as hash from './hash';
-import { getConfig } from '../../../config';
-import { secp256k1, type ECPoint, G, N_BN, bnToBigint } from './curve';
+import * as hash from './hash.js';
+import { getConfig } from '../../../config.js';
+import { secp256k1, type ECPoint, G, N_BN, bnToBigint } from './curve.js';
 
 export class PublicKey {
     Q: ECPoint | null;

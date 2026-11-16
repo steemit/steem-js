@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { Transport, TransportOptions } from './types';
+import { Transport, TransportOptions } from './types.js';
 
 export class BaseTransport extends EventEmitter implements Transport {
   options: TransportOptions;

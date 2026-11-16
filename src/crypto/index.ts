@@ -1,10 +1,10 @@
 import { sha256 as nobleSha256 } from '@noble/hashes/sha2.js';
 import { ripemd160 as nobleRipemd160 } from '@noble/hashes/legacy.js';
 import { hmac } from '@noble/hashes/hmac.js';
-import { randomBytes } from './random-bytes';
-import type { KeyPair } from '../auth';
-import { PrivateKey, PublicKey } from '../auth';
-import { Signature } from '../auth/ecc/src/signature';
+import { randomBytes } from './random-bytes.js';
+import type { KeyPair } from '../auth/index.js';
+import { PrivateKey, PublicKey } from '../auth/index.js';
+import { Signature } from '../auth/ecc/src/signature.js';
 
 export const sha256 = (data: string | Buffer): Buffer => {
   const input = Buffer.isBuffer(data) ? data : Buffer.from(data);

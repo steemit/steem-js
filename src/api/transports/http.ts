@@ -1,7 +1,7 @@
 // @ts-expect-error: No types for 'retry'
 import retry from 'retry';
-import { TransportOptions, JsonRpcRequest, JsonRpcResponse } from './types';
-import { BaseTransport } from './base';
+import { TransportOptions, JsonRpcRequest, JsonRpcResponse } from './types.js';
+import { BaseTransport } from './base.js';
 
 /** Detect Node.js for optional undici Agent (custom TLS). */
 const isNode =

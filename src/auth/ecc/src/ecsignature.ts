@@ -1,4 +1,4 @@
-import enforce from './enforce_types';
+import enforce from './enforce_types.js';
 import BN from 'bn.js';
 
 export default class ECSignature {

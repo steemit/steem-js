@@ -5,8 +5,8 @@
  * for signed RPC requests and general message signatures.
  */
 
-import { validate } from './rpc-auth';
-import { Signature, PublicKey, verifySignature } from '../auth';
+import { validate } from './rpc-auth.js';
+import { Signature, PublicKey, verifySignature } from '../auth/index.js';
 
 export interface SignedRequest {
   jsonrpc: string;

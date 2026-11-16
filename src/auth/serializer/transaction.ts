@@ -1,6 +1,6 @@
 import ByteBuffer from 'bytebuffer';
-import { PublicKey } from '../ecc/src/key_public';
-import { resolveAuthorityForSerialize } from '../account-update-chain';
+import { PublicKey } from '../ecc/src/key_public.js';
+import { resolveAuthorityForSerialize } from '../account-update-chain.js';
 
 /**
  * Serialize a transaction to binary format for Steem blockchain

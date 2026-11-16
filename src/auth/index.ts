@@ -1,11 +1,11 @@
-import { PrivateKey, constantTimeCompare } from './ecc/src/key_private';
-import { PublicKey } from './ecc/src/key_public';
-import { sha256 } from './ecc/src/hash';
-import { getConfig } from '../config';
+import { PrivateKey, constantTimeCompare } from './ecc/src/key_private.js';
+import { PublicKey } from './ecc/src/key_public.js';
+import { sha256 } from './ecc/src/hash.js';
+import { getConfig } from '../config.js';
 import bs58 from 'bs58';
-import { Signature } from './ecc/src/signature';
-import { transaction, signed_transaction } from './serializer';
-import { normalizeTransactionForBroadcast } from './account-update-chain';
+import { Signature } from './ecc/src/signature.js';
+import { transaction, signed_transaction } from './serializer.js';
+import { normalizeTransactionForBroadcast } from './account-update-chain.js';
 
 export {
   normalizeOperationForBroadcast,
@@ -14,13 +14,13 @@ export {
   sanitizeAccountUpdatePayload,
   normalizeAuthoritySource,
   resolveAuthorityForSerialize,
-} from './account-update-chain';
+} from './account-update-chain.js';
 export type {
   AuthorityWeightPair,
   ChainAuthority,
   AccountUpdatePayload,
   OperationTuple,
-} from './account-update-chain';
+} from './account-update-chain.js';
 
 export interface KeyPair {
     privateKey: string;
@@ -184,10 +184,10 @@ export const wifToPublic = Auth.wifToPublic.bind(Auth);
 export const isPubkey = Auth.isPubkey.bind(Auth);
 
 // Export classes
-export { PrivateKey } from './ecc/src/key_private';
-export { PublicKey } from './ecc/src/key_public';
-export { Signature } from './ecc/src/signature';
-export { Address } from './ecc/src/address';
+export { PrivateKey } from './ecc/src/key_private.js';
+export { PublicKey } from './ecc/src/key_public.js';
+export { Signature } from './ecc/src/signature.js';
+export { Address } from './ecc/src/address.js';
 
 // Export crypto functions
 export const sign = (message: string, privateKey: string): string => {
@@ -262,4 +262,4 @@ export const signTransaction = Auth.signTransaction.bind(Auth);
 
 // Export the binary transaction serializer so downstream apps can reconstruct
 // the signing digest sha256(chain_id || serializeTransaction(trx)) themselves.
-export { serializeTransaction } from './serializer/transaction';
+export { serializeTransaction } from './serializer/transaction.js';
