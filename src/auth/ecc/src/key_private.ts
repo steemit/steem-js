@@ -1,8 +1,8 @@
 import BN from 'bn.js';
 import base58 from 'bs58';
-import * as hash from './hash';
-import { PublicKey } from './key_public';
-import { type ECPoint, G, N_BN, bnToBigint, coordToBuffer } from './curve';
+import * as hash from './hash.js';
+import { PublicKey } from './key_public.js';
+import { type ECPoint, G, N_BN, bnToBigint, coordToBuffer } from './curve.js';
 
 /**
  * Constant-time buffer comparison to prevent timing attacks.

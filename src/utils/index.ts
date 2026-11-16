@@ -44,4 +44,4 @@ export const isValidPermlink = (permlink: string): boolean => {
   return /^[a-z0-9-]+$/.test(permlink);
 };
 
-export { debug } from './debug'; 
+export { debug } from './debug.js';

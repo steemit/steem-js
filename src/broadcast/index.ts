@@ -1,9 +1,9 @@
-import { Api } from '../api';
-import Auth from '../auth';
-import { createOperation, createTransaction, BroadcastOptions } from './helpers';
-import { operations } from './operations';
-import { camelCase } from '../utils';
-import { promisify } from '../utils/promisify';
+import { Api } from '../api/index.js';
+import Auth from '../auth/index.js';
+import { createOperation, createTransaction, BroadcastOptions } from './helpers.js';
+import { operations } from './operations.js';
+import { camelCase } from '../utils.js';
+import { promisify } from '../utils/promisify.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 
 export interface BroadcastConfig {
@@ -44,12 +44,12 @@ export class Broadcast {
             const transaction = await (broadcastMethods._prepareTransaction as (this: Broadcast, transaction: { operations: unknown[]; extensions?: unknown[] }) => Promise<unknown>).call(this, tx);
 
             // Debug: Print transaction info (full details only in development to avoid leaking sensitive data)
-            const { debug } = await import('../utils/debug');
+            const { debug } = await import('../utils/debug.js');
             if (debug.isEnabled('transaction')) {
                 const isDev = process.env.NODE_ENV === 'development';
                 if (isDev) {
-                    const { transaction: transactionSerializer } = await import('../auth/serializer');
-                    const { getConfig } = await import('../config');
+                    const { transaction: transactionSerializer } = await import('../auth/serializer.js');
+                    const { getConfig } = await import('../config.js');
                     const buf = transactionSerializer.toBuffer(transaction);
                     const chainId = Buffer.from((getConfig().get('chain_id') as string | undefined) || '', 'hex');
                     const digest = Buffer.from(sha256(Buffer.concat([chainId, buf])));

@@ -10,7 +10,7 @@ import type {
   SignedBlock,
   FollowApiObject,
   AccountHistoryEntry,
-} from '../types/protocol';
+} from '../types/protocol.js';
 
 // Base callback type
 export type ApiCallback<T = unknown> = (err: Error | null, result?: T) => void;

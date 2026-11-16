@@ -1,9 +1,9 @@
-import { PrivateKey } from '../auth/ecc/src/key_private';
-import { PublicKey } from '../auth/ecc/src/key_public';
-import { Aes } from '../auth/ecc/src/aes';
+import { PrivateKey } from '../auth/ecc/src/key_private.js';
+import { PublicKey } from '../auth/ecc/src/key_public.js';
+import { Aes } from '../auth/ecc/src/aes.js';
 import bs58 from 'bs58';
 import ByteBuffer from 'bytebuffer';
-import { Serializer, EncryptedMemo } from '../auth/serializer';
+import { Serializer, EncryptedMemo } from '../auth/serializer.js';
 
 export interface MemoData {
     from: string;

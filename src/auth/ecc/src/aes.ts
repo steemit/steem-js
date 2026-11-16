@@ -1,10 +1,10 @@
 import { cbc } from '@noble/ciphers/aes.js';
-import { PrivateKey } from './key_private';
-import { PublicKey } from './key_public';
-import { sha256, sha512 } from './hash';
+import { PrivateKey } from './key_private.js';
+import { PublicKey } from './key_public.js';
+import { sha256, sha512 } from './hash.js';
 import ByteBuffer from 'bytebuffer';
 import Long from 'long';
-import { randomBytes } from '../../../crypto/random-bytes';
+import { randomBytes } from '../../../crypto/random-bytes.js';
 
 function sha512Buffer(data: string | Buffer): Buffer {
     const result = sha512(data);

@@ -1,13 +1,13 @@
-import { setOptions as setApiOptions, Api } from './api';
-import api from './api'; // Import singleton instance from api module
-import { setOptions as setConfigOptions, getConfig } from './config';
-import * as auth from './auth';
-import * as broadcast from './broadcast';
-import * as formatter from './formatter';
-import * as memo from './memo';
-import * as operations from './operations';
-import * as utils from './utils';
-import * as crypto from './crypto';
+import { setOptions as setApiOptions, Api } from './api/index.js';
+import api from './api/index.js'; // Import singleton instance from api module
+import { setOptions as setConfigOptions, getConfig } from './config.js';
+import * as auth from './auth/index.js';
+import * as broadcast from './broadcast/index.js';
+import * as formatter from './formatter/index.js';
+import * as memo from './memo/index.js';
+import * as operations from './operations/index.js';
+import * as utils from './utils.js';
+import * as crypto from './crypto/index.js';
 // Import buffer module for UMD builds to expose Buffer globally
 import { Buffer as BufferPolyfill } from 'buffer';
 
