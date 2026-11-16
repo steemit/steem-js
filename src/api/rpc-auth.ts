@@ -2,10 +2,10 @@
 
 
 
-import { Signature } from '../auth/ecc/src/signature';
-import { PrivateKey } from '../auth/key_classes';
+import { Signature } from '../auth/ecc/src/signature.js';
+import { PrivateKey } from '../auth/key_classes.js';
 import { sha256 } from '@noble/hashes/sha2.js';
-import { randomBytes } from '../crypto/random-bytes';
+import { randomBytes } from '../crypto/random-bytes.js';
 
 interface RpcRequest {
   method: string;

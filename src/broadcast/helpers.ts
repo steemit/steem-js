@@ -1,4 +1,4 @@
-import { operations, Operation } from './operations';
+import { operations, Operation } from './operations.js';
 
 export interface BroadcastOptions {
     roles: string[];

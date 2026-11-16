@@ -1,12 +1,12 @@
-import { setOptions as setApiOptions } from './api';
-import api from './api'; // Import singleton instance from api module
-import { setOptions as setConfigOptions, getConfig } from './config';
-import * as auth from './auth';
-import * as broadcast from './broadcast';
-import * as formatter from './formatter';
-import * as memo from './memo';
-import * as operations from './operations';
-import * as utils from './utils';
+import { setOptions as setApiOptions } from './api/index.js';
+import api from './api/index.js'; // Import singleton instance from api module
+import { setOptions as setConfigOptions, getConfig } from './config.js';
+import * as auth from './auth/index.js';
+import * as broadcast from './broadcast/index.js';
+import * as formatter from './formatter/index.js';
+import * as memo from './memo/index.js';
+import * as operations from './operations/index.js';
+import * as utils from './utils.js';
 // Import buffer module for browser builds to expose Buffer globally
 import { Buffer as BufferPolyfill } from 'buffer';
 
@@ -65,13 +65,13 @@ if (typeof window !== 'undefined' || typeof globalThis !== 'undefined') {
 
 // Export everything as named exports
 export { steem };
-export * from './crypto';
+export * from './crypto/index.js';
 // Export Api class for creating multiple instances
-export { Api } from './api';
+export { Api } from './api/index.js';
 // Export rpc-auth functions for cross-verification
-export { sign as signRequest, validate as validateRequest } from './api/rpc-auth';
+export { sign as signRequest, validate as validateRequest } from './api/rpc-auth.js';
 // Export protocol types for consumers (e.g. steem-uri)
-export type { Operation, Transaction } from './types';
+export type { Operation, Transaction } from './types.js';
 export type {
   ExtendedAccount,
   DynamicGlobalProperties,
@@ -83,4 +83,4 @@ export type {
   AccountHistoryEntry,
   Manabar,
   BeneficiaryRoute,
-} from './types/protocol'; 
+} from './types/protocol.js';

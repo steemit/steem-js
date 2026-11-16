@@ -1,16 +1,16 @@
 import { EventEmitter } from 'events';
-import { getConfig } from '../config';
-import { camelCase } from '../utils';
-import { promisify } from '../utils/promisify';
-import { sign as signRequest } from './rpc-auth';
-import methods from './methods';
-import { jsonRpc } from './transports/http';
-import { transports } from './transports/index';
-import type { Transport } from './transports/types';
-import type { TransportOptions, JsonRpcRequest } from './transports/types';
-import type { SignedRequest } from './signature-verification';
-import { Auth } from '../auth';
-import type { ApiMethodSignatures } from './types';
+import { getConfig } from '../config.js';
+import { camelCase } from '../utils.js';
+import { promisify } from '../utils/promisify.js';
+import { sign as signRequest } from './rpc-auth.js';
+import methods from './methods.js';
+import { jsonRpc } from './transports/http.js';
+import { transports } from './transports/index.js';
+import type { Transport } from './transports/types.js';
+import type { TransportOptions, JsonRpcRequest } from './transports/types.js';
+import type { SignedRequest } from './signature-verification.js';
+import { Auth } from '../auth/index.js';
+import type { ApiMethodSignatures } from './types.js';
 
 interface ApiOptions {
   url?: string;
@@ -310,7 +310,7 @@ export class Api extends EventEmitter {
    * @param callback Callback function
    */
   verifySignedRequest(signedRequest: unknown, callback: (err: Error | null, result?: unknown) => void) {
-    import('./rpc-auth').then(({ validate }) => {
+    import('./rpc-auth.js').then(({ validate }) => {
       // Create verification function that checks signatures against account's public keys
       const verifyFunction = async (message: Buffer, signatures: string[], account: string) => {
           // Get account's public keys
@@ -337,7 +337,7 @@ export class Api extends EventEmitter {
           ].filter(Boolean);
 
           // Import verification functions
-          const { Signature, PublicKey } = await import('../auth');
+          const { Signature, PublicKey } = await import('../auth/index.js');
 
           // Verify at least one signature matches one of the account's keys
           let verified = false;
@@ -889,5 +889,5 @@ export const streamTransactions = (...args: unknown[]) => (((api as unknown) as 
 export const streamOperations = (...args: unknown[]) => (((api as unknown) as Record<string, unknown>).streamOperations as (...args: unknown[]) => unknown)(...args);
 
 // Export signature verification utilities
-export { sign as signRequest, validate as validateRequest } from './rpc-auth';
-export * as signatureVerification from './signature-verification'; 
+export { sign as signRequest, validate as validateRequest } from './rpc-auth.js';
+export * as signatureVerification from './signature-verification.js';

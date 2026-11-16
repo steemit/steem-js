@@ -1,7 +1,7 @@
-import { ripemd160, sha256 } from './hash';
-import { getConfig } from '../../../config';
+import { ripemd160, sha256 } from './hash.js';
+import { getConfig } from '../../../config.js';
 import bs58 from 'bs58';
-import { PublicKey } from './key_public';
+import { PublicKey } from './key_public.js';
 
 export class Address {
     private addy: Buffer;

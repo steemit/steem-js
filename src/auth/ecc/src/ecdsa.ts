@@ -1,9 +1,9 @@
-import * as crypto from './hash';
-import enforce from './enforce_types';
+import * as crypto from './hash.js';
+import enforce from './enforce_types.js';
 import BN from 'bn.js';
-import ECSignature from './ecsignature';
+import ECSignature from './ecsignature.js';
 
-import { type ECPoint, G, CURVE_N, N_BN, bnToBigint, bigintToBn, pointFromX } from './curve';
+import { type ECPoint, G, CURVE_N, N_BN, bnToBigint, bigintToBn, pointFromX } from './curve.js';
 
 // https://tools.ietf.org/html/rfc6979#section-3.2
 function deterministicGenerateK(hash: Buffer, d: BN, checkSig: (k: BN) => boolean, nonce?: number): BN {

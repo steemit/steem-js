@@ -1,6 +1,6 @@
-import { HttpTransport } from './http';
-import { BaseTransport } from './base';
-export * from './types';
+import { HttpTransport } from './http.js';
+import { BaseTransport } from './base.js';
+export * from './types.js';
 
 export const transports = {
   http: HttpTransport

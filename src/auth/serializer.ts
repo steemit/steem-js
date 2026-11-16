@@ -1,6 +1,6 @@
 import ByteBuffer from 'bytebuffer';
 import Long from 'long';
-import { PublicKey } from './ecc/src/key_public';
+import { PublicKey } from './ecc/src/key_public.js';
 
 export interface EncryptedMemo {
     from: PublicKey;
@@ -77,7 +77,7 @@ export class Serializer {
     }
 }
 
-import { serializeTransaction as serializeTransactionBinary } from './serializer/transaction';
+import { serializeTransaction as serializeTransactionBinary } from './serializer/transaction.js';
 
 export const transaction = {
     toBuffer(trx: unknown): Buffer {

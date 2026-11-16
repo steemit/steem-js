@@ -6,7 +6,7 @@
  * 3. Specific debug flags: DEBUG=steem-js:transaction,steem-js:signature
  */
 
-import { getConfig } from '../config';
+import { getConfig } from '../config.js';
 
 // Safely get process.env for browser compatibility
 function getProcessEnv(key: string): string | undefined {

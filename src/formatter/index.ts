@@ -1,5 +1,5 @@
-import { PrivateKey } from '../auth/ecc/src/key_private';
-import { Api } from '../api';
+import { PrivateKey } from '../auth/ecc/src/key_private.js';
+import { Api } from '../api/index.js';
 
 export interface Account {
     name: string;

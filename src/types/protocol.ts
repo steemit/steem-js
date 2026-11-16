@@ -17,7 +17,7 @@
  *   steem/libraries/plugins/apis/condenser_api/include/steem/plugins/condenser_api/condenser_api.hpp
  */
 
-import type { Authority, Transaction } from '../types';
+import type { Authority, Transaction } from '../types.js';
 
 // ============================================================================
 // Shared / foundational types

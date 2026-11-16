@@ -1,11 +1,11 @@
 import BN from 'bn.js';
-import { sha256 } from './hash';
-import { PrivateKey } from './key_private';
-import { PublicKey } from './key_public';
-import { sign as ecdsaSign, calcPubKeyRecoveryParam } from './ecdsa';
-import ECSignature from './ecsignature';
-import { secp256k1, CURVE_N, N_BN, bnToBigint, bigintToBn } from './curve';
-// import { debug } from '../../../utils/debug'; // Unused import
+import { sha256 } from './hash.js';
+import { PrivateKey } from './key_private.js';
+import { PublicKey } from './key_public.js';
+import { sign as ecdsaSign, calcPubKeyRecoveryParam } from './ecdsa.js';
+import ECSignature from './ecsignature.js';
+import { secp256k1, CURVE_N, N_BN, bnToBigint, bigintToBn } from './curve.js';
+// import { debug } from '../../../utils/debug.js'; // Unused import
 
 export class Signature {
     r: BN;
