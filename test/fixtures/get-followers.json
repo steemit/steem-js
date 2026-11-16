@@ -1,0 +1,74 @@
+[
+  {
+    "follower": "acid-burn",
+    "following": "ned",
+    "reputation": 43.64,
+    "what": ["blog", ""]
+  },
+  {
+    "follower": "mostofajaman",
+    "following": "ned",
+    "reputation": 76.26,
+    "what": ["blog", ""]
+  },
+  {
+    "follower": "natu-agriculture",
+    "following": "ned",
+    "reputation": 64.23,
+    "what": ["blog", ""]
+  },
+  {
+    "follower": "theuniverse.name",
+    "following": "ned",
+    "reputation": 4,
+    "what": ["blog", ""]
+  },
+  {
+    "follower": "petak",
+    "following": "ned",
+    "reputation": 50.15,
+    "what": ["blog", ""]
+  },
+  {
+    "follower": "bitcoinsight",
+    "following": "ned",
+    "reputation": 35.15,
+    "what": ["blog", ""]
+  },
+  {
+    "follower": "logikaweb3",
+    "following": "ned",
+    "reputation": 25,
+    "what": ["blog", ""]
+  },
+  {
+    "follower": "chathu13",
+    "following": "ned",
+    "reputation": 62.61,
+    "what": ["blog", ""]
+  },
+  {
+    "follower": "m-fdo",
+    "following": "ned",
+    "reputation": 78.64,
+    "what": ["blog", ""]
+  },
+  {
+    "follower": "fau57",
+    "following": "ned",
+    "reputation": 27,
+    "what": ["blog", ""]
+  },
+  {
+    "follower": "estreiker",
+    "following": "ned",
+    "reputation": 49.29,
+    "what": ["blog", ""]
+  },
+  {
+    "follower": "jal08",
+    "following": "ned",
+    "reputation": 66.72,
+    "what": ["blog", ""]
+  }
+]

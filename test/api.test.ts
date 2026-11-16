@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { steem } from '../src';
 import { Api } from '../src/api';
 import testPost from './test-post.json';
+import nedFollowers from './fixtures/get-followers.json';
 
 // Helper for callback tests
 function doneCallback(done: any, fn: (...args: any[]) => void) {
@@ -15,6 +16,33 @@ function doneCallback(done: any, fn: (...args: any[]) => void) {
   };
 }
 
+// Entry shape returned by follow_api.get_followers (see fixtures/get-followers.json,
+// a snapshot of ned's followers captured from api.steemit.com).
+interface FollowerEntry {
+  follower: string;
+  following: string;
+  reputation: number;
+  what: string[];
+}
+
+/**
+ * Reproduce follow_api.get_followers pagination over a canned list: `start` is
+ * inclusive (lower_bound on the follow index), so the page requested with the
+ * last follower of page 1 begins with that follower itself. A start name that
+ * is not a follower returns an empty page, matching the real node (verified
+ * against api.steemit.com).
+ */
+function followersPage(all: FollowerEntry[], start: unknown, limit: number): FollowerEntry[] {
+  if (typeof start === 'string' && start !== '') {
+    const idx = all.findIndex((entry) => entry.follower === start);
+    if (idx === -1) {
+      return [];
+    }
+    return all.slice(idx, idx + limit);
+  }
+  return all.slice(0, limit);
+}
+
 describe('steem.api:', () => {
   describe('setOptions', () => {
     it('works', () => {
@@ -25,42 +53,108 @@ describe('steem.api:', () => {
   });
 
   describe('getFollowers', () => {
-    describe("getting ned's followers", () => {
+    describe("getting ned's followers (mocked follow_api responses)", () => {
+      let steemApi: any;
+      let requests: Array<{ method: string; params: unknown[] }>;
+
+      beforeEach(() => {
+        requests = [];
+        steemApi = new Api({});
+        steemApi.setOptions({
+          url: 'https://api.steemit.com',
+          fetchMethod: (uri: string, req: any) =>
+            new Promise((res, rej) => {
+              const data = JSON.parse(req.body);
+              requests.push(data);
+              const [api, method, args] = data.params;
+              if (api === 'follow_api' && method === 'get_followers') {
+                const page = followersPage(nedFollowers as FollowerEntry[], args[1], args[3]);
+                res({
+                  ok: true,
+                  json: () => Promise.resolve({ jsonrpc: '2.0', id: data.id, result: page }),
+                });
+              } else {
+                rej(new Error(`Unexpected RPC call in mocked getFollowers test: ${api}.${method}`));
+              }
+            }),
+        });
+      });
+
       it('works', async () => {
-        try {
-          const result = await (steem.api as any).getFollowersAsync('ned', 0, 'blog', 5);
-          expect(result).toBeDefined();
-          expect(result).toHaveLength(5);
-        } catch (error: any) {
-          // Skip test if network is unavailable (integration test)
-          if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-            console.warn('Skipping network test: network unavailable or SSL certificate issue');
-            return;
-          }
-          throw error;
-        }
+        const result = await steemApi.getFollowersAsync('ned', 0, 'blog', 5);
+        expect(result).toBeDefined();
+        expect(result).toEqual(nedFollowers.slice(0, 5));
+        // The call must be routed through the legacy `call` wrapper to the
+        // follow_api namespace with positional args (see src/api/methods.ts).
+        expect(requests).toHaveLength(1);
+        expect(requests[0].method).toBe('call');
+        expect(requests[0].params[0]).toBe('follow_api');
+        expect(requests[0].params[1]).toBe('get_followers');
+        expect(requests[0].params[2]).toEqual(['ned', 0, 'blog', 5]);
       });
 
       it('the startFollower parameter has an impact on the result', async () => {
-        try {
-          const result1 = await (steem.api as any).getFollowersAsync('ned', 0, 'blog', 5);
-          expect(result1).toHaveLength(5);
-          const result2 = await (steem.api as any).getFollowersAsync('ned', result1[result1.length - 1].follower, 'blog', 5);
-          expect(result2).toHaveLength(5);
-          expect(result1).not.toEqual(result2);
-        } catch (error: any) {
-          // Skip test if network is unavailable (integration test)
-          if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-            console.warn('Skipping network test: network unavailable or SSL certificate issue');
-            return;
-          }
-          throw error;
-        }
+        const result1 = await steemApi.getFollowersAsync('ned', 0, 'blog', 5);
+        expect(result1).toHaveLength(5);
+        const result2 = await steemApi.getFollowersAsync('ned', result1[result1.length - 1].follower, 'blog', 5);
+        expect(result2).toHaveLength(5);
+        expect(result1).not.toEqual(result2);
+        // follow_api.get_followers is lower-bound inclusive: the page starting
+        // at the last follower of page 1 begins with that follower itself.
+        expect(result2[0].follower).toBe(result1[result1.length - 1].follower);
       });
 
-      it('clears listeners', async () => {
-        expect((steem.api as any).listeners('message')).toHaveLength(0);
+      it('returns an empty page when startFollower is not a follower of the account', async () => {
+        const result = await steemApi.getFollowersAsync('ned', 'aaa', 'blog', 5);
+        expect(result).toEqual([]);
       });
+
+      it('propagates JSON-RPC errors from the node', async () => {
+        steemApi.setOptions({
+          url: 'https://api.steemit.com',
+          fetchMethod: () =>
+            Promise.resolve({
+              ok: true,
+              json: () =>
+                Promise.resolve({
+                  jsonrpc: '2.0',
+                  id: null,
+                  error: { code: 11, message: 'assertion failed: invalid args' },
+                }),
+            }),
+        });
+        await expect(steemApi.getFollowersAsync('ned', 0, 'blog', 5)).rejects.toThrow('assertion failed: invalid args');
+      });
+    });
+
+    it('clears listeners', async () => {
+      expect((steem.api as any).listeners('message')).toHaveLength(0);
+    });
+
+    // Live-network pagination check against the public RPC. The getFollowers
+    // tests above are fully mocked; set STEEM_INTEGRATION=1 to opt in and
+    // exercise a real node.
+    describe('live (opt-in via STEEM_INTEGRATION=1)', () => {
+      it.skipIf(process.env.STEEM_INTEGRATION !== '1')(
+        'the startFollower parameter paginates on the real node',
+        async () => {
+          try {
+            const result1 = await (steem.api as any).getFollowersAsync('ned', 0, 'blog', 5);
+            expect(result1).toHaveLength(5);
+            const result2 = await (steem.api as any).getFollowersAsync('ned', result1[result1.length - 1].follower, 'blog', 5);
+            expect(result2).toHaveLength(5);
+            expect(result1).not.toEqual(result2);
+          } catch (error: any) {
+            // Skip test if network is unavailable (integration test)
+            if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+              console.warn('Skipping network test: network unavailable or SSL certificate issue');
+              return;
+            }
+            throw error;
+          }
+        },
+        30000
+      );
     });
   });
 
