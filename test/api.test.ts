@@ -43,6 +43,92 @@ function followersPage(all: FollowerEntry[], start: unknown, limit: number): Fol
   return all.slice(0, limit);
 }
 
+/**
+ * Serve condenser_api.get_content for the mocked getContent / useApiOptions
+ * tests: returns the canned test post (test/test-post.json, a snapshot of
+ * yamadapc/test-1-2-3-4-5-6-7-9) and records the wire envelope for
+ * assertions.
+ */
+function serveGetContent(requests: Array<{ method: string; params: unknown[] }>) {
+  return (uri: string, req: any) =>
+    new Promise((res, rej) => {
+      const data = JSON.parse(req.body);
+      requests.push(data);
+      const [api, method] = data.params;
+      if (api === 'condenser_api' && method === 'get_content') {
+        res({
+          ok: true,
+          json: () => Promise.resolve({ jsonrpc: '2.0', id: data.id, result: testPost }),
+        });
+      } else {
+        rej(new Error(`Unexpected RPC call in mocked getContent test: ${api}.${method}`));
+      }
+    });
+}
+
+// A canned block with the shape condenser_api.get_block returns (previous /
+// timestamp / transactions): two transactions, one operation each.
+function makeBlock() {
+  return {
+    previous: '0000000000000000000000000000000000000000000000000000000000000000',
+    timestamp: '2026-11-19T00:00:00',
+    transactions: [
+      {
+        ref_block_num: 1,
+        ref_block_prefix: 2,
+        expiration: '2026-11-19T00:10:00',
+        operations: [['vote', { voter: 'alice', author: 'bob', permlink: 'a-post', weight: 10000 }]],
+        extensions: [],
+        signatures: [],
+      },
+      {
+        ref_block_num: 1,
+        ref_block_prefix: 2,
+        expiration: '2026-11-19T00:10:00',
+        operations: [['transfer', { from: 'bob', to: 'alice', amount: '1.000 STEEM', memo: '' }]],
+        extensions: [],
+        signatures: [],
+      },
+    ],
+  };
+}
+
+/**
+ * Serve a mocked chain for the stream tests: every poll of
+ * database_api.get_dynamic_global_properties advances head_block_number by
+ * one (so streamBlockNumber emits a new number per poll) and
+ * condenser_api.get_block answers with the canned block above. Drives
+ * streamBlockNumber / streamBlock / streamTransactions / streamOperations
+ * without any network access.
+ */
+function mockChainStream(startHead: number) {
+  let head = startHead;
+  return (uri: string, req: any) =>
+    new Promise((res, rej) => {
+      const data = JSON.parse(req.body);
+      const [api, method, params] = data.params;
+      if (api === 'database_api' && method === 'get_dynamic_global_properties') {
+        head += 1;
+        res({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              jsonrpc: '2.0',
+              id: data.id,
+              result: { head_block_number: head, last_irreversible_block_num: head - 15 },
+            }),
+        });
+      } else if (api === 'condenser_api' && method === 'get_block') {
+        res({
+          ok: true,
+          json: () => Promise.resolve({ jsonrpc: '2.0', id: data.id, result: makeBlock() }),
+        });
+      } else {
+        rej(new Error(`Unexpected RPC call in mocked stream test: ${api}.${method}`));
+      }
+    });
+}
+
 describe('steem.api:', () => {
   describe('setOptions', () => {
     it('works', () => {
@@ -159,215 +245,402 @@ describe('steem.api:', () => {
   });
 
   describe('getContent', () => {
-    describe('getting a random post', () => {
+    describe('getting a random post (mocked condenser_api response)', () => {
       it('works', async () => {
-        try {
-          const result = await (steem.api as any).getContentAsync('yamadapc', 'test-1-2-3-4-5-6-7-9');
-          expect(result).toMatchObject(testPost);
-        } catch (error: any) {
-          // Skip test if network is unavailable (integration test)
-          if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-            console.warn('Skipping network test: network unavailable or SSL certificate issue');
-            return;
-          }
-          throw error;
-        }
+        const requests: Array<{ method: string; params: unknown[] }> = [];
+        const steemApi = new Api({});
+        steemApi.setOptions({ url: 'https://api.steemit.com', fetchMethod: serveGetContent(requests) });
+        const result = await (steemApi as any).getContentAsync('yamadapc', 'test-1-2-3-4-5-6-7-9');
+        expect(result).toMatchObject(testPost);
+        // The call must be routed through the legacy `call` wrapper to the
+        // condenser_api namespace with positional args (see src/api/methods.ts).
+        expect(requests).toHaveLength(1);
+        expect(requests[0].method).toBe('call');
+        expect(requests[0].params[0]).toBe('condenser_api');
+        expect(requests[0].params[1]).toBe('get_content');
+        expect(requests[0].params[2]).toEqual(['yamadapc', 'test-1-2-3-4-5-6-7-9']);
       });
+    });
 
-      it('clears listeners', async () => {
-        expect((steem.api as any).listeners('message')).toHaveLength(0);
-      });
+    it('clears listeners', async () => {
+      expect((steem.api as any).listeners('message')).toHaveLength(0);
+    });
+
+    // Live fetch of the post the canned fixture was snapshotted from. The
+    // tests above are fully mocked; set STEEM_INTEGRATION=1 to opt in and
+    // exercise a real node.
+    describe('live (opt-in via STEEM_INTEGRATION=1)', () => {
+      it.skipIf(process.env.STEEM_INTEGRATION !== '1')(
+        'works against the real node',
+        async () => {
+          try {
+            const result = await (steem.api as any).getContentAsync('yamadapc', 'test-1-2-3-4-5-6-7-9');
+            expect(result).toMatchObject(testPost);
+          } catch (error: any) {
+            // Skip test if network is unavailable (integration test)
+            if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+              console.warn('Skipping network test: network unavailable or SSL certificate issue');
+              return;
+            }
+            throw error;
+          }
+        },
+        30000
+      );
     });
   });
 
   describe('streamBlockNumber', () => {
-    it('streams steem transactions', async () => {
-      try {
-        let i = 0;
-        await new Promise<void>((resolve, reject) => {
-          const release = (steem.api as any).streamBlockNumber((err: any, block: any) => {
-            if (err) {
-              // Skip test if network is unavailable (integration test)
-              if (err.message?.includes('fetch failed') || err.message?.includes('certificate') || err.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-                console.warn('Skipping network test: network unavailable or SSL certificate issue');
-                release();
-                resolve();
-                return;
-              }
+    it('streams steem block numbers (mocked chain)', async () => {
+      const steemApi = new Api({});
+      steemApi.setOptions({ url: 'https://api.steemit.com', fetchMethod: mockChainStream(5000) });
+      let i = 0;
+      await new Promise<void>((resolve, reject) => {
+        const release = (steemApi as any).streamBlockNumber('head', (err: any, block: any) => {
+          if (err) {
+            release();
+            reject(err);
+            return;
+          }
+          try {
+            expect(block).toBeDefined();
+            expect(typeof block).toBe('number');
+            i++;
+            if (i === 2) {
               release();
-              reject(err);
+              resolve();
+            }
+          } catch (e) {
+            release();
+            reject(e);
+          }
+        }, 25);
+      });
+    });
+
+    // Live chain polling; set STEEM_INTEGRATION=1 to opt in and exercise a
+    // real node.
+    describe('live (opt-in via STEEM_INTEGRATION=1)', () => {
+      it.skipIf(process.env.STEEM_INTEGRATION !== '1')(
+        'streams steem block numbers from the real node',
+        async () => {
+          try {
+            let i = 0;
+            await new Promise<void>((resolve, reject) => {
+              const release = (steem.api as any).streamBlockNumber((err: any, block: any) => {
+                if (err) {
+                  // Skip test if network is unavailable (integration test)
+                  if (err.message?.includes('fetch failed') || err.message?.includes('certificate') || err.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+                    console.warn('Skipping network test: network unavailable or SSL certificate issue');
+                    release();
+                    resolve();
+                    return;
+                  }
+                  release();
+                  reject(err);
+                  return;
+                }
+                try {
+                  expect(block).toBeDefined();
+                  expect(typeof block).toBe('number');
+                  i++;
+                  if (i === 2) {
+                    release();
+                    resolve();
+                  }
+                } catch (e) {
+                  release();
+                  reject(e);
+                }
+              });
+            });
+          } catch (error: any) {
+            if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+              console.warn('Skipping network test: network unavailable or SSL certificate issue');
               return;
             }
-            try {
-              expect(block).toBeDefined();
-              expect(typeof block).toBe('number');
-              i++;
-              if (i === 2) {
-                release();
-                resolve();
-              }
-            } catch (e) {
-              release();
-              reject(e);
-            }
-          });
-        });
-      } catch (error: any) {
-        if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-          console.warn('Skipping network test: network unavailable or SSL certificate issue');
-          return;
-        }
-        throw error;
-      }
-    }, 30000);
+            throw error;
+          }
+        },
+        30000
+      );
+    });
   });
 
   describe('streamBlock', () => {
-    it('streams steem blocks', async () => {
-      try {
-        let i = 0;
-        await new Promise<void>((resolve, reject) => {
-          const release = (steem.api as any).streamBlock((err: any, block: any) => {
-            if (err) {
-              // Skip test if network is unavailable (integration test)
-              if (err.message?.includes('fetch failed') || err.message?.includes('certificate') || err.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-                console.warn('Skipping network test: network unavailable or SSL certificate issue');
-                release();
-                resolve();
-                return;
-              }
+    it('streams steem blocks (mocked chain)', async () => {
+      const steemApi = new Api({});
+      steemApi.setOptions({ url: 'https://api.steemit.com', fetchMethod: mockChainStream(6000) });
+      let i = 0;
+      await new Promise<void>((resolve, reject) => {
+        const release = (steemApi as any).streamBlock((err: any, block: any) => {
+          if (err) {
+            release();
+            reject(err);
+            return;
+          }
+          try {
+            expect(block).toBeDefined();
+            expect(block).toHaveProperty('previous');
+            expect(block).toHaveProperty('transactions');
+            expect(block).toHaveProperty('timestamp');
+            i++;
+            if (i === 2) {
               release();
-              reject(err);
+              resolve();
+            }
+          } catch (err2) {
+            release();
+            reject(err2);
+          }
+        });
+      });
+    });
+
+    // Live chain streaming; set STEEM_INTEGRATION=1 to opt in and exercise a
+    // real node.
+    describe('live (opt-in via STEEM_INTEGRATION=1)', () => {
+      it.skipIf(process.env.STEEM_INTEGRATION !== '1')(
+        'streams steem blocks from the real node',
+        async () => {
+          try {
+            let i = 0;
+            await new Promise<void>((resolve, reject) => {
+              const release = (steem.api as any).streamBlock((err: any, block: any) => {
+                if (err) {
+                  // Skip test if network is unavailable (integration test)
+                  if (err.message?.includes('fetch failed') || err.message?.includes('certificate') || err.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+                    console.warn('Skipping network test: network unavailable or SSL certificate issue');
+                    release();
+                    resolve();
+                    return;
+                  }
+                  release();
+                  reject(err);
+                  return;
+                }
+                try {
+                  expect(block).toBeDefined();
+                  expect(block).toHaveProperty('previous');
+                  expect(block).toHaveProperty('transactions');
+                  expect(block).toHaveProperty('timestamp');
+                  i++;
+                  if (i === 2) {
+                    release();
+                    resolve();
+                  }
+                } catch (err2) {
+                  release();
+                  reject(err2);
+                }
+              });
+            });
+          } catch (error: any) {
+            if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+              console.warn('Skipping network test: network unavailable or SSL certificate issue');
               return;
             }
-            try {
-              expect(block).toBeDefined();
-              expect(block).toHaveProperty('previous');
-              expect(block).toHaveProperty('transactions');
-              expect(block).toHaveProperty('timestamp');
-              i++;
-              if (i === 2) {
-                release();
-                resolve();
-              }
-            } catch (err2) {
-              release();
-              reject(err2);
-            }
-          });
-        });
-      } catch (error: any) {
-        if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-          console.warn('Skipping network test: network unavailable or SSL certificate issue');
-          return;
-        }
-        throw error;
-      }
-    }, 30000);
+            throw error;
+          }
+        },
+        30000
+      );
+    });
   });
 
   describe('streamTransactions', () => {
-    it('streams steem transactions', async () => {
-      try {
-        let i = 0;
-        await new Promise<void>((resolve, reject) => {
-          const release = (steem.api as any).streamTransactions((err: any, transaction: any) => {
-            if (err) {
-              // Skip test if network is unavailable (integration test)
-              if (err.message?.includes('fetch failed') || err.message?.includes('certificate') || err.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-                console.warn('Skipping network test: network unavailable or SSL certificate issue');
-                release();
-                resolve();
-                return;
-              }
+    it('streams steem transactions (mocked chain)', async () => {
+      const steemApi = new Api({});
+      steemApi.setOptions({ url: 'https://api.steemit.com', fetchMethod: mockChainStream(7000) });
+      let i = 0;
+      await new Promise<void>((resolve, reject) => {
+        const release = (steemApi as any).streamTransactions((err: any, transaction: any) => {
+          if (err) {
+            release();
+            reject(err);
+            return;
+          }
+          try {
+            expect(transaction).toBeDefined();
+            expect(transaction).toHaveProperty('ref_block_num');
+            expect(transaction).toHaveProperty('operations');
+            expect(transaction).toHaveProperty('extensions');
+            i++;
+            if (i === 2) {
               release();
-              reject(err);
+              resolve();
+            }
+          } catch (err2) {
+            release();
+            reject(err2);
+          }
+        });
+      });
+    });
+
+    // Live chain streaming; set STEEM_INTEGRATION=1 to opt in and exercise a
+    // real node.
+    describe('live (opt-in via STEEM_INTEGRATION=1)', () => {
+      it.skipIf(process.env.STEEM_INTEGRATION !== '1')(
+        'streams steem transactions from the real node',
+        async () => {
+          try {
+            let i = 0;
+            await new Promise<void>((resolve, reject) => {
+              const release = (steem.api as any).streamTransactions((err: any, transaction: any) => {
+                if (err) {
+                  // Skip test if network is unavailable (integration test)
+                  if (err.message?.includes('fetch failed') || err.message?.includes('certificate') || err.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+                    console.warn('Skipping network test: network unavailable or SSL certificate issue');
+                    release();
+                    resolve();
+                    return;
+                  }
+                  release();
+                  reject(err);
+                  return;
+                }
+                try {
+                  expect(transaction).toBeDefined();
+                  expect(transaction).toHaveProperty('ref_block_num');
+                  expect(transaction).toHaveProperty('operations');
+                  expect(transaction).toHaveProperty('extensions');
+                  i++;
+                  if (i === 2) {
+                    release();
+                    resolve();
+                  }
+                } catch (err2) {
+                  release();
+                  reject(err2);
+                }
+              });
+            });
+          } catch (error: any) {
+            if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+              console.warn('Skipping network test: network unavailable or SSL certificate issue');
               return;
             }
-            try {
-              expect(transaction).toBeDefined();
-              expect(transaction).toHaveProperty('ref_block_num');
-              expect(transaction).toHaveProperty('operations');
-              expect(transaction).toHaveProperty('extensions');
-              i++;
-              if (i === 2) {
-                release();
-                resolve();
-              }
-            } catch (err2) {
-              release();
-              reject(err2);
-            }
-          });
-        });
-      } catch (error: any) {
-        if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-          console.warn('Skipping network test: network unavailable or SSL certificate issue');
-          return;
-        }
-        throw error;
-      }
-    }, 30000);
+            throw error;
+          }
+        },
+        30000
+      );
+    });
   });
 
   describe('streamOperations', () => {
-    it('streams steem operations', async () => {
-      try {
-        let i = 0;
-        await new Promise<void>((resolve, reject) => {
-          const release = (steem.api as any).streamOperations((err: any, operation: any) => {
-            if (err) {
-              // Skip test if network is unavailable (integration test)
-              if (err.message?.includes('fetch failed') || err.message?.includes('certificate') || err.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-                console.warn('Skipping network test: network unavailable or SSL certificate issue');
-                release();
-                resolve();
-                return;
-              }
+    it('streams steem operations (mocked chain)', async () => {
+      const steemApi = new Api({});
+      steemApi.setOptions({ url: 'https://api.steemit.com', fetchMethod: mockChainStream(8000) });
+      let i = 0;
+      await new Promise<void>((resolve, reject) => {
+        const release = (steemApi as any).streamOperations((err: any, operation: any) => {
+          if (err) {
+            release();
+            reject(err);
+            return;
+          }
+          try {
+            expect(operation).toBeDefined();
+            i++;
+            if (i === 2) {
               release();
-              reject(err);
+              resolve();
+            }
+          } catch (err2) {
+            release();
+            reject(err2);
+          }
+        });
+      });
+    });
+
+    // Live chain streaming; set STEEM_INTEGRATION=1 to opt in and exercise a
+    // real node.
+    describe('live (opt-in via STEEM_INTEGRATION=1)', () => {
+      it.skipIf(process.env.STEEM_INTEGRATION !== '1')(
+        'streams steem operations from the real node',
+        async () => {
+          try {
+            let i = 0;
+            await new Promise<void>((resolve, reject) => {
+              const release = (steem.api as any).streamOperations((err: any, operation: any) => {
+                if (err) {
+                  // Skip test if network is unavailable (integration test)
+                  if (err.message?.includes('fetch failed') || err.message?.includes('certificate') || err.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+                    console.warn('Skipping network test: network unavailable or SSL certificate issue');
+                    release();
+                    resolve();
+                    return;
+                  }
+                  release();
+                  reject(err);
+                  return;
+                }
+                try {
+                  expect(operation).toBeDefined();
+                  i++;
+                  if (i === 2) {
+                    release();
+                    resolve();
+                  }
+                } catch (err2) {
+                  release();
+                  reject(err2);
+                }
+              });
+            });
+          } catch (error: any) {
+            if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+              console.warn('Skipping network test: network unavailable or SSL certificate issue');
               return;
             }
-            try {
-              expect(operation).toBeDefined();
-              i++;
-              if (i === 2) {
-                release();
-                resolve();
-              }
-            } catch (err2) {
-              release();
-              reject(err2);
-            }
-          });
-        });
-      } catch (error: any) {
-        if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-          console.warn('Skipping network test: network unavailable or SSL certificate issue');
-          return;
-        }
-        throw error;
-      }
-    }, 30000);
+            throw error;
+          }
+        },
+        30000
+      );
+    });
   });
 
   describe('useApiOptions', () => {
-    it('works ok with the prod instances', async () => {
-      try {
-        const nodes = (steem.config.get('nodes') as string[]) || [];
-        const url = nodes[0] || 'https://api.steemit.com';
-        (steem.api as any).setOptions({ useAppbaseApi: true, url: url });
-        const result = await (steem.api as any).getContentAsync('yamadapc', 'test-1-2-3-4-5-6-7-9');
-        (steem.api as any).setOptions({ useAppbaseApi: false, url: url });
-        expect(result).toMatchObject(testPost);
-      } catch (error: any) {
-        // Skip test if network is unavailable (integration test)
-        if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-          console.warn('Skipping network test: network unavailable or SSL certificate issue');
-          return;
-        }
-        throw error;
-      }
+    it('works ok (mocked)', async () => {
+      const requests: Array<{ method: string; params: unknown[] }> = [];
+      const steemApi = new Api({});
+      const nodes = (steem.config.get('nodes') as string[]) || [];
+      const url = nodes[0] || 'https://api.steemit.com';
+      steemApi.setOptions({ useAppbaseApi: true, url: url, fetchMethod: serveGetContent(requests) });
+      const result = await (steemApi as any).getContentAsync('yamadapc', 'test-1-2-3-4-5-6-7-9');
+      steemApi.setOptions({ useAppbaseApi: false, url: url });
+      expect(result).toMatchObject(testPost);
+      expect(requests).toHaveLength(1);
+    });
+
+    // Live fetch through the shared instance after toggling options; set
+    // STEEM_INTEGRATION=1 to opt in and exercise a real node.
+    describe('live (opt-in via STEEM_INTEGRATION=1)', () => {
+      it.skipIf(process.env.STEEM_INTEGRATION !== '1')(
+        'works ok with the prod instances',
+        async () => {
+          try {
+            const nodes = (steem.config.get('nodes') as string[]) || [];
+            const url = nodes[0] || 'https://api.steemit.com';
+            (steem.api as any).setOptions({ useAppbaseApi: true, url: url });
+            const result = await (steem.api as any).getContentAsync('yamadapc', 'test-1-2-3-4-5-6-7-9');
+            (steem.api as any).setOptions({ useAppbaseApi: false, url: url });
+            expect(result).toMatchObject(testPost);
+          } catch (error: any) {
+            // Skip test if network is unavailable (integration test)
+            if (error.message?.includes('fetch failed') || error.message?.includes('certificate') || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+              console.warn('Skipping network test: network unavailable or SSL certificate issue');
+              return;
+            }
+            throw error;
+          }
+        },
+        30000
+      );
     });
   });
 
