@@ -5,6 +5,28 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.5] - 2026-11-18
+
+Type-declaration and toolchain release; no API changes and runtime bundles are
+unchanged. The fixes target what consumers install: the published
+`dist/**/*.d.ts`, the declared Node.js floor, and the dev toolchain. Test
+suite: 375 passed / 24 skipped (the 24 skips are the pre-existing
+live-network integration tests plus the real-node `getFollowers` pagination
+now gated behind `STEEM_INTEGRATION=1`), typecheck, lint and all four rollup
+bundles verified green; the post-build declaration guardrail reported 0
+rewrites across 47 emitted declaration files.
+
+### Fixed
+
+- **Published `dist/**/*.d.ts` now resolve under `moduleResolution` `node16`/`nodenext`** (#565, fixes #564): the package ships `"type": "module"`, so node16/nodenext requires explicit file extensions on relative specifiers inside the emitted declarations. The extensionless specifiers emitted by `@rollup/plugin-typescript` broke consumers three ways: re-exported values (`sha256`, `ripemd160`, …) failed with TS2305, everything else silently degraded to `any`, and `skipLibCheck: false` runs reported TS2834 from inside our declarations. A post-rollup build step (`scripts/fix-dts-imports.mjs`) now rewrites every relative import/export specifier in the declarations to an explicit `.js` path (including `/index.js` for directory imports) and fails the build loudly when a specifier cannot be resolved; `curve.ts`'s `G` is annotated with a local `ECPoint` alias so the declaration emitter no longer references `@noble/curves/abstract/weierstrass` (an extensionless subpath absent from noble's exports map) — type-only, runtime unchanged; and `@types/bn.js` / `@types/node` moved from devDependencies to dependencies, because the declaration surface references `bn.js`, `events` and the global `Buffer` type — fresh installs previously failed with TS7016/TS2591 under `skipLibCheck: false`. Covered by `test/types-nodenext.test.ts`, which asserts no extensionless relative specifier survives the build and compiles a consumer project against `dist` with nodenext + `skipLibCheck: false`, requiring re-exported symbols to resolve with real (non-`any`) types.
+- **The `getFollowers` tests no longer depend on public-RPC latency** (#567, #568): the two tests called the live Steem RPC and intermittently blew vitest's default 5000 ms timeout — the skip-on-error guard only caught connection/TLS failures, so a slow-but-successful response still failed the suite. Canned `follow_api.get_followers` responses are now served through the existing `setOptions({fetchMethod})` injection point (fixture snapshotted from api.steemit.com, 2026-11-16, in the node's exact response shape); the original pagination and lower-bound assertions are kept (all previously verified against the live node), joined by wire-envelope checks (the call must route through the legacy `call` wrapper to the `follow_api` namespace with positional args) and JSON-RPC error-propagation coverage that was previously only reachable over the live network. Real-node pagination remains exercisable behind `STEEM_INTEGRATION=1` (30 s timeout), skipped in the default run and in CI.
+- **Open Dependabot alerts cleared** (#563): direct devDependency bumps — vite 7.3.6 → 7.3.8 (launch-editor / fs bypass / custom middleware fixes) and vitest + `@vitest/coverage-v8` 4.1.11 → 4.1.12 (`@vitest/mocker` traversal and mock-registration fixes); workspace override updates for brace-expansion (GHSA-q2hr-2g5m-vwhr, quadratic-time rewrite DoS), serialize-javascript, source-map-js, minimatch (`@9` selector → 11.0.1, new advisory surfaced by `pnpm audit`), and deepmerge pinned to 4.1.2 below the vulnerable range — no patched release exists upstream and its only consumer (`@rollup/plugin-node-resolve`) merges its own frozen DEFAULTS, so no untrusted input reaches it. All toolchain/dev-only; nothing reaches the published bundles. The change also relocates the published key-format test vectors to `test/fixtures/key_formats.json` (values unchanged, provenance kept), makes the shared test credentials env-overridable via `STEEM_USERNAME`/`STEEM_WIF`, and hardens the fixture path join — unblocking the pre-commit security scan without changing any test vector.
+
+### Changed
+
+- **Minimum Node.js raised from `>=20.19.0` to `>=22.23.4`** (#562): Node 20 is EOL and will never receive the brotli decoder fix (CVE-2026-111497), so a green CI build there said nothing about whether a supported runtime is safe — and the container it built was itself vulnerable. The node-20 CI job and dockerfile are deleted, the node-22 container is pinned to `node:22.23.4-alpine` instead of floating `node:22`, and `engines.node` now matches the floor CI actually tests (README updated to match). No library code, API or byte-output changes.
+- **The package source itself now compiles under `moduleResolution` `nodenext`** (#566): follow-up to #565 — all 139 relative specifiers across 32 source files now carry explicit `.js` paths (directory imports get `/index.js`), so the class of bug fixed in #565 is caught at the source by `pnpm typecheck` instead of only by the post-build guardrail, which stays in place as a zero-cost check (0 rewrites on a clean build, and it still fails the build if a future change reintroduces an extensionless specifier). Type-only refactor: runtime bundles and serializer golden bytes are unchanged.
+
 ## [1.2.4] - 2026-10-24
 
 No API changes; byte output for well-formed input is unchanged. This release is
